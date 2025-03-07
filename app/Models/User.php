@@ -21,4 +21,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Progress::class);
     }
+
+    public function answers()
+    {
+        return $this->hasMany(Answer::class);
+    }
+
+    public function materials()
+    {
+        return $this->belongsToMany(Material::class, 'answers', 'user_id', 'material_id')
+            ->distinct();
+    }
+
+    public function hasRole($role)
+    {
+        return $this->role_id == $role;
+    }
 }

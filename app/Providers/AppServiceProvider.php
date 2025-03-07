@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('components.navbars.sidebar', function ($view) {
-            $view->with('materials', Material::all());
+            $view->with('materials', Material::orderBy('created_at', 'asc')->get());
         });
     }
 }

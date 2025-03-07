@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class SessionsController extends Controller
 {
@@ -79,9 +81,10 @@ class SessionsController extends Controller
 
     public function destroy()
     {
-        auth()->logout();
+        Session::flush();
+        Auth::logout();
 
-        return redirect('/sign-in');
+        return redirect()->route('login')->with(['success' => 'You\'ve been logged out successfully.']);
     }
 
 }

@@ -1,4 +1,4 @@
-<x-layout bodyClass="">
+<x-layout bodyClass="auth-layout bg-gray-200">
     <div>
         <div class="container position-sticky z-index-sticky top-0">
             <div class="row">

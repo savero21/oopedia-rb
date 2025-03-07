@@ -37,8 +37,186 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <!-- CSS Files -->
     <link id="pagestyle" href="{{ asset('assets') }}/css/material-dashboard.css?v=3.0.0" rel="stylesheet" />
+    
+    @auth
+    <style>
+        /* Style khusus untuk user yang sudah login */
+        .g-sidenav-show {
+            overflow-x: hidden;
+        }
+
+        .g-sidenav-show .sidenav {
+            z-index: 1009;
+            position: fixed;
+            display: block;
+        }
+
+        /* Perbaikan untuk main content */
+        .main-content {
+            position: relative;
+            float: right;
+            width: calc(100% - 280px);
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 0;
+            transition: all .2s ease-in-out;
+        }
+
+        .container-fluid {
+            padding: 1.5rem 1.5rem !important;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Responsive fixes */
+        @media (max-width: 991.98px) {
+            .main-content {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            .g-sidenav-show.g-sidenav-pinned .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        /* Fix untuk navbar */
+        .navbar.navbar-main {
+            margin-left: 0;
+            margin-right: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        /* Fix untuk cards */
+        .card {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Fix untuk sidebar scroll */
+        .sidenav {
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Fix untuk dropdown menu */
+        #questionsMenu {
+            position: relative;
+            background: transparent;
+        }
+
+        #questionsMenu .nav-link {
+            padding-left: 3rem;
+        }
+    </style>
+    @endauth
+
+    @guest
+    <style>
+        /* Style umum yang tetap berlaku untuk semua halaman */
+        .g-sidenav-show {
+            overflow-x: hidden;
+        }
+
+        /* Style khusus untuk halaman auth (sebelum login) */
+        .auth-layout {
+            min-height: 100vh;
+            background-color: #f0f2f5;
+        }
+
+        .auth-layout .main-content {
+            width: 100% !important;
+            margin-left: 0 !important;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .auth-layout .container-fluid {
+            padding: 1.5rem 1.5rem !important;
+            width: 100%;
+            position: relative;
+        }
+
+        .auth-layout .card {
+            margin-bottom: 1.5rem;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        /* Style untuk halaman setelah login */
+        .dashboard-layout .g-sidenav-show .sidenav {
+            z-index: 1009;
+            position: fixed;
+            display: block;
+        }
+
+        .dashboard-layout .main-content {
+            position: relative;
+            float: right;
+            width: calc(100% - 280px);
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 0;
+            transition: all .2s ease-in-out;
+        }
+
+        .dashboard-layout .container-fluid {
+            padding: 1.5rem 1.5rem !important;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Responsive fixes untuk dashboard */
+        @media (max-width: 991.98px) {
+            .dashboard-layout .main-content {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            .dashboard-layout.g-sidenav-show.g-sidenav-pinned .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        /* Fix untuk navbar di dashboard */
+        .dashboard-layout .navbar.navbar-main {
+            margin-left: 0;
+            margin-right: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        /* Fix untuk sidebar scroll di dashboard */
+        .dashboard-layout .sidenav {
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Fix untuk dropdown menu di dashboard */
+        .dashboard-layout #questionsMenu {
+            position: relative;
+            background: transparent;
+        }
+
+        .dashboard-layout #questionsMenu .nav-link {
+            padding-left: 3rem;
+        }
+    </style>
+    @endguest
 </head>
 <body class="{{ $bodyClass }}">
+
+@if (Session::has('success'))
+    <div class="alert alert-success alert-dismissible text-white" role="alert">
+        <span class="text-sm">{{ Session::get('success') }}</span>
+        <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+@endif
+
 
 {{ $slot }}
 
@@ -56,6 +234,34 @@
         Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Perfect Scrollbar initialization
+        if (document.querySelector('.sidenav')) {
+            var fixedPlugin = document.querySelector('.fixed-plugin');
+            var fixedPluginButton = document.querySelector('.fixed-plugin-button');
+            var fixedPluginButtonNav = document.querySelector('.fixed-plugin-button-nav');
+            var fixedPluginCard = document.querySelector('.fixed-plugin .card');
+            var fixedPluginCloseButton = document.querySelectorAll('.fixed-plugin-close-button');
+            var navbar = document.getElementById('navbarBlur');
+            var buttonNavbarFixed = document.getElementById('navbarFixed');
+
+            if (fixedPluginButton) {
+                fixedPluginButton.onclick = function() {
+                    if (!fixedPlugin.classList.contains('show')) {
+                        fixedPlugin.classList.add('show');
+                    } else {
+                        fixedPlugin.classList.remove('show');
+                    }
+                }
+            }
+
+            document.querySelector('body').onclick = function(e) {
+                if (e.target != fixedPluginButton && e.target != fixedPluginButtonNav && e.target.closest('.fixed-plugin .card') != fixedPluginCard) {
+                    fixedPlugin.classList.remove('show');
+                }
+            }
+        }
+    });
 </script>
 <!-- Github buttons -->
 <script async defer src="https://buttons.github.io/buttons.js"></script>
