@@ -1,19 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\SessionsController;
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\MaterialController;
-use App\Http\Controllers\QuestionController;
-use App\Http\Controllers\SessionController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\StudentMaterialController;
-use App\Http\Controllers\StudentExerciseController;
-use App\Http\Controllers\StudentProgressController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\RegisterController;
+use App\Http\Controllers\Admin\SessionsController;
+use App\Http\Controllers\Admin\UserProfileController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\MaterialController;
+use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\SessionController;
+use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentMaterialController;
+use App\Http\Controllers\Admin\StudentExerciseController;
+use App\Http\Controllers\Admin\StudentProgressController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Admin\AdminStudentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -46,4 +47,7 @@ Route::post('login', [SessionsController::class, 'store']);
 
 // Logout route
 Route::post('logout', [SessionsController::class, 'destroy'])->name('logout');
+
+Route::get('/students', [AdminStudentController::class, 'index'])->name('admin.students.index');
+Route::get('/students/{student}/progress', [AdminStudentController::class, 'progress'])->name('admin.students.progress');
 

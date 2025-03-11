@@ -82,6 +82,21 @@
                     </ul>
                 </div>
             </li>
+
+            {{-- Menu Progress Mahasiswa --}}
+            <li class="nav-item mt-3">
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Data Mahasiswa</h6>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-white {{ $activePage == 'students' ? 'active bg-gradient-primary' : '' }}"
+                    href="{{ route('admin.students.index') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="material-icons opacity-10">school</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Data Mahasiswa</span>
+                </a>
+            </li>
         </ul>
     </div>
 </aside>
@@ -132,18 +147,15 @@
     font-weight: 400;
 }
 
-/* Menghilangkan kotak di sebelah icon arrow */
 .material-icons.ms-auto::after {
     display: none !important;
     content: none !important;
 }
 
-/* Menghilangkan kotak yang muncul di sebelah icon */
 .nav-link::after {
     display: none !important; /* Menghilangkan kotak */
 }
 
-/* Additional styles for new menu items */
 .nav-item h6 {
     margin: 0;
     padding: 1rem 0;

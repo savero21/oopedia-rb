@@ -24,13 +24,18 @@ class User extends Authenticatable
 
     public function answers()
     {
-        return $this->hasMany(Answer::class);
+        return $this->hasMany(UserAnswer::class);
     }
 
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'answers', 'user_id', 'material_id')
+        return $this->belongsToMany(Material::class, 'progress', 'user_id', 'material_id')
             ->distinct();
+    }
+
+    public function materialProgress()
+    {
+        return $this->hasMany(Progress::class, 'user_id');
     }
 
     public function hasRole($role)
