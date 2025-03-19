@@ -11,7 +11,8 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "LaravelFrontendPresets\\MaterialPreset\\": "src/"
+            "LaravelFrontendPresets\\MaterialPreset\\": "src/",
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
     "extra": {

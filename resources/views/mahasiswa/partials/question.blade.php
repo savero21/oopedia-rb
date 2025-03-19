@@ -15,6 +15,12 @@
                         {{ $currentQuestion->question_text }}
                     </div>
                     <div class="answers-container">
+                    @if($currentQuestion->question_type === 'fill_in_the_blank')
+                            <div class="form-group">
+                                <label for="fillInTheBlankAnswer">Jawaban:</label>
+                                <input type="text" name="fill_in_the_blank_answer" id="fillInTheBlankAnswer" class="form-control" required placeholder="Isi jawaban di sini...">
+                            </div>
+                        @else
                         @foreach($currentQuestion->answers as $answer)
                             <div class="form-check answer-option mb-3">
                                 <input class="form-check-input" 
@@ -27,7 +33,10 @@
                                     {{ $answer->answer_text }}
                                 </label>
                             </div>
+                            
+                            
                         @endforeach
+                    @endif
                     </div>
                 </div>
 

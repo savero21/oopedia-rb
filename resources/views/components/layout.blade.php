@@ -303,11 +303,29 @@
 </head>
 <body class="{{ $bodyClass }}">
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+@if (Session::has('success'))
+    <div class="d-flex justify-content-center mt-3">
+        <div id="success-alert" class="col-10 col-md-6 col-lg-4">
+            <div class="alert alert-success alert-dismissible text-white text-center fade show" role="alert">
+                <span class="text-sm">{{ Session::get('success') }}</span>
+                <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Menghilangkan alert setelah 3 detik (3000ms)
+        setTimeout(function() {
+            let alertBox = document.getElementById('success-alert');
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s ease";
+                alertBox.style.opacity = "0";
+                setTimeout(() => alertBox.remove(), 500); // Hapus elemen setelah animasi selesai
+            }
+        }, 3000);
+    </script>
 @endif
 
 @if(session('error'))
