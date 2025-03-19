@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Material;
 use Illuminate\Http\Request;
 
@@ -9,26 +10,27 @@ class MaterialController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
-        
-        // Get the search query from the request
-        $search = $request->input('search');
+        $query = Material::query();
 
-        // Query materials and filter by title or creator's name
-        $materials = Material::with('createdBy')
-            ->when($search, function ($query) use ($search) {
-                return $query->where('title', 'like', "%{$search}%")
-                             ->orWhereHas('createdBy', function ($q) use ($search) {
-                                 $q->where('name', 'like', "%{$search}%");
-                             });
-            })
-            ->get();
+        // Handle search
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%");
+        }
 
-        return view('materials.index', [
-            'materials' => $materials,
-            'userName' => $user->name,
-            'userRole' => $user->role->role_name
-        ]);
+        // Handle sorting
+        $sort = $request->get('sort', 'created_at'); // default sort by created_at
+        $direction = $request->get('direction', 'asc'); // default direction ascending
+
+        // Validate sort field to prevent SQL injection
+        $allowedSortFields = ['title', 'created_at'];
+        if (in_array($sort, $allowedSortFields)) {
+            $query->orderBy($sort, $direction);
+        }
+
+        $materials = $query->with('creator')->get();
+
+        return view('materials.index', compact('materials'));
     }
 
     public function create()
@@ -38,14 +40,23 @@ class MaterialController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'created_by' => 'required|exists:users,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'created_by' => 'required|exists:users,id'
+            ]);
 
-        Material::create($request->all());
-        return redirect()->route('materials.index')->with('success', 'Material created successfully.');
+            $material = Material::create($validated);
+
+            return redirect()->route('admin.materials.index')
+                ->with('success', 'Materi berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     public function edit(Material $material)
@@ -57,16 +68,20 @@ class MaterialController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'required|string'
         ]);
 
         $material->update($request->all());
-        return redirect()->route('materials.index')->with('success', 'Material updated successfully.');
+
+        return redirect()->route('admin.materials.index')
+            ->with('success', 'Materi berhasil diperbarui.');
     }
 
     public function destroy(Material $material)
     {
         $material->delete();
-        return redirect()->route('materials.index')->with('success', 'Material deleted successfully.');
+
+        return redirect()->route('admin.materials.index')
+            ->with('success', 'Materi berhasil dihapus.');
     }
 }

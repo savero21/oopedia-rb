@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Question;
 use App\Models\Answer;
 use App\Models\Material;
@@ -74,17 +75,18 @@ class QuestionController extends Controller
             'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
             'answers' => 'required|array|min:1',
             'answers.*.answer_text' => 'required|string',
-            'answers.*.is_correct' => 'required|boolean'
+            'answers.*.is_correct' => 'required|boolean',
+            'answers.*.explanation' => 'nullable|string|max:500'
         ]);
 
         // Ensure only one correct answer for radio button type
         if ($request->question_type === 'radio_button') {
             $correctAnswers = collect($request->answers)->where('is_correct', true)->count();
             if ($correctAnswers !== 1) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Radio button questions must have exactly one correct answer'
-                ], 422);
+                return back()
+                    ->withInput()
+                    ->withErrors(['correct_answer' => 'Soal dengan tipe Radio Button harus memiliki tepat satu jawaban yang benar.'])
+                    ->with('warning', 'Pilih satu jawaban yang benar untuk tipe soal Radio Button');
             }
         }
 
@@ -108,22 +110,23 @@ class QuestionController extends Controller
         }
 
         if ($material) {
-            return redirect()->route('materials.questions.index', $material)
-                ->with('success', 'Question created successfully.');
+            return redirect()
+                ->route('admin.materials.questions.index', $material)
+                ->with('success', 'Soal berhasil ditambahkan.');
         }
 
-        return redirect()->route('questions.index')
-            ->with('success', 'Question created successfully.');
+        return redirect()
+            ->route('admin.questions.index')
+            ->with('success', 'Soal berhasil ditambahkan.');
     }
 
-    public function edit(Question $question)
+    public function edit(Material $material = null, Question $question)
     {
         $materials = Material::all();
-        $material = $question->material; // Get the question's material
         return view('questions.edit', compact('question', 'materials', 'material'));
     }
 
-    public function update(Request $request, Question $question)
+    public function update(Request $request, Material $material = null, Question $question)
     {
         $request->validate([
             'material_id' => 'required|exists:materials,id',
@@ -131,7 +134,8 @@ class QuestionController extends Controller
             'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
             'answers' => 'required|array|min:1',
             'answers.*.answer_text' => 'required|string',
-            'answers.*.is_correct' => 'required|boolean'
+            'answers.*.is_correct' => 'required|boolean',
+            'answers.*.explanation' => 'nullable|string|max:500'
         ]);
 
         // Ensure only one correct answer for radio button type
@@ -146,7 +150,7 @@ class QuestionController extends Controller
         }
 
         $question->update([
-            'material_id' => $request->material_id,
+            'material_id' => $material ? $material->id : $request->material_id,
             'question_text' => $request->question_text,
             'question_type' => $request->question_type
         ]);
@@ -167,29 +171,31 @@ class QuestionController extends Controller
             ]);
         }
 
-        // Redirect back to the material's questions page if it came from there
-        if ($question->material_id) {
-            return redirect()->route('materials.questions.index', $question->material_id)
+        if ($material) {
+            return redirect()
+                ->route('admin.materials.questions.index', $material)
                 ->with('success', 'Question updated successfully.');
         }
 
-        return redirect()->route('questions.index')
+        return redirect()
+            ->route('admin.questions.index')
             ->with('success', 'Question updated successfully.');
     }
 
-    public function destroy(Question $question)
+    public function destroy(Material $material = null, Question $question)
     {
-        $material_id = $question->material_id; // Store the material_id before deletion
+        $material_id = $question->material_id;
         $question->answers()->delete();
         $question->delete();
 
-        // Redirect back to the material's questions page if it came from there
-        if ($material_id) {
-            return redirect()->route('materials.questions.index', $material_id)
-                ->with('success', 'Question deleted successfully.');
+        if ($material) {
+            return redirect()
+                ->route('admin.materials.questions.index', $material)
+                ->with('success', 'Soal berhasil dihapus.');
         }
 
-        return redirect()->route('questions.index')
-            ->with('success', 'Question deleted successfully.');
+        return redirect()
+            ->route('admin.questions.index')
+            ->with('success', 'Soal berhasil dihapus.');
     }
 }

@@ -14,7 +14,7 @@
 -->
 @props(['bodyClass'])
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8" />
@@ -37,7 +37,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <!-- CSS Files -->
     <link id="pagestyle" href="{{ asset('assets') }}/css/material-dashboard.css?v=3.0.0" rel="stylesheet" />
-    
+    <script src="https://cdn.tiny.cloud/1/9iw2xqwn1593xsb15d6xpi0y41mtrets5ms0l5s8kekdgf63/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
     @auth
     <style>
         /* Style khusus untuk user yang sudah login */
@@ -205,18 +206,116 @@
         }
     </style>
     @endguest
+
+    <style>
+        /* TinyMCE Editor Improvements */
+        .tox-tinymce {
+            min-height: 400px !important;
+            margin-bottom: 20px;
+        }
+
+        /* Card Content Improvements */
+        .card {
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Text Content Handling */
+        .materi-description, 
+        .question-content,
+        .answer-content {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+            max-width: 100%;
+        }
+
+        /* TinyMCE Content Display */
+        .content-display {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
+            padding: 15px;
+        }
+
+        .content-display img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .content-display pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .content-display code {
+            background: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        /* Dashboard Card Improvements */
+        .materi-card {
+            height: 100%;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .materi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .materi-card-body {
+            padding: 1.5rem;
+        }
+
+        .materi-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #344767;
+        }
+
+        .materi-description {
+            font-size: 0.875rem;
+            color: #67748e;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+    @stack('head')
 </head>
 <body class="{{ $bodyClass }}">
 
-@if (Session::has('success'))
-    <div class="alert alert-success alert-dismissible text-white" role="alert">
-        <span class="text-sm">{{ Session::get('success') }}</span>
-        <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
 
 {{ $slot }}
 
@@ -260,6 +359,33 @@
                     fixedPlugin.classList.remove('show');
                 }
             }
+        }
+    });
+
+    // Add this before the existing script content
+    tinymce.init({
+        selector: 'textarea.tinymce',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        menubar: false,
+        height: 400,
+        content_style: `
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #333;
+                margin: 15px;
+            }
+            p { margin: 0 0 1em 0; }
+            img { max-width: 100%; height: auto; }
+            pre { background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; }
+            code { background: #f5f5f5; padding: 2px 4px; border-radius: 4px; }
+        `,
+        setup: function(editor) {
+            editor.on('change', function() {
+                editor.save();
+            });
         }
     });
 </script>

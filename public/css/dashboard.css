@@ -1,0 +1,24 @@
+.card-header {
+    position: relative;
+    padding-top: 24px !important;
+}
+
+.icon.icon-lg {
+    width: 64px;
+    height: 64px;
+    position: absolute;
+    top: -20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon.icon-lg i {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.card-header .text-end {
+    margin-left: 75px;
+} 

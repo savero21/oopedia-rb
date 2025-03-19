@@ -35,4 +35,9 @@ class Question extends Model
     {
         return $this->hasMany(Question::class);
     }
+
+    public function progress()
+    {
+        return $this->hasMany(Progress::class);
+    }
 }

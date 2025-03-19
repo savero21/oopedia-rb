@@ -4,7 +4,10 @@
     class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 bg-gradient-dark"
     id="sidenav-main">
     <div class="sidenav-header d-flex flex-column align-items-center">
-        <a class="navbar-brand m-0 d-flex text-wrap align-items-center" href="{{ route('dashboard') }}">
+        @php
+            $dashboardRoute = auth()->user()->role_id === 1 ? 'admin.dashboard' : 'mahasiswa.dashboard';
+        @endphp
+        <a class="navbar-brand m-0 d-flex text-wrap align-items-center" href="{{ route($dashboardRoute) }}">
             <span class="font-weight-bold text-white">OOPEDIA</span>
         </a>
     </div>
@@ -22,7 +25,7 @@
             {{-- Menu Dashboard untuk Semua Role --}}
             <li class="nav-item">
                 <a class="nav-link text-white {{ $activePage == 'dashboard' ? 'active bg-gradient-primary' : '' }}"
-                    href="{{ route('dashboard') }}">
+                    href="{{ route($dashboardRoute) }}">
                     <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="material-icons opacity-10">dashboard</i>
                     </div>
@@ -38,7 +41,7 @@
             {{-- Menu Materi --}}
             <li class="nav-item">
                 <a class="nav-link text-white {{ $activePage == 'materials' ? 'active bg-gradient-primary' : '' }}"
-                    href="{{ route('materials.index') }}">
+                    href="{{ route('admin.materials.index') }}">
                     <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="material-icons opacity-10">library_books</i>
                     </div>
@@ -64,7 +67,7 @@
                         @forelse($materials ?? [] as $material)
                             <li class="nav-item">
                                 <a class="nav-link text-white {{ $activePage == 'questions-'.$material->id ? 'active bg-gradient-primary' : '' }}"
-                                    href="{{ route('materials.questions.index', $material->id) }}">
+                                    href="{{ route('admin.materials.questions.index', $material->id) }}">
                                     <span class="sidenav-mini-icon">
                                         <i class="material-icons opacity-10">article</i>
                                     </span>

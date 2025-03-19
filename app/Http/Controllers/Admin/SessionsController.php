@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-Use Str;
-Use Hash;
+use Str;
+use Hash;
 use Illuminate\Auth\Events\PasswordReset;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use App\Http\Controllers\Controller;
+use App\Models\Role;
 
 class SessionsController extends Controller
 {
@@ -19,23 +21,32 @@ class SessionsController extends Controller
         return view('sessions.create');
     }
 
-    public function store()
+    public function store(Request $request)
     {
-        $attributes = request()->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        if (! auth()->attempt($attributes)) {
-            throw ValidationException::withMessages([
-                'email' => 'Your provided credentials could not be verified.'
-            ]);
+        if (Auth::attempt($credentials, $request->remember)) {
+            $request->session()->regenerate();
+            
+            // Redirect berdasarkan role
+            switch(Auth::user()->role_id) {
+                case 1:
+                    return redirect()->intended(route('admin.dashboard'));
+                case 2:
+                    return redirect()->intended(route('mahasiswa.dashboard'));
+                case 3:
+                    return redirect()->intended(route('mahasiswa.materials.index'));
+                default:
+                    return redirect()->intended('/');
+            }
         }
 
-        session()->regenerate();
-
-        return redirect('/dashboard');
-
+        return back()->withErrors([
+            'email' => 'Email atau password yang Anda masukkan salah.',
+        ])->withInput($request->only('email', 'remember'));
     }
 
     public function show(){
@@ -81,10 +92,9 @@ class SessionsController extends Controller
 
     public function destroy()
     {
-        Session::flush();
-        Auth::logout();
-
-        return redirect()->route('login')->with(['success' => 'You\'ve been logged out successfully.']);
+        auth()->logout();
+        
+        return redirect('/login');
     }
 
 }

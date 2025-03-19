@@ -21,13 +21,25 @@ class Material extends Model
         return $this->hasMany(Media::class);
     }
 
-    public function createdBy()
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     public function progress()
     {
-        return $this->hasMany(Progress::class);
+        return $this->hasOne(Progress::class);
+    }
+
+    public function inProgress()
+    {
+        $materials = Material::all();
+        return view('mahasiswa.dashboard.in-progress', compact('materials'));
+    }
+
+    public function complete()
+    {
+        $materials = Material::all();
+        return view('mahasiswa.dashboard.completed', compact('materials'));
     }
 }

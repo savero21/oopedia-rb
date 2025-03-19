@@ -6,13 +6,17 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card my-4">
+                    <br><br>
+
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                             <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
                                 <h6 class="text-white text-capitalize ps-3">Edit Soal</h6>
                             </div>
                         </div>
                         <div class="card-body px-0 pb-2">
-                            <form method="POST" action="{{ route('questions.update', $question) }}" class="p-4">
+                            <form method="POST" action="{{ $material 
+                                ? route('admin.materials.questions.update', ['material' => $material, 'question' => $question]) 
+                                : route('admin.questions.update', $question) }}" class="p-4">
                                 @csrf
                                 @method('PUT')
                                 <div class="row">
@@ -59,6 +63,9 @@
                                                     <div class="input-group input-group-outline">
                                                         <input type="text" name="answers[{{ $index }}][answer_text]" class="form-control" placeholder="Jawaban" required value="{{ $answer->answer_text }}">
                                                     </div>
+                                                    <div class="input-group input-group-outline mt-2">
+                                                        <textarea name="answers[{{ $index }}][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2">{{ $answer->explanation }}</textarea>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <div class="form-check">
@@ -85,9 +92,9 @@
                                     <div class="col-12">
                                         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                                         @if($material)
-                                            <a href="{{ route('materials.questions.index', $material) }}" class="btn btn-outline-secondary">Batal</a>
+                                            <a href="{{ route('admin.materials.questions.index', $material) }}" class="btn btn-outline-secondary">Batal</a>
                                         @else
-                                            <a href="{{ route('questions.index') }}" class="btn btn-outline-secondary">Batal</a>
+                                            <a href="{{ route('admin.questions.index') }}" class="btn btn-outline-secondary">Batal</a>
                                         @endif
                                     </div>
                                 </div>
@@ -141,6 +148,9 @@
                     <div class="col-md-8">
                         <div class="input-group input-group-outline">
                             <input type="text" name="answers[${currentIndex}][answer_text]" class="form-control" placeholder="Jawaban" required>
+                        </div>
+                        <div class="input-group input-group-outline mt-2">
+                            <textarea name="answers[${currentIndex}][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2"></textarea>
                         </div>
                     </div>
                     <div class="col-md-4">

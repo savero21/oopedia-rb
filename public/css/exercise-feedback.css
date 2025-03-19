@@ -1,0 +1,93 @@
+/* Exercise Feedback Styles */
+.exercise-feedback {
+    position: relative;
+    display: none;
+    background-color: #1a2035;
+    color: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-top: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    
+    /* Prevent flickering */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+}
+
+.feedback-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    
+    /* Prevent flickering */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+}
+
+.feedback-icon-container {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+.feedback-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Prevent flickering */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.feedback-icon.success {
+    background-color: #00A67E;
+}
+
+.feedback-icon.error {
+    background-color: #E94F37;
+}
+
+.feedback-icon i {
+    font-size: 60px;
+    color: white;
+}
+
+.feedback-actions {
+    margin-top: 2rem;
+}
+
+#tryAgainBtn, #retryQuestionBtn, #nextQuestionBtn {
+    border: none;
+    padding: 0.5rem 2rem;
+    margin: 0 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#tryAgainBtn:hover, #retryQuestionBtn:hover, #nextQuestionBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#tryAgainBtn, #nextQuestionBtn {
+    background-color: #00A67E;
+}
+
+#retryQuestionBtn {
+    background-color: #f0ad4e;
+} 

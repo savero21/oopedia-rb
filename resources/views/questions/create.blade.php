@@ -6,6 +6,8 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card my-4">
+                    <br><br>
+
                         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                             <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
                                 <h6 class="text-white text-capitalize ps-3">Tambah Soal Baru</h6>
@@ -13,11 +15,28 @@
                         </div>
                         <div class="card-body px-0 pb-2">
                             @if(isset($material))
-                                <form method="POST" action="{{ route('materials.questions.store', $material) }}" class="p-4">
+                                <form method="POST" action="{{ route('admin.materials.questions.store', $material) }}" class="p-4">
                             @else
-                                <form method="POST" action="{{ route('questions.store') }}" class="p-4">
+                                <form method="POST" action="{{ route('admin.questions.store') }}" class="p-4">
                             @endif
                                 @csrf
+                                
+                                @if($errors->any())
+                                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                        @foreach($errors->all() as $error)
+                                            {{ $error }}<br>
+                                        @endforeach
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                @endif
+
+                                @if(session('warning'))
+                                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                        {{ session('warning') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                @endif
+
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="form-group">
@@ -59,6 +78,9 @@
                                                 <div class="input-group input-group-outline">
                                                     <input type="text" name="answers[0][answer_text]" class="form-control" placeholder="Jawaban" required>
                                                 </div>
+                                                <div class="input-group input-group-outline mt-2">
+                                                    <textarea name="answers[0][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2"></textarea>
+                                                </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-check">
@@ -79,9 +101,9 @@
                                     <div class="col-12">
                                         <button type="submit" class="btn btn-primary">Simpan Soal</button>
                                         @if(isset($material))
-                                            <a href="{{ route('materials.questions.index', $material) }}" class="btn btn-outline-secondary">Batal</a>
+                                            <a href="{{ route('admin.materials.questions.index', $material) }}" class="btn btn-outline-secondary">Batal</a>
                                         @else
-                                            <a href="{{ route('questions.index') }}" class="btn btn-outline-secondary">Batal</a>
+                                            <a href="{{ route('admin.questions.index') }}" class="btn btn-outline-secondary">Batal</a>
                                         @endif
                                     </div>
                                 </div>
@@ -125,34 +147,31 @@
 
         function addAnswer() {
             const container = document.getElementById('answers-container');
-            const questionType = document.querySelector('[name="question_type"]').value;
+            const answerCount = container.getElementsByClassName('answer-entry').length;
+            
             const newAnswer = document.createElement('div');
             newAnswer.className = 'answer-entry mb-3';
-            
-            const currentIndex = answerCount;
-            
             newAnswer.innerHTML = `
                 <div class="row">
                     <div class="col-md-8">
                         <div class="input-group input-group-outline">
-                            <input type="text" name="answers[${currentIndex}][answer_text]" class="form-control" placeholder="Jawaban" required>
+                            <input type="text" name="answers[${answerCount}][answer_text]" class="form-control" placeholder="Jawaban" required>
+                        </div>
+                        <div class="input-group input-group-outline mt-2">
+                            <textarea name="answers[${answerCount}][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2"></textarea>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-check">
-                            ${questionType === 'radio_button' ? 
-                                `<input class="form-check-input" type="radio" name="correct_answer" value="${currentIndex}">
-                                 <label class="form-check-label">Jawaban Benar</label>
-                                 <input type="hidden" name="answers[${currentIndex}][is_correct]" value="0">` :
-                                `<input class="form-check-input" type="checkbox" name="answers[${currentIndex}][is_correct]" value="1">
-                                 <label class="form-check-label">Jawaban Benar</label>`
-                            }
+                            <input class="form-check-input" type="radio" name="correct_answer" value="${answerCount}">
+                            <label class="form-check-label">Jawaban Benar</label>
+                            <input type="hidden" name="answers[${answerCount}][is_correct]" value="0">
                         </div>
                     </div>
                 </div>
             `;
+            
             container.appendChild(newAnswer);
-            answerCount++;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -165,7 +184,6 @@
             // Event listener untuk perubahan jawaban benar
             document.addEventListener('change', function(e) {
                 if (e.target.type === 'radio' && e.target.name === 'correct_answer') {
-                    // Reset semua hidden input is_correct ke 0
                     const container = document.getElementById('answers-container');
                     const answers = container.getElementsByClassName('answer-entry');
                     
@@ -189,7 +207,6 @@
                         return;
                     }
 
-                    // Pastikan hanya satu jawaban yang benar
                     const correctAnswers = document.querySelectorAll('input[name$="[is_correct]"][value="1"]');
                     if (correctAnswers.length !== 1) {
                         e.preventDefault();

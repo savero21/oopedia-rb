@@ -22,11 +22,6 @@ class User extends Authenticatable
         return $this->hasMany(Progress::class);
     }
 
-    public function answers()
-    {
-        return $this->hasMany(UserAnswer::class);
-    }
-
     public function materials()
     {
         return $this->belongsToMany(Material::class, 'progress', 'user_id', 'material_id')
@@ -38,8 +33,13 @@ class User extends Authenticatable
         return $this->hasMany(Progress::class, 'user_id');
     }
 
+    public function answeredQuestions()
+    {
+        return $this->hasMany(Progress::class)->where('is_answered', true);
+    }
+
     public function hasRole($role)
     {
-        return $this->role_id == $role;
+        return $this->role->role_name === $role;
     }
 }
