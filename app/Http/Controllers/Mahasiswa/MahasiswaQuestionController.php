@@ -51,13 +51,15 @@ class MahasiswaQuestionController extends Controller
                 ])
                 ->first();
             
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Jawaban Benar!',
-                'explanation' => $selectedAnswer->explanation, // Gunakan explanation dari jawaban yang dipilih
-                'hasNextQuestion' => !is_null($nextQuestion),
-                'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Jawaban Benar!',
+                    'explanation' => $selectedAnswer->explanation,
+                    'hasNextQuestion' => !is_null($nextQuestion),
+                    'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
+                ]);
+            }
         }
         
         // Jika jawaban salah

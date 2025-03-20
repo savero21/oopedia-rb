@@ -82,44 +82,67 @@ class DashboardController extends Controller
     public function inProgress()
     {
         $userId = auth()->id();
-        $materials = Material::with(['questions', 'progress' => function($query) use ($userId) {
-            $query->where('user_id', $userId);
-        }])
-        ->whereHas('progress', function($query) use ($userId) {
-            $query->where('user_id', $userId)
-                  ->where('is_correct', true);
-        })
-        ->get()
-        ->filter(function($material) {
-            $totalQuestions = $material->questions->count();
-            $completedQuestions = $material->progress->where('is_correct', true)->count();
-            return $completedQuestions > 0 && $completedQuestions < $totalQuestions;
-        });
+        
+        // Get progress statistics
+        $progressStats = DB::table('progress')
+            ->select(
+                'material_id',
+                DB::raw('COUNT(DISTINCT question_id) as total_answered'),
+                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+            )
+            ->where('user_id', $userId)
+            ->groupBy('material_id')
+            ->get();
+
+        $materials = Material::with(['questions'])
+            ->get()
+            ->filter(function($material) use ($progressStats) {
+                $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+                $totalQuestions = $material->questions->count();
+                
+                if ($materialProgress && $totalQuestions > 0) {
+                    $correctAnswers = $materialProgress->correct_answers;
+                    return $correctAnswers > 0 && $correctAnswers < $totalQuestions;
+                }
+                
+                return false;
+            });
 
         return view('mahasiswa.dashboard.in-progress', [
-            'materials' => $materials
+            'materials' => $materials,
+            'progressStats' => $progressStats
         ]);
     }
 
     public function complete()
     {
         $userId = auth()->id();
-        $materials = Material::with(['questions', 'progress' => function($query) use ($userId) {
-            $query->where('user_id', $userId);
-        }])
-        ->whereHas('progress', function($query) use ($userId) {
-            $query->where('user_id', $userId)
-                  ->where('is_correct', true);
-        })
-        ->get()
-        ->filter(function($material) {
-            $totalQuestions = $material->questions->count();
-            $completedQuestions = $material->progress->where('is_correct', true)->count();
-            return $completedQuestions == $totalQuestions;
-        });
+        
+        // Get progress statistics
+        $progressStats = DB::table('progress')
+            ->select(
+                'material_id',
+                DB::raw('COUNT(DISTINCT question_id) as answered_questions'),
+                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+            )
+            ->where('user_id', $userId)
+            ->groupBy('material_id')
+            ->get();
 
-        return view('mahasiswa.dashboard.complete', [
-            'materials' => $materials
-        ]);
+        $materials = Material::with(['questions'])
+            ->get()
+            ->filter(function($material) use ($progressStats) {
+                $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+                $totalQuestions = $material->questions->count();
+                
+                if ($materialProgress && $totalQuestions > 0) {
+                    $correctAnswers = $materialProgress->correct_answers;
+                    return $correctAnswers == $totalQuestions;
+                }
+                
+                return false;
+            });
+
+        return view('mahasiswa.dashboard.complete', compact('materials'));
     }
 }

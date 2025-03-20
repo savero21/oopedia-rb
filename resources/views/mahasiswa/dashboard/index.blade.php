@@ -46,8 +46,8 @@ use Illuminate\Support\Str;
                             <span class="progress-text">Materi Aktif</span>
                             <span class="progress-percentage">{{ $inProgressCount }}</span>
                         </div>
-                        <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-update w-100 mt-3">
-                            Jelajahi Materi
+                        <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-book-reader me-2"></i>Jelajahi Materi
                         </a>
                     </div>
                 </div>
@@ -99,6 +99,13 @@ use Illuminate\Support\Str;
                                         <i class="fas fa-question-circle"></i>
                                         <span>{{ $materi->questions_count }} Soal</span>
                                     </div>
+                                    <div class="mt-3">
+                                        <a href="{{ route('mahasiswa.materials.show', $materi->id) }}" 
+                                           class="btn btn-primary w-100">
+                                            <i class="fas fa-book-reader me-2"></i>
+                                            {{ $materi->progress == 100 ? 'Lihat Kembali Materi' : 'Mulai Belajar' }}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -108,4 +115,41 @@ use Illuminate\Support\Str;
         </div>
     </div>
 </div>
+
+@push('css')
+<style>
+.progress-item-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.progress-bar {
+    background: linear-gradient(to right, #FF0080, #7928CA);
+    height: 8px;
+    border-radius: 4px;
+}
+
+.progress-bar-container {
+    background: #f0f0f0;
+    border-radius: 4px;
+    height: 8px;
+}
+
+.btn-primary, .btn-update {
+    background: linear-gradient(to right, #FF0080, #7928CA);
+    border: none;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.btn-primary:hover, .btn-update:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    color: white;
+}
+</style>
+@endpush
 @endsection 
