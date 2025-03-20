@@ -8,14 +8,15 @@
     border-radius: 15px;
     box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
     margin-bottom: 2rem;
-    border: 1px solid #eef2f7;
+    border: 2px solid #FF0080;
     overflow: hidden;
 }
 
 .question-header {
-    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(255, 0, 128, 0.05));
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 2px solid #FF0080;
+    margin-bottom: 1.5rem;
 }
 
 .question-number {
@@ -37,15 +38,21 @@
 }
 
 .question-text {
-    background-color: #f8f9fa;
-    padding: 1.25rem;
-    border-radius: 10px;
-    font-size: 1.1rem;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    font-size: 1.15rem;
     color: #344767;
     font-weight: 500;
     line-height: 1.6;
     margin-bottom: 1.5rem;
-    border-left: 4px solid #e91e63;
+    border: 3px solid #eef2f7;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.question-text:hover {
+    border: 3px solid #FF0080;
+    transition: all 0.3s ease;
 }
 
 .answers-container {
@@ -54,37 +61,43 @@
 
 .answer-option {
     background: white;
-    border: 1px solid #eef2f7;
+    border: 3px solid #eef2f7;
     border-radius: 10px;
-    padding: 1rem 1.25rem;
+    padding: 1.25rem;
     margin-bottom: 1rem;
     transition: all 0.3s ease;
-    position: relative;
+    cursor: pointer;
 }
 
 .answer-option:hover {
     transform: translateX(5px);
-    border-color: #e91e63;
+    border: 3px solid #FF0080;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .answer-option.correct-answer {
+    border: 3px solid #4CAF50;
     background: linear-gradient(to right, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
-    border-color: #4CAF50;
 }
 
-.answer-option.correct-answer::before {
-    content: '✓';
-    position: absolute;
-    left: -25px;
-    color: #4CAF50;
-    font-weight: bold;
-    font-size: 1.2rem;
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.25rem;
+    border: 2px solid #eef2f7;
+    cursor: pointer;
 }
 
-.answer-text {
-    font-size: 1rem;
-    color: #495057;
-    line-height: 1.5;
+.form-check-input:checked {
+    background-color: #FF0080;
+    border-color: #FF0080;
+}
+
+.form-check-label {
+    font-size: 1.1rem;
+    color: #344767;
+    padding-left: 0.75rem;
+    cursor: pointer;
 }
 
 .answer-explanation {
@@ -110,18 +123,20 @@
     text-align: center;
 }
 
-.btn-warning {
-    background: linear-gradient(45deg, #fb8c00, #ffa726);
-    border: none;
-    padding: 0.75rem 1.5rem;
+.btn-check-answer {
+    background: linear-gradient(45deg, #FF0080, #7928CA);
     color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    border: none;
     font-weight: 600;
     transition: all 0.3s ease;
+    margin-top: 1rem;
 }
 
-.btn-warning:hover {
+.btn-check-answer:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(251, 140, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(255, 0, 128, 0.2);
 }
 
 .review-header {
@@ -137,4 +152,13 @@
     color: #344767;
     margin-bottom: 0;
     font-weight: 600;
+}
+
+.badge.bg-gradient-primary {
+    background: linear-gradient(45deg, #FF0080, #7928CA);
+    color: white;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 } 

@@ -23,10 +23,12 @@
             </div>
             
             <div class="question-content">
+                <h5 class="mb-3"><i class="fas fa-question me-2"></i>Pertanyaan</h5>
                 <div class="question-text">
                     {{ $question->question_text }}
                 </div>
 
+                <h5 class="mt-4 mb-3"><i class="fas fa-list-ul me-2"></i>Pilihan Jawaban</h5>
                 <div class="answers-container">
                     @foreach($question->answers as $answer)
                         <div class="answer-option {{ $answer->is_correct ? 'correct-answer' : '' }}">
