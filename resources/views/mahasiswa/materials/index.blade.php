@@ -52,66 +52,6 @@
 </div>
 
 @push('css')
-<style>
-.progress-item-card {
-    background: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.progress-item-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-.materi-description {
-    color: #666;
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
-}
-
-.progress-bar-container {
-    width: 100%;
-    height: 8px;
-    background: #f0f0f0;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(to right, #FF0080, #7928CA);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-}
-
-.btn-primary {
-    background: linear-gradient(to right, #FF0080, #7928CA);
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-}
-
-.progress-details {
-    color: #666;
-    text-align: center;
-}
-
-.progress-info {
-    margin-bottom: 0.5rem;
-}
-
-.progress-percentage {
-    font-weight: 600;
-    color: #FF0080;
-}
-</style>
+<link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
 @endpush
 @endsection 

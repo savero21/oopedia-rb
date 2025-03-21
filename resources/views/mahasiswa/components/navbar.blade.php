@@ -13,12 +13,23 @@
             
             <!-- Navigation links -->
             <div class="nav-links">
-                <ul>
+                <ul class="nav-menu">
                     @if(auth()->user()->role_id !== 3)
-                        {{-- Show full menu for regular users --}}
-                        <li><a href="{{ route('mahasiswa.dashboard') }}" class="nav-link">Dashboard</a></li>
+                        <li>
+                            <a href="{{ route('mahasiswa.dashboard') }}" 
+                               class="nav-link {{ request()->routeIs('mahasiswa.dashboard*') ? 'active' : '' }}">
+                                <i class="fas fa-chart-line me-2"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
                     @endif
-                    <li><a href="{{ route('mahasiswa.materials.index') }}" class="nav-link">Materi</a></li>
+                    <li>
+                        <a href="{{ route('mahasiswa.materials.index') }}" 
+                           class="nav-link {{ request()->routeIs('mahasiswa.materials*') ? 'active' : '' }}">
+                            <i class="fas fa-book me-2"></i>
+                            <span>Materi</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

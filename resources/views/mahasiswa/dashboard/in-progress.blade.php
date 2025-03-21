@@ -64,29 +64,6 @@
 </div>
 
 @push('css')
-<style>
-.progress-item-card {
-    background: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.btn-primary {
-    background: linear-gradient(to right, #FF0080, #7928CA);
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-}
-
-.progress-bar {
-    background: linear-gradient(to right, #FF0080, #7928CA);
-}
-</style>
+<link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
 @endpush
 @endsection

@@ -70,12 +70,16 @@ class DashboardController extends Controller
             $totalProgress = round(($completedCount / $totalMaterials) * 100);
         }
 
+        // Tambahkan variable baru untuk mahasiswa aktif
+        $activeStudents = $this->getActiveStudentsCount();
+        
         return view('mahasiswa.dashboard.index', compact(
             'totalMaterials',
             'completedCount',
             'inProgressCount',
             'totalProgress',
-            'allMaterials'
+            'allMaterials',
+            'activeStudents'
         ));
     }
 
@@ -144,5 +148,16 @@ class DashboardController extends Controller
             });
 
         return view('mahasiswa.dashboard.complete', compact('materials'));
+    }
+
+    private function getActiveStudentsCount()
+    {
+        // Ambil mahasiswa yang memiliki aktivitas dalam 7 hari terakhir
+        return DB::table('users')
+            ->join('progress', 'users.id', '=', 'progress.user_id')
+            ->where('users.role_id', 2) // role mahasiswa
+            ->where('progress.created_at', '>=', now()->subDays(7))
+            ->distinct('users.id')
+            ->count('users.id');
     }
 }

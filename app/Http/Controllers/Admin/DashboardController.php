@@ -24,11 +24,7 @@ class DashboardController extends Controller
         $totalMaterials = Material::count();
         $totalQuestions = Question::count();
         
-        // Active Students (students who have made progress in the last 7 days)
-        $activeStudents = Progress::select('user_id')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->distinct()
-            ->count();
+        $activeStudents = $this->getActiveStudentsCount();
 
         // Most Active Materials (materials with most student completion)
         $popularMaterials = Material::withCount(['questions', 'progress' => function($query) {
@@ -39,7 +35,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function($material) {
                 if ($material->questions_count > 0) {
-                    $material->completion_rate = round(($material->progress_count / $material->questions_count) * 100, 1);
+                    $material->completion_rate = min(100, round(($material->progress_count / $material->questions_count) * 100));
                 } else {
                     $material->completion_rate = 0;
                 }
@@ -88,7 +84,7 @@ class DashboardController extends Controller
                 $answeredQuestions = $student->answers->unique('question_id')->count();
                 
                 $progress = $totalQuestions > 0 
-                    ? round(($answeredQuestions / $totalQuestions) * 100) 
+                    ? min(100, round(($answeredQuestions / $totalQuestions) * 100)) 
                     : 0;
 
                 $student->progress = $progress;
@@ -101,5 +97,16 @@ class DashboardController extends Controller
             'userName' => auth()->user()->name,
             'userRole' => 'Admin'
         ]);
+    }
+
+    private function getActiveStudentsCount()
+    {
+        // Ambil mahasiswa yang memiliki aktivitas dalam 7 hari terakhir
+        return DB::table('users')
+            ->join('progress', 'users.id', '=', 'progress.user_id')
+            ->where('users.role_id', 2) // role mahasiswa
+            ->where('progress.created_at', '>=', now()->subDays(7))
+            ->distinct('users.id')
+            ->count('users.id');
     }
 }

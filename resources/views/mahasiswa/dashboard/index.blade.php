@@ -117,39 +117,6 @@ use Illuminate\Support\Str;
 </div>
 
 @push('css')
-<style>
-.progress-item-card {
-    background: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.progress-bar {
-    background: linear-gradient(to right, #FF0080, #7928CA);
-    height: 8px;
-    border-radius: 4px;
-}
-
-.progress-bar-container {
-    background: #f0f0f0;
-    border-radius: 4px;
-    height: 8px;
-}
-
-.btn-primary, .btn-update {
-    background: linear-gradient(to right, #FF0080, #7928CA);
-    border: none;
-    transition: all 0.3s ease;
-    color: white;
-}
-
-.btn-primary:hover, .btn-update:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    color: white;
-}
-</style>
+<link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
 @endpush
 @endsection 

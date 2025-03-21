@@ -28,7 +28,6 @@ class MahasiswaQuestionController extends Controller
         $isCorrect = $selectedAnswer->is_correct;
 
         if ($isCorrect) {
-            // Save progress
             Progress::updateOrCreate(
                 [
                     'user_id' => auth()->id(),
@@ -41,7 +40,6 @@ class MahasiswaQuestionController extends Controller
                 ]
             );
             
-            // Get next question
             $nextQuestion = Question::where('material_id', $request->material_id)
                 ->whereNotIn('id', [
                     $question->id,
@@ -152,7 +150,6 @@ class MahasiswaQuestionController extends Controller
             ]);
         }
         
-        // Redirect for non-AJAX request
         return redirect()->route('mahasiswa.dashboard')
             ->with('success', "Anda menjawab benar $correctAnswers dari $totalQuestions soal (Skor: $score%)");
     }

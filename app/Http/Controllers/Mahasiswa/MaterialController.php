@@ -46,7 +46,6 @@ class MaterialController extends Controller
     {
         $userId = auth()->id();
         
-        // Get progress statistics
         $progressStats = DB::table('progress')
             ->select(
                 'material_id',

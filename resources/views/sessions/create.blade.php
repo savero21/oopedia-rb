@@ -39,19 +39,24 @@
                                             </button>
                                         </div>
                                         @endif
-                                        <div class="input-group input-group-outline mt-3">
-                                            <input type="email" class="form-control" name="email">
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email</label>
+                                            <div class="input-group input-group-outline">
+                                                <input type="email" id="email" class="form-control" name="email">
+                                            </div>
+                                            @error('email')
+                                            <p class='text-danger inputerror'>{{ $message }} </p>
+                                            @enderror
                                         </div>
-                                        @error('email')
-                                        <p class='text-danger inputerror'>{{ $message }} </p>
-                                        @enderror
-                                        <div class="input-group input-group-outline mt-3">
-                                            <label class="form-label">Password</label>
-                                            <input type="password" class="form-control" name="password">
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label">Password</label>
+                                            <div class="input-group input-group-outline">
+                                                <input type="password" id="password" class="form-control" name="password">
+                                            </div>
+                                            @error('password')
+                                            <p class='text-danger inputerror'>{{ $message }} </p>
+                                            @enderror
                                         </div>
-                                        @error('password')
-                                        <p class='text-danger inputerror'>{{ $message }} </p>
-                                        @enderror
                                         <div class="form-check form-switch d-flex align-items-center my-3">
                                             <input class="form-check-input" type="checkbox" id="rememberMe">
                                             <label class="form-check-label mb-0 ms-2" for="rememberMe">Remember
@@ -62,14 +67,14 @@
                                                 in</button>
                                         </div>
                                         <p class="mt-4 text-sm text-center">
-                                            Don't have an account?
+                                           Tidak memiliki akun?
                                             <a href="{{ route('register') }}"
-                                                class="text-primary text-gradient font-weight-bold">Sign up</a>
+                                                class="text-primary text-gradient font-weight-bold">Register</a>
                                         </p>
                                         <p class="text-sm text-center">
-                                            Forgot your password? Reset your password
+                                            Masuk sebagai
                                             <a href="{{ route('verify') }}"
-                                                class="text-primary text-gradient font-weight-bold">here</a>
+                                                class="text-primary text-gradient font-weight-bold">tamu</a>
                                         </p>
                                     </form>
                                 </div>
