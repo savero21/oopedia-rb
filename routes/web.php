@@ -19,6 +19,7 @@ use App\Http\Controllers\Mahasiswa\{
     QuestionController as MahasiswaQuestionController
 };
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -41,6 +42,7 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [SessionsController::class, 'store']);
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::get('/guest-login', [SessionsController::class, 'guestLogin'])->name('guest.login');
 });
 
 // Authenticated Routes
@@ -59,22 +61,24 @@ Route::middleware('auth')->group(function () {
     });
 
     // Mahasiswa Routes
-    Route::middleware(['auth', 'role:2'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
-        // Dashboard Routes
-        Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/dashboard/in-progress', [MahasiswaDashboardController::class, 'inProgress'])->name('dashboard.in-progress');
-        Route::get('/dashboard/complete', [MahasiswaDashboardController::class, 'complete'])->name('dashboard.complete');
-        
-        Route::get('/materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
-        Route::get('/materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
-        Route::get('/profile', [MahasiswaProfileController::class, 'index'])->name('profile');
-        Route::put('/profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
-        
-        // Add this new route
-        Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])
-            ->name('questions.check-answer');
+    Route::middleware(['auth'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+        // Routes that require student role
+        Route::middleware('role:2')->group(function () {
+            Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard');
+            Route::get('/dashboard/in-progress', [MahasiswaDashboardController::class, 'inProgress'])->name('dashboard.in-progress');
+            Route::get('/dashboard/complete', [MahasiswaDashboardController::class, 'complete'])->name('dashboard.complete');
+            Route::get('/profile', [MahasiswaProfileController::class, 'index'])->name('profile');
+            Route::put('/profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
+        });
 
-        Route::post('materials/{material}/reset', [MahasiswaMaterialController::class, 'reset'])->name('materials.reset');
+        // Routes accessible by both students and guests
+        Route::middleware('guest.access')->group(function () {
+            Route::get('/materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
+            Route::get('/materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+            Route::get('/materials/{material}/question/{question?}', [MahasiswaMaterialController::class, 'show'])->name('materials.show.question');
+            Route::post('/materials/{material}/reset', [MahasiswaMaterialController::class, 'reset'])->name('materials.reset');
+            Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
+        });
     });
 });
 
@@ -96,5 +100,19 @@ Route::middleware(['web'])->group(function () {
 Route::post('/mahasiswa/questions/check-answer', [App\Http\Controllers\Mahasiswa\MahasiswaQuestionController::class, 'checkAnswer'])->name('mahasiswa.questions.check-answer');
 
 Route::get('/mahasiswa/questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('mahasiswa.questions.show');
+
+// Guest Routes
+Route::middleware(['guest.access'])->name('guest.')->prefix('guest')->group(function () {
+    Route::controller(MaterialController::class)->group(function () {
+        Route::get('/materials', 'index')->name('materials.index');
+        Route::get('/materials/{material}', 'guestShow')->name('materials.show');
+        Route::post('/materials/{material}/reset', 'guestReset')->name('materials.reset');
+    });
+
+    Route::controller(MahasiswaQuestionController::class)->group(function () {
+        Route::post('/questions/check-answer', 'checkAnswer')->name('questions.check-answer');
+    });
+});
+
 
 

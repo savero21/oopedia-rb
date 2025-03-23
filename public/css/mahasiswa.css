@@ -1397,3 +1397,22 @@ button.dropdown-item[type="submit"]::before {
     color: var(--text-dark);
     margin-bottom: 1rem;
 }
+
+.guest-badge {
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: linear-gradient(45deg, #6f42c1, #007bff) !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.guest-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.guest-badge i {
+    font-size: 1rem;
+}

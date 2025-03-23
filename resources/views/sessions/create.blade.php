@@ -57,14 +57,8 @@
                                             <p class='text-danger inputerror'>{{ $message }} </p>
                                             @enderror
                                         </div>
-                                        <div class="form-check form-switch d-flex align-items-center my-3">
-                                            <input class="form-check-input" type="checkbox" id="rememberMe">
-                                            <label class="form-check-label mb-0 ms-2" for="rememberMe">Remember
-                                                me</label>
-                                        </div>
                                         <div class="text-center">
-                                            <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Sign
-                                                in</button>
+                                            <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Login</button>
                                         </div>
                                         <p class="mt-4 text-sm text-center">
                                            Tidak memiliki akun?
@@ -73,8 +67,8 @@
                                         </p>
                                         <p class="text-sm text-center">
                                             Masuk sebagai
-                                            <a href="{{ route('verify') }}"
-                                                class="text-primary text-gradient font-weight-bold">tamu</a>
+                                            <a href="{{ route('guest.login') }}" 
+                                               class="text-primary text-gradient font-weight-bold">tamu</a>
                                         </p>
                                     </form>
                                 </div>
