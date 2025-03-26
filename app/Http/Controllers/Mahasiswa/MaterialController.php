@@ -16,6 +16,13 @@ class MaterialController extends Controller
             $query->with('answers')->orderBy('id', 'asc');
         }])->findOrFail($id);
         
+        // If user is guest (role_id = 3), only show half of the questions
+        if (auth()->user()->role_id === 3) {
+            $totalQuestions = $material->questions->count();
+            $halfQuestions = ceil($totalQuestions / 2);
+            $material->questions = $material->questions->take($halfQuestions);
+        }
+        
         $answeredQuestionIds = Progress::where('user_id', auth()->id())
             ->where('material_id', $id)
             ->where('is_correct', true)

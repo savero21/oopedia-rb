@@ -29,10 +29,6 @@ class GuestAccess
                 if (!in_array($request->route()->getName(), $allowedRoutes)) {
                     return redirect()->route('mahasiswa.materials.index');
                 }
-
-                if ($request->route()->getName() === 'mahasiswa.materials.index') {
-                    session()->flash('info', 'Anda masuk sebagai Tamu. Beberapa fitur mungkin dibatasi.');
-                }
             }
         }
 

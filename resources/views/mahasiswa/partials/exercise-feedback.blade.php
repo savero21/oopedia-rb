@@ -1,6 +1,6 @@
 <div class="exercise-feedback" style="display: none;">
     <div class="feedback-container">
-        <h2 class="text-center">Exercise</h2>
+        <h2 class="text-center">Latihan Soal</h2>
         
         <div id="feedbackStatus" class="text-center mt-4 mb-3"></div>
         
@@ -10,7 +10,7 @@
         
         <div id="feedbackDetails" class="mt-4">
             <div id="explanationBox" class="explanation-box p-3 rounded" style="display: none;">
-                <h5 class="mb-2"><i class="fas fa-info-circle me-2"></i>Penjelasan:</h5>
+                <h5 class="mb-2"><i class="fas fa-info-circle me-2"></i>Penjelasan</h5>
                 <p id="explanationText"></p>
             </div>
         </div>

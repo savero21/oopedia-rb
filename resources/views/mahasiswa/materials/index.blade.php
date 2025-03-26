@@ -23,8 +23,11 @@
                         <span class="progress-percentage">
                             @php
                                 $totalQuestions = $material->total_questions;
+                                if(auth()->user()->role_id === 3) {
+                                    $totalQuestions = ceil($totalQuestions / 2);
+                                }
                                 $correctAnswers = $material->completed_questions;
-                                $percentage = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+                                $percentage = $totalQuestions > 0 ? min(100, round(($correctAnswers / $totalQuestions) * 100)) : 0;
                             @endphp
                             {{ $percentage }}%
                         </span>
@@ -35,6 +38,9 @@
                     <div class="progress-details mt-2">
                         <small>
                             {{ $correctAnswers }} dari {{ $totalQuestions }} soal selesai
+                            @if(auth()->user()->role_id === 3)
+                                (Mode Tamu)
+                            @endif
                         </small>
                     </div>
                 </div>

@@ -1,5 +1,7 @@
 @extends('mahasiswa.layouts.app')
 
+@section('title', 'Profil Mahasiswa')
+
 @section('content')
 <div class="container-fluid px-2 px-md-4">
     <!-- Header background dengan gambar -->

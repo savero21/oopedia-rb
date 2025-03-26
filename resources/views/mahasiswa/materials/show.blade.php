@@ -27,6 +27,14 @@
         </div>
     @endif
 
+    @if(auth()->user()->role_id === 3)
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            Anda masuk sebagai Tamu. Hanya dapat mengakses setengah dari total soal yang tersedia.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Content Section -->
     <div class="materi-card mb-4">
         <div class="materi-card-body">

@@ -26,47 +26,48 @@ class DashboardController extends Controller
         
         $activeStudents = $this->getActiveStudentsCount();
 
-        // Most Active Materials (materials with most student completion)
-        $popularMaterials = Material::withCount(['questions', 'progress' => function($query) {
-                $query->where('is_correct', true);
-            }])
-            ->orderBy('progress_count', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(function($material) {
-                if ($material->questions_count > 0) {
-                    $material->completion_rate = min(100, round(($material->progress_count / $material->questions_count) * 100));
-                } else {
-                    $material->completion_rate = 0;
-                }
-                return $material;
-            });
-
-        // Recent Student Progress (only showing successful completions)
+        // Recent Student Progress
         $recentProgress = Progress::with(['user', 'material'])
             ->where('is_correct', true)
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 
-        // Student Progress Overview (focusing on completion rather than accuracy)
+        // Student Progress Overview with completion percentage
         $studentProgress = User::where('role_id', 2)
             ->withCount(['progress as completed_questions' => function($query) {
                 $query->where('is_correct', true);
             }])
+            ->with(['progress' => function($query) {
+                $query->where('is_correct', true)
+                      ->with('material:id,title');
+            }])
             ->having('completed_questions', '>', 0)
             ->orderByDesc('completed_questions')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function($student) use ($totalMaterials) {
+                // Count unique completed materials
+                $completedMaterialsCount = $student->progress
+                    ->pluck('material')
+                    ->unique('id')
+                    ->count();
+                
+                // Calculate progress percentage
+                $student->materials_progress = $totalMaterials > 0 
+                    ? round(($completedMaterialsCount / $totalMaterials) * 100) 
+                    : 0;
+                
+                return $student;
+            });
 
-        return view('dashboard.index', compact(
+        return view('admin.dashboard.index', compact(
             'userName',
             'userRole',
             'totalStudents',
             'totalMaterials',
             'totalQuestions',
             'activeStudents',
-            'popularMaterials',
             'recentProgress',
             'studentProgress'
         ));
@@ -108,5 +109,42 @@ class DashboardController extends Controller
             ->where('progress.created_at', '>=', now()->subDays(7))
             ->distinct('users.id')
             ->count('users.id');
+    }
+
+    private function getMaterialStatistics()
+    {
+        return DB::table('materials')
+            ->leftJoin('questions', 'materials.id', '=', 'questions.material_id')
+            ->leftJoin('progress', 'questions.id', '=', 'progress.question_id')
+            ->select(
+                'materials.id',
+                'materials.title',
+                DB::raw('COUNT(DISTINCT questions.id) as questions_count'),
+                DB::raw('COUNT(DISTINCT CASE 
+                    WHEN (
+                        SELECT COUNT(*) 
+                        FROM progress p2 
+                        JOIN questions q2 ON p2.question_id = q2.id 
+                        WHERE q2.material_id = materials.id 
+                        AND p2.user_id = progress.user_id 
+                        AND p2.is_correct = 1
+                    ) = COUNT(DISTINCT questions.id) 
+                    THEN progress.user_id 
+                    END) as completed_students_count'),
+                DB::raw('ROUND(COUNT(DISTINCT CASE 
+                    WHEN (
+                        SELECT COUNT(*) 
+                        FROM progress p2 
+                        JOIN questions q2 ON p2.question_id = q2.id 
+                        WHERE q2.material_id = materials.id 
+                        AND p2.user_id = progress.user_id 
+                        AND p2.is_correct = 1
+                    ) = COUNT(DISTINCT questions.id) 
+                    THEN progress.user_id 
+                    END) * 100.0 / 
+                    (SELECT COUNT(*) FROM users WHERE role_id = 2), 1) as completion_rate')
+            )
+            ->groupBy('materials.id', 'materials.title')
+            ->get();
     }
 }
