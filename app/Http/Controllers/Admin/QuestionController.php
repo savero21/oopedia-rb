@@ -137,7 +137,7 @@ class QuestionController extends Controller
         $materials = Material::all();
 
         $material = $question->material; // Get the question's material
-        return view('questions.edit', compact('question', 'materials', 'material'));
+        return view('admin.questions.edit', compact('question', 'materials', 'material'));
         // $materials = Material::all();
         // return view('questions.edit', compact('question', 'materials', 'material'));
     }

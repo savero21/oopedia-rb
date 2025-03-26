@@ -22,6 +22,7 @@ class MahasiswaQuestionController extends Controller
         $isCorrect = false;
         $correctAnswerText = null;
         $selectedAnswerText = null;
+        $explanation = null;
 
         if ($question->question_type === 'fill_in_the_blank') {
             // Ambil jawaban dari input teks
@@ -31,11 +32,19 @@ class MahasiswaQuestionController extends Controller
             $correctAnswer = Answer::where('question_id', $question->id)
                                    ->where('is_correct', true)
                                    ->first();
+            
+            if (!$correctAnswer) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan: Jawaban tidak ditemukan'
+                ], 422);
+            }
+
             $correctAnswerText = trim($correctAnswer->answer_text);
+            $explanation = $correctAnswer->explanation;
 
             // Bandingkan jawaban pengguna dengan yang benar (case insensitive)
             $isCorrect = strcasecmp($selectedAnswerText, $correctAnswerText) === 0;
-
         } else {
             // Jika soal pilihan ganda
             $request->validate([
@@ -78,15 +87,16 @@ class MahasiswaQuestionController extends Controller
             'message' => $isCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!',
             'selectedAnswer' => $selectedAnswerText,
             'correctAnswer' => $isCorrect ? null : $correctAnswerText,
+            'explanation' => $isCorrect ? $explanation : null,
             'hasNextQuestion' => !is_null($nextQuestion),
             'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
         ]);
     }
-}
+
     /**
      * Check all answers for a material
      */
-    public function checkAllAnswers(Request $request)
+    public function checkAllAnswers(Request $request){
     {
         $request->validate([
             'material_id' => 'required|exists:materials,id',
@@ -150,3 +160,4 @@ class MahasiswaQuestionController extends Controller
             ->with('success', "Anda menjawab benar $correctAnswers dari $totalQuestions soal (Skor: $score%)");
     }
 } 
+}
