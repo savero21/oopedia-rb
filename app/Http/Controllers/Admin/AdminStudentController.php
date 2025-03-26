@@ -20,7 +20,7 @@ class AdminStudentController extends Controller
                 return $student;
             });
 
-        return view('students.index', compact('students'));
+        return view('admin.students.index', compact('students'));
     }
 
     public function progress(User $student)
@@ -49,7 +49,7 @@ class AdminStudentController extends Controller
             return $material;
         });
 
-        return view('students.progress', compact('student', 'materials'));
+        return view('admin.students.progress', compact('student', 'materials'));
     }
 
     private function calculateOverallProgress($student)

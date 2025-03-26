@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Material;
 use App\Models\Progress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MaterialController extends Controller
 {
@@ -14,6 +15,13 @@ class MaterialController extends Controller
         $material = Material::with(['questions' => function($query) {
             $query->with('answers')->orderBy('id', 'asc');
         }])->findOrFail($id);
+        
+        // If user is guest (role_id = 3), only show half of the questions
+        if (auth()->user()->role_id === 3) {
+            $totalQuestions = $material->questions->count();
+            $halfQuestions = ceil($totalQuestions / 2);
+            $material->questions = $material->questions->take($halfQuestions);
+        }
         
         $answeredQuestionIds = Progress::where('user_id', auth()->id())
             ->where('material_id', $id)
@@ -45,30 +53,34 @@ class MaterialController extends Controller
     {
         $userId = auth()->id();
         
-        $materials = Material::with(['questions', 'progress' => function($query) use ($userId) {
-            $query->where('user_id', $userId)
-                  ->where('is_correct', true);
-        }])->get()->map(function($material) {
-            // Hitung total soal
-            $totalQuestions = $material->questions->count();
-            
-            // Hitung jawaban benar - pastikan progress tidak null
-            $correctAnswers = $material->progress ? $material->progress->count() : 0;
-            
-            // Pastikan correctAnswers tidak melebihi totalQuestions
-            $correctAnswers = min($correctAnswers, $totalQuestions);
-            
-            // Hitung persentase
-            $progressPercentage = $totalQuestions > 0 
-                ? min(100, round(($correctAnswers / $totalQuestions) * 100))
-                : 0;
+        $progressStats = DB::table('progress')
+            ->select(
+                'material_id',
+                DB::raw('COUNT(DISTINCT question_id) as answered_questions'),
+                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+            )
+            ->where('user_id', $userId)
+            ->groupBy('material_id')
+            ->get();
+
+        $materials = Material::with(['questions'])
+            ->get()
+            ->map(function($material) use ($progressStats) {
+                $totalQuestions = $material->questions->count();
+                $materialProgress = $progressStats->firstWhere('material_id', $material->id);
                 
-            $material->progress_percentage = $progressPercentage;
-            $material->completed_questions = $correctAnswers;
-            $material->total_questions = $totalQuestions;
-            
-            return $material;
-        });
+                $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
+                $progressPercentage = $totalQuestions > 0 
+                    ? min(100, round(($correctAnswers / $totalQuestions) * 100))
+                    : 0;
+
+                // Kembalikan model Material asli dengan properti tambahan
+                $material->progress_percentage = $progressPercentage;
+                $material->total_questions = $totalQuestions;
+                $material->completed_questions = $correctAnswers;
+                
+                return $material;
+            });
         
         return view('mahasiswa.materials.index', compact('materials'));
     }

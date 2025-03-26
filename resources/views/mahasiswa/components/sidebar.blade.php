@@ -11,8 +11,8 @@
         </h5>
     </div>
 
-    @if(request()->routeIs('mahasiswa.profile'))
-        {{-- Show only Dashboard and Profile menu when on profile page --}}
+    @if(request()->routeIs('mahasiswa.profile') && auth()->user()->role_id !== 3)
+        {{-- Show only Dashboard and Profile menu when on profile page (except for guests) --}}
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.dashboard') }}"
@@ -29,8 +29,8 @@
                 </a>
             </li>
         </ul>
-    @elseif(request()->routeIs('mahasiswa.dashboard*'))
-        {{-- Dashboard Sidebar Menu --}}
+    @elseif(request()->routeIs('mahasiswa.dashboard*') && auth()->user()->role_id !== 3)
+        {{-- Dashboard Sidebar Menu (except for guests) --}}
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.dashboard') }}"
@@ -68,13 +68,13 @@
         </ul>
     @endif
 
-    @unless(request()->routeIs('mahasiswa.profile'))
-        {{-- Profile Section Divider --}}
+    @unless(request()->routeIs('mahasiswa.profile') || auth()->user()->role_id === 3)
+        {{-- Profile Section Divider (hide for guests) --}}
         <div class="sidebar-header mt-4">
             <h5 class="sidebar-title">Profil</h5>
         </div>
         
-        {{-- Profile Menu Items --}}
+        {{-- Profile Menu Items (hide for guests) --}}
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.profile') }}" 

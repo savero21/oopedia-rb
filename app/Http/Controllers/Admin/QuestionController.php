@@ -45,7 +45,7 @@ class QuestionController extends Controller
             return $question;
         });
 
-        return view('questions.index', [
+        return view('admin.questions.index', [
             'questions' => $questions,
             'userName' => $user->name,
             'userRole' => $user->role->role_name,
@@ -59,11 +59,11 @@ class QuestionController extends Controller
         if ($material) {
             // If material is provided, only show that material
             $materials = collect([$material]);
-            return view('questions.create', compact('materials', 'material'));
+            return view('admin.questions.create', compact('materials', 'material'));
         } else {
             // Otherwise show all materials (for the general create route)
             $materials = Material::all();
-            return view('questions.create', compact('materials'));
+            return view('admin.questions.create', compact('materials'));
         }
     }
 
@@ -135,6 +135,7 @@ class QuestionController extends Controller
     public function edit(Material $material = null, Question $question)
     {
         $materials = Material::all();
+
         $material = $question->material; // Get the question's material
         return view('questions.edit', compact('question', 'materials', 'material'));
         // $materials = Material::all();

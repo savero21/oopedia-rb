@@ -83,3 +83,70 @@ class MahasiswaQuestionController extends Controller
         ]);
     }
 }
+    /**
+     * Check all answers for a material
+     */
+    public function checkAllAnswers(Request $request)
+    {
+        $request->validate([
+            'material_id' => 'required|exists:materials,id',
+            'answers' => 'required|array'
+        ]);
+
+        $materialId = $request->material_id;
+        $answers = $request->answers;
+        
+        $totalQuestions = count($answers);
+        $correctAnswers = 0;
+        $results = [];
+        
+        // Check each answer
+        foreach ($answers as $questionId => $answerId) {
+            $question = Question::with('answers')->findOrFail($questionId);
+            $selectedAnswer = $question->answers->find($answerId);
+            
+            $isCorrect = $selectedAnswer && $selectedAnswer->is_correct;
+            
+            // Save progress regardless of correctness
+            Progress::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'material_id' => $materialId,
+                    'question_id' => $questionId
+                ],
+                [
+                    'is_correct' => $isCorrect,
+                    'is_answered' => true
+                ]
+            );
+            
+            if ($isCorrect) {
+                $correctAnswers++;
+            }
+            
+            // Store result for feedback
+            $results[$questionId] = [
+                'is_correct' => $isCorrect,
+                'question_text' => $question->question_text,
+                'selected_answer' => $selectedAnswer ? $selectedAnswer->answer_text : null,
+                'correct_answer' => $isCorrect ? null : $question->answers->where('is_correct', true)->first()->answer_text
+            ];
+        }
+        
+        $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+        
+        // Return JSON response for AJAX request
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => "Anda menjawab benar $correctAnswers dari $totalQuestions soal (Skor: $score%)",
+                'score' => $score,
+                'results' => $results,
+                'nextUrl' => route('mahasiswa.dashboard')
+            ]);
+        }
+        
+        return redirect()->route('mahasiswa.dashboard')
+            ->with('success', "Anda menjawab benar $correctAnswers dari $totalQuestions soal (Skor: $score%)");
+    }
+} 

@@ -6,14 +6,20 @@
                 <input type="hidden" name="question_id" value="{{ $currentQuestion->id }}">
                 <input type="hidden" name="material_id" value="{{ $material->id }}">
                 
-                <div class="question-header mb-4">
-                    <span class="badge bg-gradient-primary">Soal {{ $currentQuestionNumber }} dari {{ $material->questions->count() }}</span>
+                <div class="question-header">
+                    <span class="badge bg-gradient-primary">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Soal {{ $currentQuestionNumber }} dari {{ $material->questions->count() }}
+                    </span>
                 </div>
 
-                <div class="mb-4">
-                    <div class="question-text mb-4">
+                <div class="question-content">
+                    <h5 class="mb-3"><i class="fas fa-question me-2"></i>Pertanyaan</h5>
+                    <div class="question-text">
                         {{ $currentQuestion->question_text }}
                     </div>
+                    
+                    <h5 class="mt-4 mb-3"><i class="fas fa-list-ul me-2"></i>Pilihan Jawaban</h5>
                     <div class="answers-container">
                     @if($currentQuestion->question_type === 'fill_in_the_blank')
                             <div class="form-group">
@@ -22,7 +28,7 @@
                             </div>
                         @else
                         @foreach($currentQuestion->answers as $answer)
-                            <div class="form-check answer-option mb-3">
+                            <div class="form-check answer-option">
                                 <input class="form-check-input" 
                                        type="radio" 
                                        name="answer" 
@@ -38,16 +44,14 @@
                         @endforeach
                     @endif
                     </div>
-                </div>
 
-                <div class="text-end mt-4">
-                    <button type="submit" class="btn bg-gradient-primary" id="checkAnswerBtn">
+                    <button type="submit" class="btn btn-check-answer w-100" id="checkAnswerBtn">
                         <i class="fas fa-check-circle me-2"></i>Periksa Jawaban
                     </button>
                 </div>
             </form>
-
-            @include('mahasiswa.partials.exercise-feedback')
         </div>
+        
+        @include('mahasiswa.partials.exercise-feedback')
     </div>
 </div> 
