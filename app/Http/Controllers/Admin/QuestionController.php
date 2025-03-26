@@ -79,16 +79,27 @@ class QuestionController extends Controller
             'answers.*.explanation' => 'nullable|string|max:500'
         ]);
 
-        // Ensure only one correct answer for radio button type
-        if ($request->question_type === 'radio_button') {
-            $correctAnswers = collect($request->answers)->where('is_correct', true)->count();
-            if ($correctAnswers !== 1) {
-                return back()
+        $questionType = $request->question_type;
+
+        if ($questionType === 'fill_in_the_blank') {
+            if (count($request->answers) > 1) {
+                return redirect()
+                    ->back()
                     ->withInput()
-                    ->withErrors(['correct_answer' => 'Soal dengan tipe Radio Button harus memiliki tepat satu jawaban yang benar.'])
-                    ->with('warning', 'Pilih satu jawaban yang benar untuk tipe soal Radio Button');
+                    ->with('error', 'Soal Fill in the Blank hanya boleh memiliki satu jawaban.');
             }
         }
+
+        if (in_array($request->question_type, ['radio_button', 'fill_in_the_blank'])) {
+            $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
+            if ($correctAnswersCount !== 1) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error', ucfirst(str_replace('_', ' ', $request->question_type)) . ' questions must have exactly one correct answer.');
+            }
+        }
+        
 
         $question = Question::create([
             'material_id' => $material ? $material->id : $request->material_id,
@@ -108,7 +119,8 @@ class QuestionController extends Controller
                 'blank_position' => $answer['blank_position'] ?? null
             ]);
         }
-
+        // return redirect()->route($material ? 'materials.questions.index' : 'questions.index', $material ?? [])
+        // ->with('success', 'Question created successfully.');
         if ($material) {
             return redirect()
                 ->route('admin.materials.questions.index', $material)
@@ -123,7 +135,11 @@ class QuestionController extends Controller
     public function edit(Material $material = null, Question $question)
     {
         $materials = Material::all();
-        return view('admin.questions.edit', compact('question', 'materials', 'material'));
+
+        $material = $question->material; // Get the question's material
+        return view('questions.edit', compact('question', 'materials', 'material'));
+        // $materials = Material::all();
+        // return view('questions.edit', compact('question', 'materials', 'material'));
     }
 
     public function update(Request $request, Material $material = null, Question $question)
@@ -138,16 +154,27 @@ class QuestionController extends Controller
             'answers.*.explanation' => 'nullable|string|max:500'
         ]);
 
-        // Ensure only one correct answer for radio button type
-        if ($request->question_type === 'radio_button') {
-            $correctAnswers = collect($request->answers)->where('is_correct', true)->count();
-            if ($correctAnswers !== 1) {
+        $questionType = $request->question_type;
+
+        if (in_array($questionType, ['radio_button', 'fill_in_the_blank'])) {
+            $correctAnswersCount = collect($request->answers)->where('is_correct', '1')->count();
+            if ($correctAnswersCount !== 1) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Radio button questions must have exactly one correct answer'
+                    'message' => ucfirst(str_replace('_', ' ', $questionType)) . ' questions must have exactly one correct answer.'
                 ], 422);
             }
         }
+        // // Ensure only one correct answer for radio button type
+        // if ($request->question_type === 'radio_button') {
+        //     $correctAnswers = collect($request->answers)->where('is_correct', true)->count();
+        //     if ($correctAnswers !== 1) {
+        //         return response()->json([
+        //             'status' => 'error',
+        //             'message' => 'Radio button questions must have exactly one correct answer'
+        //         ], 422);
+        //     }
+        // }
 
         $question->update([
             'material_id' => $material ? $material->id : $request->material_id,
@@ -171,6 +198,10 @@ class QuestionController extends Controller
             ]);
         }
 
+        $material = $question->material;
+        
+        // return redirect()->route($material ? 'materials.questions.index' : 'questions.index', ['material' => $material?->id])
+        // ->with('success', 'Question updated successfully.');
         if ($material) {
             return redirect()
                 ->route('admin.materials.questions.index', $material)

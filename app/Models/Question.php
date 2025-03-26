@@ -9,6 +9,8 @@ class Question extends Model
 {
     use HasFactory;
 
+    const TYPE_FILL_IN_THE_BLANK = 'fill_in_the_blank';
+    
     protected $fillable = [
         'material_id',
         'question_text',
