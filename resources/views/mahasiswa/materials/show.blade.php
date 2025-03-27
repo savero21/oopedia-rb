@@ -30,7 +30,7 @@
     @if(auth()->user()->role_id === 3)
         <div class="alert alert-info alert-dismissible fade show" role="alert">
             <i class="fas fa-info-circle me-2"></i>
-            Anda masuk sebagai Tamu. Hanya dapat mengakses setengah dari total soal yang tersedia.
+            Anda masuk sebagai Tamu. Akses terbatas.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
@@ -64,6 +64,10 @@
 <script>
 function initializeQuestionForm() {
     const questionForm = document.getElementById('questionForm');
+    const isGuest = {{ auth()->user()->role_id === 3 ? 'true' : 'false' }};
+    const totalQuestions = {{ $material->questions->count() }};
+    const maxQuestionsForGuest = Math.floor(totalQuestions / 2);
+    
     if (questionForm) {
         questionForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -111,7 +115,12 @@ function initializeQuestionForm() {
                 if (data.status === 'success') {
                     tryAgainBtn.style.display = 'none';
                     nextQuestionBtn.style.display = 'inline-block';
-                    if (data.hasNextQuestion) {
+                    
+                    // Check if guest has completed their maximum questions
+                    if (isGuest && data.answeredCount >= maxQuestionsForGuest) {
+                        nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
+                        nextQuestionBtn.onclick = () => window.location.reload();
+                    } else if (data.hasNextQuestion) {
                         nextQuestionBtn.onclick = () => {
                             // Save current scroll position
                             const currentScroll = window.scrollY;

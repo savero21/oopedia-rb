@@ -96,7 +96,7 @@ class QuestionController extends Controller
                 return redirect()
                     ->back()
                     ->withInput()
-                    ->with('error', ucfirst(str_replace('_', ' ', $request->question_type)) . ' questions must have exactly one correct answer.');
+                    ->with('error', 'Soal ' . ucfirst(str_replace('_', ' ', $questionType)) . ' hanya boleh memiliki 1 jawaban benar.');
             }
         }
         
@@ -161,7 +161,7 @@ class QuestionController extends Controller
             if ($correctAnswersCount !== 1) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => ucfirst(str_replace('_', ' ', $questionType)) . ' questions must have exactly one correct answer.'
+                    'message' => ucfirst(str_replace('_', ' ', $questionType)) . ' Pertanyaan hanya boleh memliki 1 jawaban.'
                 ], 422);
             }
         }

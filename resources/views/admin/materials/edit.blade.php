@@ -23,21 +23,26 @@
                                 @method('PUT')
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="input-group input-group-outline my-3">
+                                        <div class="mb-3">
                                             <label class="form-label">Judul Materi</label>
-                                            <input type="text" name="title" class="form-control" required value="{{ old('title', $material->title) }}">
+                                            <div class="input-group input-group-outline">
+                                                <input type="text" name="title" class="form-control" required value="{{ old('title', $material->title) }}">
+                                            </div>
+                                            @error('title')
+                                                <span class="text-danger">{{ $message }}</span>
+                                            @enderror
                                         </div>
-                                        @error('title')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
                                     </div>
                                     <div class="col-md-12">
-                                        <div class="my-3">
-                                            <textarea id="content-editor" name="content" required>{{ old('content', $material->content) }}</textarea>
+                                        <div class="mb-3">
+                                            <label class="form-label">Isi Materi</label>
+                                            <div class="my-3">
+                                                <textarea id="content-editor" name="content" required>{{ old('content', $material->content) }}</textarea>
+                                            </div>
+                                            @error('content')
+                                                <span class="text-danger">{{ $message }}</span>
+                                            @enderror
                                         </div>
-                                        @error('content')
-                                            <span class="text-danger">{{ $message }}</span>
-                                        @enderror
                                     </div>
                                 </div>
                                 <button type="submit" class="btn bg-gradient-primary">Update</button>
