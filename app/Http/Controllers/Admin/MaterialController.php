@@ -30,12 +30,12 @@ class MaterialController extends Controller
 
         $materials = $query->with('creator')->get();
 
-        return view('materials.index', compact('materials'));
+        return view('admin.materials.index', compact('materials'));
     }
 
     public function create()
     {
-        return view('materials.create');
+        return view('admin.materials.create');
     }
 
     public function store(Request $request)
@@ -61,7 +61,7 @@ class MaterialController extends Controller
 
     public function edit(Material $material)
     {
-        return view('materials.edit', compact('material'));
+        return view('admin.materials.edit', compact('material'));
     }
 
     public function update(Request $request, Material $material)

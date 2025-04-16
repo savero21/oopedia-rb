@@ -1,6 +1,6 @@
-<div class="exercise-feedback">
+<div class="exercise-feedback" style="display: none;">
     <div class="feedback-container">
-        <h2 class="text-center">Exercise</h2>
+        <h2 class="text-center">Latihan Soal</h2>
         
         <div id="feedbackStatus" class="text-center mt-4 mb-3"></div>
         
@@ -8,12 +8,20 @@
             <div id="feedbackIcon" class="feedback-icon"></div>
         </div>
         
-        <div id="feedbackDetails" class="mt-4"></div>
+        <div id="feedbackDetails" class="mt-4">
+            <div id="explanationBox" class="explanation-box p-3 rounded" style="display: none;">
+                <h5 class="mb-2"><i class="fas fa-info-circle me-2"></i>Penjelasan</h5>
+                <p id="explanationText"></p>
+            </div>
+        </div>
         
         <div class="feedback-actions mt-4 text-center">
-            <button id="tryAgainBtn" class="btn btn-success" style="display: none;">Try again</button>
-            <button id="retryQuestionBtn" class="btn btn-warning" style="display: none;">Retry Question</button>
-            <button id="nextQuestionBtn" class="btn btn-primary" style="display: none;">Next Question »</button>
+            <button id="tryAgainBtn" class="btn btn-warning" style="display: none;">
+                <i class="fas fa-redo me-2"></i>Coba Lagi
+            </button>
+            <button id="nextQuestionBtn" class="btn btn-success" style="display: none;">
+                Lanjut ke Soal Berikutnya <i class="fas fa-arrow-right ms-2"></i>
+            </button>
         </div>
     </div>
 </div> 

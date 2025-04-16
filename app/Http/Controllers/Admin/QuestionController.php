@@ -45,7 +45,7 @@ class QuestionController extends Controller
             return $question;
         });
 
-        return view('questions.index', [
+        return view('admin.questions.index', [
             'questions' => $questions,
             'userName' => $user->name,
             'userRole' => $user->role->role_name,
@@ -59,11 +59,11 @@ class QuestionController extends Controller
         if ($material) {
             // If material is provided, only show that material
             $materials = collect([$material]);
-            return view('questions.create', compact('materials', 'material'));
+            return view('admin.questions.create', compact('materials', 'material'));
         } else {
             // Otherwise show all materials (for the general create route)
             $materials = Material::all();
-            return view('questions.create', compact('materials'));
+            return view('admin.questions.create', compact('materials'));
         }
     }
 
@@ -81,11 +81,20 @@ class QuestionController extends Controller
 
         $questionType = $request->question_type;
 
+<<<<<<< HEAD
         
         if (in_array($request->question_type, ['radio_button', 'fill_in_the_blank'])) {
             $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
             if ($correctAnswersCount !== 1) {
                 return redirect()->back()->withInput()->with('error', ucfirst(str_replace('_', ' ', $request->question_type)) . ' questions must have exactly one correct answer.');
+=======
+        if ($questionType === 'fill_in_the_blank') {
+            if (count($request->answers) > 1) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error', 'Soal Fill in the Blank hanya boleh memiliki satu jawaban.');
+>>>>>>> 88b1aa5b1b0b897063e0232d562bd4fdf0eb9dc8
             }
         }
         // // Ensure only one correct answer for radio button type
@@ -98,6 +107,17 @@ class QuestionController extends Controller
         //             ->with('warning', 'Pilih satu jawaban yang benar untuk tipe soal Radio Button');
         //     }
         // }
+
+        if (in_array($request->question_type, ['radio_button', 'fill_in_the_blank'])) {
+            $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
+            if ($correctAnswersCount !== 1) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error', ucfirst(str_replace('_', ' ', $request->question_type)) . ' questions must have exactly one correct answer.');
+            }
+        }
+        
 
         $question = Question::create([
             'material_id' => $material ? $material->id : $request->material_id,
@@ -133,6 +153,7 @@ class QuestionController extends Controller
     public function edit(Material $material = null, Question $question)
     {
         $materials = Material::all();
+
         $material = $question->material; // Get the question's material
         return view('questions.edit', compact('question', 'materials', 'material'));
         // $materials = Material::all();

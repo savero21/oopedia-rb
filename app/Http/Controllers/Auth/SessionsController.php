@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Auth\Events\PasswordReset;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class SessionsController extends Controller
 {
@@ -90,5 +92,20 @@ class SessionsController extends Controller
         auth()->logout();
         
         return redirect('/login');
+    }
+
+    public function guestLogin()
+    {
+        // Create a temporary guest user
+        $guestUser = User::create([
+            'name' => 'Tamu_' . Str::random(8),
+            'email' => 'guest_' . Str::random(8) . '@temporary.com',
+            'password' => Hash::make(Str::random(16)),
+            'role_id' => 3 // Guest role
+        ]);
+
+        Auth::login($guestUser);
+        
+        return redirect()->route('mahasiswa.materials.index');
     }
 } 

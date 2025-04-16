@@ -46,8 +46,8 @@ use Illuminate\Support\Str;
                             <span class="progress-text">Materi Aktif</span>
                             <span class="progress-percentage">{{ $inProgressCount }}</span>
                         </div>
-                        <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-update w-100 mt-3">
-                            Jelajahi Materi
+                        <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-primary w-100 mt-3">
+                            <i class="fas fa-book-reader me-2"></i>Jelajahi Materi
                         </a>
                     </div>
                 </div>
@@ -99,6 +99,13 @@ use Illuminate\Support\Str;
                                         <i class="fas fa-question-circle"></i>
                                         <span>{{ $materi->questions_count }} Soal</span>
                                     </div>
+                                    <div class="mt-3">
+                                        <a href="{{ route('mahasiswa.materials.show', $materi->id) }}" 
+                                           class="btn btn-primary w-100">
+                                            <i class="fas fa-book-reader me-2"></i>
+                                            {{ $materi->progress == 100 ? 'Lihat Kembali Materi' : 'Mulai Belajar' }}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -108,4 +115,8 @@ use Illuminate\Support\Str;
         </div>
     </div>
 </div>
+
+@push('css')
+<link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
+@endpush
 @endsection 

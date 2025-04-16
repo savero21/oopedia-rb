@@ -33,16 +33,28 @@
                             <div class="progress-info d-flex justify-content-between">
                                 <span class="progress-text">Progress</span>
                                 <span class="progress-percentage">
-                                    {{ round(($material->progress->where('is_correct', true)->count() / $material->questions->count()) * 100) }}%
+                                    @php
+                                        $progress = $progressStats->firstWhere('material_id', $material->id);
+                                        $totalQuestions = $material->questions->count();
+                                        $correctAnswers = $progress ? $progress->correct_answers : 0;
+                                        $percentage = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+                                    @endphp
+                                    {{ $percentage }}%
                                 </span>
                             </div>
                             <div class="progress-bar-container">
-                                <div class="progress-bar" style="width: {{ round(($material->progress->where('is_correct', true)->count() / $material->questions->count()) * 100) }}%"></div>
+                                <div class="progress-bar" style="width: {{ $percentage }}%"></div>
                             </div>
                         </div>
                         <div class="question-info mt-3">
                             <i class="fas fa-question-circle"></i>
                             <span>{{ $material->questions->count() }} Soal</span>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ route('mahasiswa.materials.show', $material->id) }}" 
+                               class="btn btn-primary w-100">
+                                <i class="fas fa-book-reader me-2"></i>Lanjutkan Belajar
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -50,4 +62,8 @@
         </div>
     @endif
 </div>
+
+@push('css')
+<link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
+@endpush
 @endsection
