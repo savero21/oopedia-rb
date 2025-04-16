@@ -66,7 +66,8 @@ function initializeQuestionForm() {
     const questionForm = document.getElementById('questionForm');
     const isGuest = {{ auth()->user()->role_id === 3 ? 'true' : 'false' }};
     const totalQuestions = {{ $material->questions->count() }};
-    const maxQuestionsForGuest = Math.floor(totalQuestions / 2);
+    const maxQuestionsForGuest = Math.ceil(totalQuestions / 2);
+    const currentQuestionNumber = {{ is_numeric($currentQuestionNumber) ? $currentQuestionNumber : 0 }};
     
     if (questionForm) {
         questionForm.addEventListener('submit', function(e) {
@@ -101,10 +102,10 @@ function initializeQuestionForm() {
                 feedbackIcon.innerHTML = `<i class="fas ${data.status === 'success' ? 'fa-check-circle' : 'fa-times-circle'} fa-3x"></i>`;
 
                 // Tampilkan penjelasan
-                if (data.status === 'success' && data.explanation) {
+                if (data.explanation) {
                     explanationText.innerHTML = data.explanation;
                     explanationBox.style.display = 'block';
-                } else if (data.status === 'error' && data.selectedExplanation) {
+                } else if (data.selectedExplanation) {
                     explanationText.innerHTML = data.selectedExplanation;
                     explanationBox.style.display = 'block';
                 } else {
@@ -120,7 +121,12 @@ function initializeQuestionForm() {
                     if (isGuest && data.answeredCount >= maxQuestionsForGuest) {
                         nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
                         nextQuestionBtn.onclick = () => window.location.reload();
+                    } else if (isGuest && !data.hasNextQuestion) {
+                        // Jika pengguna tamu dan tidak ada soal berikutnya
+                        nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
+                        nextQuestionBtn.onclick = () => window.location.reload();
                     } else if (data.hasNextQuestion) {
+                        nextQuestionBtn.innerHTML = 'Lanjut ke Soal Berikutnya <i class="fas fa-arrow-right ms-2"></i>';
                         nextQuestionBtn.onclick = () => {
                             // Save current scroll position
                             const currentScroll = window.scrollY;

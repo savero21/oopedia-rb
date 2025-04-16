@@ -23,6 +23,7 @@ class MahasiswaQuestionController extends Controller
         $correctAnswerText = null;
         $selectedAnswerText = null;
         $explanation = null;
+        $selectedExplanation = null;
 
         if ($question->question_type === 'fill_in_the_blank') {
             // Ambil jawaban dari input teks
@@ -54,6 +55,7 @@ class MahasiswaQuestionController extends Controller
             $selectedAnswer = Answer::findOrFail($request->answer);
             $isCorrect = $selectedAnswer->is_correct;
             $selectedAnswerText = $selectedAnswer->answer_text;
+            $selectedExplanation = $selectedAnswer->explanation;
 
             // Ambil jawaban yang benar jika jawaban salah
             if (!$isCorrect) {
@@ -61,6 +63,9 @@ class MahasiswaQuestionController extends Controller
                                        ->where('is_correct', true)
                                        ->first();
                 $correctAnswerText = $correctAnswer->answer_text ?? null;
+                $explanation = $correctAnswer->explanation ?? null;
+            } else {
+                $explanation = $selectedAnswer->explanation;
             }
         }
 
@@ -87,7 +92,8 @@ class MahasiswaQuestionController extends Controller
             'message' => $isCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!',
             'selectedAnswer' => $selectedAnswerText,
             'correctAnswer' => $isCorrect ? null : $correctAnswerText,
-            'explanation' => $isCorrect ? $explanation : null,
+            'explanation' => $explanation,
+            'selectedExplanation' => $selectedExplanation,
             'hasNextQuestion' => !is_null($nextQuestion),
             'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
         ]);
