@@ -29,12 +29,14 @@ class MahasiswaQuestionController extends Controller
 
             // Ambil jawaban yang benar dari database
             $correctAnswer = Answer::where('question_id', $question->id)
-                                   ->where('is_correct', true)
-                                   ->first();
-            $correctAnswerText = trim($correctAnswer->answer_text);
-
-            // Bandingkan jawaban pengguna dengan yang benar (case insensitive)
-            $isCorrect = strcasecmp($selectedAnswerText, $correctAnswerText) === 0;
+                                 ->where('is_correct', true)
+                                 ->first();
+            
+            if ($correctAnswer) {
+                $correctAnswerText = trim($correctAnswer->answer_text);
+                // Bandingkan jawaban pengguna dengan yang benar (case insensitive)
+                $isCorrect = strcasecmp($selectedAnswerText, $correctAnswerText) === 0;
+            }
 
         } else {
             // Jika soal pilihan ganda
@@ -49,8 +51,8 @@ class MahasiswaQuestionController extends Controller
             // Ambil jawaban yang benar jika jawaban salah
             if (!$isCorrect) {
                 $correctAnswer = Answer::where('question_id', $question->id)
-                                       ->where('is_correct', true)
-                                       ->first();
+                                     ->where('is_correct', true)
+                                     ->first();
                 $correctAnswerText = $correctAnswer->answer_text ?? null;
             }
         }
@@ -82,7 +84,7 @@ class MahasiswaQuestionController extends Controller
             'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
         ]);
     }
-}
+
     /**
      * Check all answers for a material
      */
@@ -129,7 +131,7 @@ class MahasiswaQuestionController extends Controller
                 'is_correct' => $isCorrect,
                 'question_text' => $question->question_text,
                 'selected_answer' => $selectedAnswer ? $selectedAnswer->answer_text : null,
-                'correct_answer' => $isCorrect ? null : $question->answers->where('is_correct', true)->first()->answer_text
+                'correct_answer' => $isCorrect ? null : ($question->answers->where('is_correct', true)->first()->answer_text ?? null)
             ];
         }
         
@@ -149,4 +151,4 @@ class MahasiswaQuestionController extends Controller
         return redirect()->route('mahasiswa.dashboard')
             ->with('success', "Anda menjawab benar $correctAnswers dari $totalQuestions soal (Skor: $score%)");
     }
-} 
+}
