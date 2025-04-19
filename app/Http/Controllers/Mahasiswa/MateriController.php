@@ -28,11 +28,11 @@ class MateriController extends Controller
             $progressPercentage = $totalQuestions > 0 
                 ? round(($correctAnswers / $totalQuestions) * 100) 
                 : 0;
-                
+           
             $material->progress_percentage = $progressPercentage;
             return $material;
+            
         });
-        
         return view('mahasiswa.materials.index', compact('materials'));
     }
 

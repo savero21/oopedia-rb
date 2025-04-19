@@ -22,8 +22,6 @@ class MahasiswaQuestionController extends Controller
         $isCorrect = false;
         $correctAnswerText = null;
         $selectedAnswerText = null;
-        $explanation = null;
-        $selectedExplanation = null;
 
         if ($question->question_type === 'fill_in_the_blank') {
             // Ambil jawaban dari input teks
@@ -31,21 +29,15 @@ class MahasiswaQuestionController extends Controller
 
             // Ambil jawaban yang benar dari database
             $correctAnswer = Answer::where('question_id', $question->id)
-                                   ->where('is_correct', true)
-                                   ->first();
+                                 ->where('is_correct', true)
+                                 ->first();
             
-            if (!$correctAnswer) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Terjadi kesalahan: Jawaban tidak ditemukan'
-                ], 422);
+            if ($correctAnswer) {
+                $correctAnswerText = trim($correctAnswer->answer_text);
+                // Bandingkan jawaban pengguna dengan yang benar (case insensitive)
+                $isCorrect = strcasecmp($selectedAnswerText, $correctAnswerText) === 0;
             }
 
-            $correctAnswerText = trim($correctAnswer->answer_text);
-            $explanation = $correctAnswer->explanation;
-
-            // Bandingkan jawaban pengguna dengan yang benar (case insensitive)
-            $isCorrect = strcasecmp($selectedAnswerText, $correctAnswerText) === 0;
         } else {
             // Jika soal pilihan ganda
             $request->validate([
@@ -55,17 +47,13 @@ class MahasiswaQuestionController extends Controller
             $selectedAnswer = Answer::findOrFail($request->answer);
             $isCorrect = $selectedAnswer->is_correct;
             $selectedAnswerText = $selectedAnswer->answer_text;
-            $selectedExplanation = $selectedAnswer->explanation;
 
             // Ambil jawaban yang benar jika jawaban salah
             if (!$isCorrect) {
                 $correctAnswer = Answer::where('question_id', $question->id)
-                                       ->where('is_correct', true)
-                                       ->first();
+                                     ->where('is_correct', true)
+                                     ->first();
                 $correctAnswerText = $correctAnswer->answer_text ?? null;
-                $explanation = $correctAnswer->explanation ?? null;
-            } else {
-                $explanation = $selectedAnswer->explanation;
             }
         }
 
@@ -92,8 +80,6 @@ class MahasiswaQuestionController extends Controller
             'message' => $isCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!',
             'selectedAnswer' => $selectedAnswerText,
             'correctAnswer' => $isCorrect ? null : $correctAnswerText,
-            'explanation' => $explanation,
-            'selectedExplanation' => $selectedExplanation,
             'hasNextQuestion' => !is_null($nextQuestion),
             'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
         ]);
@@ -102,7 +88,7 @@ class MahasiswaQuestionController extends Controller
     /**
      * Check all answers for a material
      */
-    public function checkAllAnswers(Request $request){
+    public function checkAllAnswers(Request $request)
     {
         $request->validate([
             'material_id' => 'required|exists:materials,id',
@@ -145,7 +131,7 @@ class MahasiswaQuestionController extends Controller
                 'is_correct' => $isCorrect,
                 'question_text' => $question->question_text,
                 'selected_answer' => $selectedAnswer ? $selectedAnswer->answer_text : null,
-                'correct_answer' => $isCorrect ? null : $question->answers->where('is_correct', true)->first()->answer_text
+                'correct_answer' => $isCorrect ? null : ($question->answers->where('is_correct', true)->first()->answer_text ?? null)
             ];
         }
         
@@ -165,5 +151,4 @@ class MahasiswaQuestionController extends Controller
         return redirect()->route('mahasiswa.dashboard')
             ->with('success', "Anda menjawab benar $correctAnswers dari $totalQuestions soal (Skor: $score%)");
     }
-} 
 }
