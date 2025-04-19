@@ -7,7 +7,7 @@
         <!-- Left side group -->
         <div class="d-flex align-items-center h-100">
             <!-- Logo -->
-            <a class="navbar-brand me-4" href="{{ route('mahasiswa.materials.index') }}">
+            <a class="navbar-brand me-4" href="{{ route('mahasiswa.dashboard') }}">
                 <img src="{{ asset('images/logo.png') }}" alt="OOPEDIA" height="38">
             </a>
             

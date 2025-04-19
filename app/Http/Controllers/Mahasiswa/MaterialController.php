@@ -16,6 +16,16 @@ class MaterialController extends Controller
             $query->with('answers')->orderBy('id', 'asc');
         }])->findOrFail($id);
         
+        // Acak urutan soal
+        $material->questions = $material->questions->shuffle();
+        
+        // Acak urutan jawaban untuk setiap soal
+        foreach ($material->questions as $question) {
+            if ($question->question_type !== 'fill_in_the_blank') {
+                $question->answers = $question->answers->shuffle();
+            }
+        }
+        
         // If user is guest (role_id = 3), only show half of the questions
         if (auth()->user()->role_id === 3) {
             $totalQuestions = $material->questions->count();

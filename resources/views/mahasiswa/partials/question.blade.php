@@ -23,8 +23,16 @@
                     <div class="answers-container">
                     @if($currentQuestion->question_type === 'fill_in_the_blank')
                             <div class="form-group">
-                                <label for="fillInTheBlankAnswer">Jawaban:</label>
-                                <input type="text" name="fill_in_the_blank_answer" id="fillInTheBlankAnswer" class="form-control" required placeholder="Isi jawaban di sini...">
+                                <label for="fillInTheBlankAnswer" class="form-label">Jawaban:</label>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           name="fill_in_the_blank_answer" 
+                                           id="fillInTheBlankAnswer" 
+                                           class="form-control" 
+                                           required 
+                                           placeholder="Isi jawaban di sini..."
+                                           autocomplete="off">
+                                </div>
                             </div>
                         @else
                         @foreach($currentQuestion->answers as $answer)

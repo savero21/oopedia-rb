@@ -35,7 +35,7 @@ class StudentController extends Controller
                 return $student;
             });
 
-        return view('students.index', [
+        return view('admin.students.index', [
             'students' => $students,
             'userName' => auth()->user()->name,
             'userRole' => auth()->user()->role_id == 1 ? 'Admin' : 'Mahasiswa'
@@ -92,7 +92,7 @@ class StudentController extends Controller
             ->limit(10)
             ->get();
 
-        return view('students.progress', [
+        return view('admin.students.progress', [
             'student' => $student,
             'materials' => $materials,
             'recent_activities' => $recent_activities,

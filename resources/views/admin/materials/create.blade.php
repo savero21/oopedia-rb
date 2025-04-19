@@ -24,21 +24,26 @@
                                 <input type="hidden" name="created_by" value="{{ auth()->id() }}">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="input-group input-group-outline my-3">
+                                        <div class="mb-3">
                                             <label class="form-label">Judul Materi</label>
-                                            <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" required value="{{ old('title') }}">
+                                            <div class="input-group input-group-outline">
+                                                <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" required value="{{ old('title') }}">
+                                            </div>
+                                            @error('title')
+                                                <div class="text-danger text-xs">{{ $message }}</div>
+                                            @enderror
                                         </div>
-                                        @error('title')
-                                            <div class="text-danger text-xs">{{ $message }}</div>
-                                        @enderror
                                     </div>
                                     <div class="col-md-12">
-                                        <div class="my-3">
-                                            <textarea id="content-editor" name="content" class="@error('content') is-invalid @enderror">{{ old('content') }}</textarea>
+                                        <div class="mb-3">
+                                            <label class="form-label">Isi Materi</label>
+                                            <div class="my-3">
+                                                <textarea id="content-editor" name="content" class="@error('content') is-invalid @enderror">{{ old('content') }}</textarea>
+                                            </div>
+                                            @error('content')
+                                                <div class="text-danger text-xs">{{ $message }}</div>
+                                            @enderror
                                         </div>
-                                        @error('content')
-                                            <div class="text-danger text-xs">{{ $message }}</div>
-                                        @enderror
                                     </div>
                                 </div>
                                 <div class="row mt-4">

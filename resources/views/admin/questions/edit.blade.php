@@ -21,35 +21,43 @@
                                 @method('PUT')
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label for="material_id">Material</label>
-                                            @if(isset($material))
-                                                <input type="hidden" name="material_id" value="{{ $material->id }}">
-                                                <input type="text" class="form-control" value="{{ $material->title }}" disabled>
-                                            @else
-                                                <select name="material_id" id="material_id" class="form-control" required>
-                                                    <option value="">Select Material</option>
-                                                    @foreach($materials as $mat)
-                                                        <option value="{{ $mat->id }}" {{ $question->material_id == $mat->id ? 'selected' : '' }}>
-                                                            {{ $mat->title }}
-                                                        </option>
-                                                    @endforeach
+                                        <div class="mb-3">
+                                            <label class="form-label">Material</label>
+                                            <div class="input-group input-group-outline">
+                                                @if(isset($material))
+                                                    <input type="hidden" name="material_id" value="{{ $material->id }}">
+                                                    <input type="text" class="form-control" value="{{ $material->title }}" disabled>
+                                                @else
+                                                    <select name="material_id" id="material_id" class="form-control" required>
+                                                        <option value="">Pilih Material</option>
+                                                        @foreach($materials as $mat)
+                                                            <option value="{{ $mat->id }}" {{ $question->material_id == $mat->id ? 'selected' : '' }}>
+                                                                {{ $mat->title }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Pertanyaan</label>
+                                            <div class="input-group input-group-outline">
+                                                <textarea name="question_text" class="form-control" rows="3" required>{{ $question->question_text }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tipe Soal</label>
+                                            <div class="input-group input-group-outline">
+                                                <select name="question_type" class="form-control" required>
+                                                    <option value="radio_button" {{ $question->question_type == 'radio_button' ? 'selected' : '' }}>Radio Button</option>
+                                                    <option value="drag_and_drop" {{ $question->question_type == 'drag_and_drop' ? 'selected' : '' }}>Drag and Drop</option>
+                                                    <option value="fill_in_the_blank" {{ $question->question_type == 'fill_in_the_blank' ? 'selected' : '' }}>Fill in the Blank</option>
                                                 </select>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class="input-group input-group-outline my-3">
-                                            <textarea name="question_text" class="form-control" rows="3" placeholder="Pertanyaan" required>{{ $question->question_text }}</textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class="input-group input-group-outline my-3">
-                                            <select name="question_type" class="form-control" required>
-                                                <option value="radio_button" {{ $question->question_type == 'radio_button' ? 'selected' : '' }}>Radio Button</option>
-                                                <option value="drag_and_drop" {{ $question->question_type == 'drag_and_drop' ? 'selected' : '' }}>Drag and Drop</option>
-                                                <option value="fill_in_the_blank" {{ $question->question_type == 'fill_in_the_blank' ? 'selected' : '' }}>Fill in the Blank</option>
-                                            </select>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

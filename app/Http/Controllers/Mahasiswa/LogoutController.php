@@ -10,10 +10,16 @@ class LogoutController extends Controller
 {
     public function logout(Request $request)
     {
-        Auth::logout();
+        $user = Auth::user();
+        $isGuest = $user && $user->role_id === 3;
         
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        
+        if ($isGuest) {
+            $user->delete();
+        }
         
         return redirect('/');
     }

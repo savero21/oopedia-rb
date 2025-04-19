@@ -9,9 +9,9 @@
         </div>
         
         <div id="feedbackDetails" class="mt-4">
-            <div id="explanationBox" class="explanation-box p-3 rounded" style="display: none;">
+            <div id="explanationBox" class="explanation-box p-3 rounded mb-4" style="display: none;">
                 <h5 class="mb-2"><i class="fas fa-info-circle me-2"></i>Penjelasan</h5>
-                <p id="explanationText"></p>
+                <div id="explanationText" class="explanation-content"></div>
             </div>
         </div>
         
