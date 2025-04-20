@@ -69,9 +69,9 @@
                                             <label class="form-label">Tipe Soal</label>
                                             <div class="input-group input-group-outline">
                                                 <select name="question_type" class="form-control" required>
+                                                     <option value="fill_in_the_blank">Fill in the Blank</option>
                                                     <option value="radio_button">Radio Button</option>
                                                     <option value="drag_and_drop">Drag and Drop</option>
-                                                    <option value="fill_in_the_blank">Fill in the Blank</option>
                                                 </select>
                                             </div>
                                         </div>

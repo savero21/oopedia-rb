@@ -37,9 +37,9 @@ class QuestionController extends Controller
         // Format question types for display
         $questions->transform(function ($question) {
             $question->formatted_type = match($question->question_type) {
+                'fill_in_the_blank' => 'Fill in the Blank',
                 'radio_button' => 'Radio Button',
                 'drag_and_drop' => 'Drag and Drop',
-                'fill_in_the_blank' => 'Fill in the Blank',
                 default => $question->question_type
             };
             return $question;
@@ -84,7 +84,7 @@ class QuestionController extends Controller
 
 
         
-        if (in_array($request->question_type, ['radio_button', 'fill_in_the_blank'])) {
+        if (in_array($request->question_type, ['fill_in_the_blank','radio_button',])) {
             $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
             if ($correctAnswersCount !== 1) {
                 return redirect()->back()->withInput()->with('error', ucfirst(str_replace('_', ' ', $request->question_type)) . ' questions must have exactly one correct answer.');
@@ -109,7 +109,7 @@ class QuestionController extends Controller
         //     }
         // }
 
-        if (in_array($request->question_type, ['radio_button', 'fill_in_the_blank'])) {
+        if (in_array($request->question_type, ['fill_in_the_blank','radio_button', ])) {
             $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
             if ($correctAnswersCount !== 1) {
                 return redirect()
