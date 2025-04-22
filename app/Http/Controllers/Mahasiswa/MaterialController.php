@@ -106,4 +106,24 @@ class MaterialController extends Controller
         return redirect()->route('mahasiswa.materials.show', ['material' => $id])
             ->with('success', 'Progress direset. Anda dapat mengerjakan soal kembali.');
     }
+
+    public function dashboard()
+    {
+        $dashboardMaterials = Material::select([
+            'id',
+            'title',
+            DB::raw('SUBSTRING(description, 1, 150) as description'), // Batasi deskripsi ke 150 karakter
+            // ... field lainnya
+        ])->get()->map(function($material) {
+            // Bersihkan HTML tags dan batasi panjang teks
+            $material->description = strip_tags($material->description);
+            // Tambahkan ellipsis jika teks terpotong
+            if(strlen($material->description) >= 150) {
+                $material->description .= '...';
+            }
+            return $material;
+        });
+
+        return view('mahasiswa.dashboard.dashboard', compact('dashboardMaterials'));
+    }
 } 

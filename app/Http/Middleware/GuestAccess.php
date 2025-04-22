@@ -23,6 +23,7 @@ class GuestAccess
                     'mahasiswa.materials.index',
                     'mahasiswa.materials.show',
                     'mahasiswa.questions.check-answer',
+                    'mahasiswa.questions.show',
                     'mahasiswa.materials.reset',
                     'logout'
                 ];

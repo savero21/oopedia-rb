@@ -17,7 +17,7 @@ class GuestLoginController extends Controller
             'name' => 'Tamu_' . Str::random(8),
             'email' => 'guest_' . Str::random(8) . '@temporary.com',
             'password' => Hash::make(Str::random(16)),
-            'role_id' => 4 // Guest role (sekarang 4)
+            'role_id' => 4 // Guest role
         ]);
 
         Auth::login($guestUser);

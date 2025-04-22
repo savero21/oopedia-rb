@@ -150,6 +150,12 @@ class DashboardController extends Controller
         return view('mahasiswa.dashboard.complete', compact('materials'));
     }
 
+    public function completed()
+    {
+        $materials = Material::all();
+        return view('mahasiswa.dashboard.completed', compact('materials'));
+    }
+
     private function getActiveStudentsCount()
     {
         // Ambil mahasiswa yang memiliki aktivitas dalam 7 hari terakhir

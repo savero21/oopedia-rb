@@ -68,7 +68,7 @@
                                             <td>
                                                 <div class="d-flex px-2 py-1">
                                                     <div class="d-flex flex-column justify-content-center">
-                                                        <h6 class="mb-0 text-sm">{{ $material->creator->name }}</h6>
+                                                        <h6 class="mb-0 text-sm">{{ $material->creator ? $material->creator->name : 'No Creator' }}</h6>
                                                     </div>
                                                 </div>
                                             </td>

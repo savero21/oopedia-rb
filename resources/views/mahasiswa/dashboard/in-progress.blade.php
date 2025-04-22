@@ -49,9 +49,10 @@
                             <i class="fas fa-question-circle"></i>
                             <span>{{ $material->questions->count() }} Soal</span>
                         </div>
-                        <div class="mt-3">
-                            <a href="{{ route('mahasiswa.materials.show', $material->id) }}" class="btn-continue-material">
-                                <i class="fas fa-play-circle me-2"></i>Lanjutkan Belajar
+                        <div class="mt-4 text-center">
+                            <a href="{{ route('mahasiswa.materials.show', $material->id) }}" class="continue-learning-btn">
+                                <span class="continue-icon"><i class="fas fa-play-circle"></i></span>
+                                <span class="continue-text">Lanjutkan Belajar</span>
                             </a>
                         </div>
                     </div>
@@ -63,5 +64,66 @@
 
 @push('css')
 <link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
+<style>
+    .continue-learning-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(78, 115, 223, 0.3);
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .continue-learning-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(78, 115, 223, 0.4);
+        color: white;
+        background: linear-gradient(135deg, #3a5fcc 0%, #1a3a9c 100%);
+    }
+    
+    .continue-icon {
+        margin-right: 10px;
+        font-size: 1.2em;
+    }
+    
+    .continue-text {
+        font-size: 0.95em;
+    }
+    
+    .progress-item-card {
+        border-radius: 12px;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .progress-item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-item-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mt-4 {
+        margin-top: auto !important;
+        padding-top: 1rem;
+    }
+</style>
 @endpush
 @endsection

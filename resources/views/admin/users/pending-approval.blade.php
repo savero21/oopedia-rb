@@ -96,7 +96,7 @@
                                                     <p>Akun admin Anda sedang menunggu persetujuan dari superadmin.</p>
                                                     <p>Silakan coba login kembali nanti.</p>
                                                     
-                                                    <form method="POST" action="{{ route('logout') }}">
+                                                    <form method="POST" action="{{ route('admin.logout') }}">
                                                         @csrf
                                                         <button type="submit" class="btn btn-danger">Logout</button>
                                                     </form>

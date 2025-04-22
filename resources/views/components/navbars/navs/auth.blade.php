@@ -13,13 +13,12 @@
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
             <ul class="navbar-nav ms-auto me-3">
                 <li class="nav-item d-flex align-items-center">
-                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" 
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="fa fa-user me-sm-1"></i>
-                            <span class="d-sm-inline d-none">Logout</span>
-                        </a>
+                        <button type="submit" class="nav-link px-3">
+                            <i class="material-icons opacity-10">logout</i>
+                            <span class="nav-link-text ms-1">Logout</span>
+                        </button>
                     </form>
                 </li>
                 <li class="nav-item d-xl-none ps-3 d-flex align-items-center">

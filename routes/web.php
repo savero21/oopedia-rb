@@ -19,10 +19,8 @@ use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
     MaterialController as MahasiswaMaterialController,
     ProfileController as MahasiswaProfileController,
-    LogoutController as MahasiswaLogoutController,
     QuestionController as MahasiswaQuestionController
 };
-
 
 /*
 |--------------------------------------------------------------------------
@@ -35,22 +33,41 @@ use App\Http\Controllers\Mahasiswa\{
 |
 */
 
-// Redirect root to login
+// Redirect root to login or materials page based on authentication
 Route::get('/', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        
+        if ($user->role_id <= 2) {
+            return redirect()->route('admin.dashboard');
+        } else if ($user->role_id == 3) {
+            return redirect()->route('mahasiswa.dashboard');
+        } else {
+            return redirect()->route('mahasiswa.materials.index');
+        }
+    }
+    
     return redirect()->route('login');
-});
+})->name('home');
 
-// Guest Routes
+// Guest Routes (Unauthenticated)
 Route::middleware('guest')->group(function () {
+    // Authentication
     Route::get('/login', [SessionsController::class, 'create'])->name('login');
     Route::post('/login', [SessionsController::class, 'store']);
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store']);
-    Route::get('/guest-login', [SessionsController::class, 'guestLogin'])->name('guest.login');
+    
+    // Guest login
+    Route::get('/guest-login', [GuestLoginController::class, 'login'])->name('guest.login');
 });
 
-// Logout route
+// Logout routes (for all authenticated users)
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
+Route::post('/mahasiswa/logout', [LogoutController::class, 'logout'])->name('mahasiswa.logout');
+
+// Verification route
+Route::get('/verify', [SessionsController::class, 'verify'])->name('verify');
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
@@ -58,94 +75,88 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/pending-approval', [PendingApprovalController::class, 'index'])
         ->name('admin.pending-approval');
 
-    // Admin Routes
-    Route::middleware(['auth', 'role:1|2', 'admin.approved'])->name('admin.')->prefix('admin')->group(function () {
+    // Admin Routes (role 1 = superadmin, role 2 = admin)
+    Route::middleware(['role:1|2', 'admin.approved'])->name('admin.')->prefix('admin')->group(function () {
+        // Dashboard
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        
+        // Materials & Questions
         Route::resource('materials', AdminMaterialController::class);
         Route::resource('questions', AdminQuestionController::class);
         Route::resource('materials.questions', AdminQuestionController::class)->except(['show']);
+        
+        // Students
         Route::get('students', [AdminStudentController::class, 'index'])->name('students.index');
         Route::get('students/{student}/progress', [AdminStudentController::class, 'progress'])
             ->name('students.progress');
 
-        // Admin management routes (only for superadmin)
+        // Admin management routes (only for superadmin - role 1)
         Route::middleware(['superadmin'])->group(function () {
+            // Admin approval
             Route::get('/pending-admins', [AdminUserController::class, 'pendingAdmins'])->name('pending-admins');
             Route::post('/users/{user}/approve', [AdminUserController::class, 'approveAdmin'])->name('users.approve');
             Route::post('/users/{user}/reject', [AdminUserController::class, 'rejectAdmin'])->name('users.reject');
             
-            // Add these import routes
+            // User import
             Route::get('/users/import', [AdminUserController::class, 'showImportForm'])->name('users.import');
             Route::post('/users/import', [AdminUserController::class, 'processImport'])->name('users.process-import');
             Route::get('/users/download-template', [AdminUserController::class, 'downloadTemplate'])->name('users.download-template');
             
+            // User management
             Route::resource('users', AdminUserController::class)->except(['show']);
         });
     });
 
-    // Mahasiswa Routes
-    Route::middleware(['auth', 'role:3'])->name('mahasiswa.')->prefix('mahasiswa')->group(function () {
-        Route::get('dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard');
+    // Mahasiswa & Guest Routes (role 3 = mahasiswa, role 4 = guest)
+    Route::middleware(['role:3|4'])->name('mahasiswa.')->prefix('mahasiswa')->group(function () {
+        // Dashboard (only for mahasiswa)
+        Route::middleware(['role:3'])->group(function () {
+            Route::get('dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard');
+            Route::get('dashboard/in-progress', [MahasiswaDashboardController::class, 'inProgress'])->name('dashboard.in-progress');
+            Route::get('dashboard/completed', [MahasiswaDashboardController::class, 'complete'])->name('dashboard.completed');
+            
+            // Profile
+            Route::get('profile', [MahasiswaProfileController::class, 'show'])->name('profile');
+            Route::put('profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
+        });
         
-        // Add these new routes for dashboard sections
-        Route::get('dashboard/in-progress', [MahasiswaDashboardController::class, 'inProgress'])->name('dashboard.in-progress');
-        Route::get('dashboard/completed', [MahasiswaDashboardController::class, 'completed'])->name('dashboard.completed');
-        
+        // Materials (for both mahasiswa and guest)
         Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
         Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
-        Route::post('materials/{material}/reset', [MahasiswaMaterialController::class, 'reset'])->name('materials.reset');
-        Route::get('profile', [MahasiswaProfileController::class, 'show'])->name('profile');
-        Route::put('profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
+        
+        // Reset (conditional based on role)
+        Route::post('materials/{material}/reset', function($material) {
+            if (auth()->user()->role_id == 3) {
+                $controller = app()->make(App\Http\Controllers\Mahasiswa\MaterialController::class);
+                return $controller->reset($material);
+            } else {
+                $controller = app()->make(App\Http\Controllers\Mahasiswa\MaterialController::class);
+                return $controller->guestReset($material);
+            }
+        })->name('materials.reset');
+        
+        // Questions
+        Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
+        Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('questions.show');
     });
 });
 
-// Tambahkan route untuk approve dan reject admin
-Route::middleware(['auth', 'superadmin'])->group(function() {
-    Route::post('/admin/users/{user}/approve', [AdminUserController::class, 'approveAdmin'])->name('admin.users.approve');
-    Route::post('/admin/users/{user}/reject', [AdminUserController::class, 'rejectAdmin'])->name('admin.users.reject');
-});
-
-// General Routes
-Route::get('/home', function () {
+// Fallback route for 404 errors
+Route::fallback(function () {
     if (auth()->check()) {
-        if (auth()->user()->role_id == 2 && !auth()->user()->is_approved) {
-            return redirect()->route('admin.pending-approval');
+        $user = auth()->user();
+        
+        if ($user->role_id <= 2) {
+            return redirect()->route('admin.dashboard');
+        } else if ($user->role_id == 3) {
+            return redirect()->route('mahasiswa.dashboard');
+        } else {
+            return redirect()->route('mahasiswa.materials.index');
         }
-        return redirect()->route(auth()->user()->role_id <= 2 ? 'admin.dashboard' : 'mahasiswa.dashboard');
     }
+    
     return redirect()->route('login');
-})->name('home');
-
-Route::get('/verify', [SessionsController::class, 'verify'])->name('verify');
-
-Route::middleware(['web'])->group(function () {
-   
 });
-
-// Tambahkan atau pastikan route ini sudah ada
-Route::post('/mahasiswa/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])
-    ->name('mahasiswa.questions.check-answer')
-    ->middleware('auth');
-
-Route::get('/mahasiswa/questions/{question}', [MahasiswaQuestionController::class, 'show'])
-    ->name('mahasiswa.questions.show')
-    ->middleware('auth');
-
-// Guest Routes
-Route::middleware(['guest.access'])->name('guest.')->prefix('guest')->group(function () {
-    Route::get('/materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
-    Route::get('/materials/{material}', [MahasiswaMaterialController::class, 'guestShow'])->name('materials.show');
-    Route::post('/materials/{material}/reset', [MahasiswaMaterialController::class, 'guestReset'])->name('materials.reset');
-    Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
-});
-
-// Guest login route
-Route::get('guest-login', [GuestLoginController::class, 'login'])->name('guest.login');
-
-// Admin import routes
-Route::get('/admin/users/import', [App\Http\Controllers\Admin\AdminUserController::class, 'showImportForm'])->name('admin.users.import');
-Route::post('/admin/users/import', [App\Http\Controllers\Admin\AdminUserController::class, 'processImport'])->name('admin.users.process-import');
-Route::get('/admin/users/download-template', [App\Http\Controllers\Admin\AdminUserController::class, 'downloadTemplate'])->name('admin.users.download-template');
 
 
 
