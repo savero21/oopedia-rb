@@ -26,18 +26,35 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Tentukan role berdasarkan checkbox
+        $role_id = $request->has('register_as_admin') ? 2 : 3; // 2 untuk admin, 3 untuk mahasiswa
+        
+        // Admin baru perlu approval, mahasiswa langsung approved
+        $is_approved = $role_id == 3;
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 2, // Set role_id to 2 for mahasiswa
+            'role_id' => $role_id,
+            'is_approved' => $is_approved,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        // Redirect to mahasiswa dashboard for all new registrations
+        // Jika mendaftar sebagai admin dan belum diapprove, arahkan ke halaman menunggu persetujuan
+        if ($role_id == 2 && !$is_approved) {
+            return redirect()->route('admin.pending-approval');
+        }
+
+        // Arahkan berdasarkan role
+        if ($role_id == 2) {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        // Jika mahasiswa, langsung ke dashboard mahasiswa
         return redirect()->route('mahasiswa.dashboard');
     }
 } 

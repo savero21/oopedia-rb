@@ -2,11 +2,11 @@
     <div class="review-header d-flex justify-content-between align-items-center">
         <h3 class="review-title">
             <i class="fas fa-clipboard-check me-2"></i>Review Semua Soal
-            @if(auth()->user()->role_id === 3)
+            @if(auth()->user()->role_id === 4)
                 <small class="text-muted">(Tamu)</small>
             @endif
         </h3>
-        @if(auth()->user()->role_id !== 3)
+        @if(auth()->user()->role_id !== 4)
             <div class="action-buttons">
                 <form action="{{ route('mahasiswa.materials.reset', $material->id) }}" method="POST" class="d-inline">
                     @csrf
@@ -60,7 +60,7 @@
         <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-primary me-2">
             <i class="fas fa-book me-2"></i>Kembali ke Daftar Materi
         </a>
-        @if(auth()->user()->role_id !== 3)
+        @if(auth()->user()->role_id !== 4)
             <a href="{{ route('mahasiswa.dashboard') }}" class="btn btn-info">
                 <i class="fas fa-home me-2"></i>Dashboard
             </a>

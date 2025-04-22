@@ -3,25 +3,24 @@
 @section('title', 'Materi Sedang Dipelajari')
 
 @section('content')
-<div class="dashboard-header text-center">
-    <h1 class="main-title">Sedang Dipelajari</h1>
+<div class="dashboard-header">
+    <h1 class="main-title">Materi Sedang Dipelajari</h1>
     <div class="title-underline"></div>
 </div>
 
-<div class="container-fluid">
+<div class="dashboard-content">
     @if($materials->isEmpty())
-        <div class="text-center mt-5">
-            <div class="materi-card">
-                <div class="materi-card-body">
-                    <h3 class="materi-title">Belum Ada Materi yang Sedang Dipelajari</h3>
-                    <div class="materi-description">
-                        Anda belum mulai mempelajari materi apapun.
-                    </div>
-                    <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-update mt-3">
-                        Jelajahi Materi
-                    </a>
-                </div>
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-book-open"></i>
             </div>
+            <h3 class="empty-state-title">Belum Ada Materi yang Sedang Dipelajari</h3>
+            <p class="empty-state-description">
+                Anda belum memulai belajar materi apapun atau semua materi sudah selesai.
+            </p>
+            <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-primary">
+                <i class="fas fa-book me-2"></i>Lihat Daftar Materi
+            </a>
         </div>
     @else
         <div class="row g-4">
@@ -51,9 +50,8 @@
                             <span>{{ $material->questions->count() }} Soal</span>
                         </div>
                         <div class="mt-3">
-                            <a href="{{ route('mahasiswa.materials.show', $material->id) }}" 
-                               class="btn btn-primary w-100">
-                                <i class="fas fa-book-reader me-2"></i>Lanjutkan Belajar
+                            <a href="{{ route('mahasiswa.materials.show', $material->id) }}" class="btn-continue-material">
+                                <i class="fas fa-play-circle me-2"></i>Lanjutkan Belajar
                             </a>
                         </div>
                     </div>

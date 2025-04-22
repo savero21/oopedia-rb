@@ -14,7 +14,7 @@
             <!-- Navigation links -->
             <div class="nav-links">
                 <ul class="nav-menu">
-                    @if(auth()->user()->role_id === 3)
+                    @if(auth()->user()->role_id === 4)
                         <li>
                             <a href="{{ route('mahasiswa.materials.index') }}" 
                                class="nav-link {{ request()->routeIs('mahasiswa.materials*') ? 'active' : '' }}">
@@ -44,36 +44,29 @@
 
         <!-- Right side - Profile/Logout -->
         <div class="d-flex align-items-center">
-            @if(auth()->user()->role_id === 3)
-                <span class="badge bg-primary text-white d-flex align-items-center guest-badge">
-                    <i class="fas fa-user-clock me-2"></i>
-                    <span>Mode Tamu</span>
-                </span>
-                <form action="{{ route('logout') }}" method="POST" class="d-inline ms-3">
-                    @csrf
-                    <button type="submit" class="btn btn-link nav-link">
-                        <i class="fas fa-sign-out-alt me-1"></i>
-                        Logout
-                    </button>
-                </form>
-            @else
-                <!-- Regular user profile dropdown -->
-                <div class="profile-section dropdown">
-                    <a href="#" class="d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ asset('images/profile.gif') }}" alt="Profile" class="rounded-circle" width="32">
-                        <span class="ms-2 text-white">{{ auth()->user()->name }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{{ route('mahasiswa.profile') }}">Profile</a></li>
-                        <li>
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="dropdown-item">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            @endif
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle profile-dropdown" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ asset('images/profile.gif') }}" alt="Profile" class="profile-image me-2">
+                    <span class="me-2">{{ auth()->user()->name }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    @if(auth()->user()->role_id !== 4)
+                    <li>
+                        <a class="dropdown-item" href="{{ route('mahasiswa.profile') }}">
+                            <span>Profil Saya</span>
+                        </a>
+                    </li>
+                    @endif
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item">
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </nav>

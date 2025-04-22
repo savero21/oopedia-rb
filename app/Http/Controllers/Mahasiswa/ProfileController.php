@@ -8,10 +8,11 @@ use App\Models\Material;
 
 class ProfileController extends Controller
 {
-    public function index()
+    public function show()
     {
+        $user = auth()->user();
         $materials = Material::orderBy('created_at', 'asc')->get();
-        return view('mahasiswa.profile.index', compact('materials'));
+        return view('mahasiswa.profile.index', compact('materials', 'user'));
     }
 
     public function update(Request $request)

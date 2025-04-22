@@ -12,18 +12,19 @@ class GuestAccess
         if (auth()->check()) {
             $user = auth()->user();
             
-            // Allow regular students to access all routes
-            if ($user->role_id === 2) {
+            // Allow regular students (role 3) and admin/superadmin (roles 1-2) to access all routes
+            if ($user->role_id <= 3) {
                 return $next($request);
             }
             
-            // Restrict guest access
-            if ($user->role_id === 3) {
+            // Restrict guest access (role 4)
+            if ($user->role_id === 4) {
                 $allowedRoutes = [
                     'mahasiswa.materials.index',
                     'mahasiswa.materials.show',
                     'mahasiswa.questions.check-answer',
-                    'mahasiswa.materials.reset'
+                    'mahasiswa.materials.reset',
+                    'logout'
                 ];
 
                 if (!in_array($request->route()->getName(), $allowedRoutes)) {

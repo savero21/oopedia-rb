@@ -5,7 +5,7 @@
     id="sidenav-main">
     <div class="sidenav-header d-flex flex-column align-items-center">
         @php
-            $dashboardRoute = auth()->user()->role_id === 1 ? 'admin.dashboard' : 'mahasiswa.dashboard';
+            $dashboardRoute = auth()->user()->role_id === 3 ? 'mahasiswa.dashboard' : 'admin.dashboard';
         @endphp
         <a class="navbar-brand m-0 d-flex text-wrap align-items-center" href="{{ route($dashboardRoute) }}">
             <span class="font-weight-bold text-white">OOPEDIA</span>
@@ -100,6 +100,39 @@
                     <span class="nav-link-text ms-1">Data Mahasiswa</span>
                 </a>
             </li>
+
+            {{-- Menu Admin hanya untuk Superadmin --}}
+            @if(auth()->user()->role_id == 1)
+            <li class="nav-item mt-3">
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Data Admin</h6>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {{ $activePage == 'users' ? 'active bg-gradient-primary' : '' }}"
+                    href="{{ route('admin.users.index') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="material-icons opacity-10">person</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Data Admin</span>
+                </a>
+            </li>
+            
+            {{-- Menu Admin Pending hanya untuk Superadmin --}}
+            <li class="nav-item">
+                <a class="nav-link text-white {{ $activePage == 'pending-users' ? 'active bg-gradient-primary' : '' }}" 
+                   href="{{ route('admin.pending-admins') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="material-icons opacity-10">person_add</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Admin Pending</span>
+                    @php
+                        $pendingAdminsCount = \App\Models\User::where('role_id', 2)->where('is_approved', false)->count();
+                    @endphp
+                    @if($pendingAdminsCount > 0)
+                        <span class="badge bg-danger ms-auto">{{ $pendingAdminsCount }}</span>
+                    @endif
+                </a>
+            </li>
+            @endif
         </ul>
     </div>
 </aside>

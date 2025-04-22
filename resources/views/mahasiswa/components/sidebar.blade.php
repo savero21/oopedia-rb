@@ -11,7 +11,7 @@
         </h5>
     </div>
 
-    @if(request()->routeIs('mahasiswa.profile') && auth()->user()->role_id !== 3)
+    @if(request()->routeIs('mahasiswa.profile') && auth()->user()->role_id !== 4)
         {{-- Show only Dashboard and Profile menu when on profile page (except for guests) --}}
         <ul class="nav-menu">
             <li>
@@ -29,46 +29,47 @@
                 </a>
             </li>
         </ul>
-    @elseif(request()->routeIs('mahasiswa.dashboard*') && auth()->user()->role_id !== 3)
+    @elseif(request()->routeIs('mahasiswa.dashboard*') && auth()->user()->role_id !== 4)
         {{-- Dashboard Sidebar Menu (except for guests) --}}
         <ul class="nav-menu">
             <li>
-                <a href="{{ route('mahasiswa.dashboard') }}"
-                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') && !request()->routeIs('*.in-progress') && !request()->routeIs('*.complete') ? 'active' : '' }}">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Semua Progress</span>
+                <a href="{{ route('mahasiswa.dashboard') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') && !request()->routeIs('mahasiswa.dashboard.*') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i>
+                    <span>Beranda</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('mahasiswa.dashboard.in-progress') }}"
+                <a href="{{ route('mahasiswa.dashboard.in-progress') }}" 
                    class="menu-item {{ request()->routeIs('mahasiswa.dashboard.in-progress') ? 'active' : '' }}">
                     <i class="fas fa-spinner"></i>
                     <span>Sedang Dipelajari</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('mahasiswa.dashboard.complete') }}"
-                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard.complete') ? 'active' : '' }}">
+                <a href="{{ route('mahasiswa.dashboard.completed') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard.completed') ? 'active' : '' }}">
                     <i class="fas fa-check-circle"></i>
                     <span>Selesai</span>
                 </a>
             </li>
         </ul>
     @else
+        {{-- Materials Sidebar Menu --}}
         <ul class="nav-menu">
-            @foreach($materials as $material)
+            @foreach($materials as $m)
                 <li>
-                    <a href="{{ route('mahasiswa.materials.show', $material) }}"
-                       class="menu-item {{ request()->is('mahasiswa/materials/' . $material->id) ? 'active' : '' }}">
+                    <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
+                       class="menu-item {{ isset($material) && $material->id == $m->id ? 'active' : '' }}">
                         <i class="fas fa-book"></i>
-                        <span>{{ $material->title }}</span>
+                        <span>{{ $m->title }}</span>
                     </a>
                 </li>
             @endforeach
         </ul>
     @endif
 
-    @unless(request()->routeIs('mahasiswa.profile') || auth()->user()->role_id === 3)
+    @unless(request()->routeIs('mahasiswa.profile') || auth()->user()->role_id === 4)
         {{-- Profile Section Divider (hide for guests) --}}
         <div class="sidebar-header mt-4">
             <h5 class="sidebar-title">Profil</h5>

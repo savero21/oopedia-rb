@@ -27,7 +27,7 @@
         </div>
     @endif
 
-    @if(auth()->user()->role_id === 3)
+    @if(auth()->user()->role_id === 4)
         <div class="alert alert-info alert-dismissible fade show" role="alert">
             <i class="fas fa-info-circle me-2"></i>
             Anda masuk sebagai Tamu. Akses terbatas.
@@ -64,7 +64,7 @@
 <script>
 function initializeQuestionForm() {
     const questionForm = document.getElementById('questionForm');
-    const isGuest = {{ auth()->user()->role_id === 3 ? 'true' : 'false' }};
+    const isGuest = {{ auth()->user()->role_id === 4 ? 'true' : 'false' }};
     const totalQuestions = {{ $material->questions->count() }};
     const maxQuestionsForGuest = Math.ceil(totalQuestions / 2);
     const currentQuestionNumber = {{ is_numeric($currentQuestionNumber) ? $currentQuestionNumber : 0 }};

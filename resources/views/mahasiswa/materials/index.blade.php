@@ -23,7 +23,7 @@
                         <span class="progress-percentage">
                             @php
                                 $totalQuestions = $material->total_questions;
-                                if(auth()->user()->role_id === 3) {
+                                if(auth()->user()->role_id === 4) {
                                     $totalQuestions = ceil($totalQuestions / 2);
                                 }
                                 $correctAnswers = $material->completed_questions;
@@ -38,17 +38,15 @@
                     <div class="progress-details mt-2">
                         <small>
                             {{ $correctAnswers }} dari {{ $totalQuestions }} soal selesai
-                            @if(auth()->user()->role_id === 3)
+                            @if(auth()->user()->role_id === 4)
                                 (Mode Tamu)
                             @endif
                         </small>
                     </div>
                 </div>
                 <div class="mt-3">
-                    <a href="{{ route('mahasiswa.materials.show', $material) }}" 
-                       class="btn btn-primary w-100">
-                        <i class="fas fa-book-reader me-2"></i>
-                        {{ $percentage == 100 ? 'Lihat Kembali Materi' : 'Mulai Belajar' }}
+                    <a href="{{ route('mahasiswa.materials.show', $material->id) }}" class="btn-start-material">
+                        Mulai Belajar
                     </a>
                 </div>
             </div>

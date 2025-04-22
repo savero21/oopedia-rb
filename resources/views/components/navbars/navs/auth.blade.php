@@ -13,14 +13,14 @@
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
             <ul class="navbar-nav ms-auto me-3">
                 <li class="nav-item d-flex align-items-center">
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
                         @csrf
+                        <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" 
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fa fa-user me-sm-1"></i>
+                            <span class="d-sm-inline d-none">Logout</span>
+                        </a>
                     </form>
-                    <a href="javascript:;" class="nav-link text-body font-weight-bold px-3"
-                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        <i class="fa fa-user me-2"></i>
-                        <span class="d-sm-inline d-none">Logout</span>
-                    </a>
                 </li>
                 <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
                     <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">

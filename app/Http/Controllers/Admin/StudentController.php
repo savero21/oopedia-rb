@@ -11,8 +11,8 @@ class StudentController extends Controller
 {
     public function index()
     {
-        // Get all users with role_id 2 (students)
-        $students = User::where('role_id', 2)
+        // Get all users with role_id 3 (students)
+        $students = User::where('role_id', 3)
             ->withCount(['answeredQuestions as total_answered_questions'])
             ->with(['progress', 'materials' => function($query) {
                 $query->withCount('questions');
@@ -38,14 +38,14 @@ class StudentController extends Controller
         return view('admin.students.index', [
             'students' => $students,
             'userName' => auth()->user()->name,
-            'userRole' => auth()->user()->role_id == 1 ? 'Admin' : 'Mahasiswa'
+            'userRole' => auth()->user()->role->role_name
         ]);
     }
 
     public function progress(User $student)
     {
         // Ensure we're looking at a student
-        abort_if($student->role_id != 2, 404);
+        abort_if($student->role_id != 3, 404);
 
         // Get materials with progress
         $materials = DB::table('materials')
@@ -97,7 +97,7 @@ class StudentController extends Controller
             'materials' => $materials,
             'recent_activities' => $recent_activities,
             'userName' => auth()->user()->name,
-            'userRole' => auth()->user()->role_id == 1 ? 'Admin' : 'Mahasiswa'
+            'userRole' => auth()->user()->role->role_name
         ]);
     }
 }

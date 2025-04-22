@@ -155,7 +155,7 @@ class DashboardController extends Controller
         // Ambil mahasiswa yang memiliki aktivitas dalam 7 hari terakhir
         return DB::table('users')
             ->join('progress', 'users.id', '=', 'progress.user_id')
-            ->where('users.role_id', 2) // role mahasiswa
+            ->where('users.role_id', 3) // Role mahasiswa sekarang adalah 3
             ->where('progress.created_at', '>=', now()->subDays(7))
             ->distinct('users.id')
             ->count('users.id');

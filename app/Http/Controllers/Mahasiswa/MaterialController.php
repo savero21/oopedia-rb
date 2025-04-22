@@ -26,8 +26,9 @@ class MaterialController extends Controller
             }
         }
         
-        // If user is guest (role_id = 3), only show half of the questions
-        if (auth()->user()->role_id === 3) {
+        // If user is guest (role_id = 4), only show half of the questions
+        // For regular students (role_id = 3), show all questions
+        if (auth()->user()->role_id === 4) {
             $totalQuestions = $material->questions->count();
             $halfQuestions = ceil($totalQuestions / 2);
             $material->questions = $material->questions->take($halfQuestions);
