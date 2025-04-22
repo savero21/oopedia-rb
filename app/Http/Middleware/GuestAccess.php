@@ -25,11 +25,14 @@ class GuestAccess
                     'mahasiswa.questions.check-answer',
                     'mahasiswa.questions.show',
                     'mahasiswa.materials.reset',
-                    'logout'
+                    'logout',
+                    'login',
+                    'register'
                 ];
 
                 if (!in_array($request->route()->getName(), $allowedRoutes)) {
-                    return redirect()->route('mahasiswa.materials.index');
+                    return redirect()->route('mahasiswa.materials.index')
+                        ->with('info', 'Fitur ini hanya tersedia untuk mahasiswa terdaftar.');
                 }
             }
         }

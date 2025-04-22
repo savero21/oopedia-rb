@@ -151,12 +151,17 @@ Route::fallback(function () {
         } else if ($user->role_id == 3) {
             return redirect()->route('mahasiswa.dashboard');
         } else {
-            return redirect()->route('mahasiswa.materials.index');
+            // Guest users (role_id = 4)
+            return redirect()->route('mahasiswa.materials.index')
+                ->with('info', 'Halaman yang Anda cari tidak tersedia untuk akun tamu.');
         }
     }
     
     return redirect()->route('login');
 });
+
+// Add this with your other guest routes
+Route::post('/guest-logout', [GuestLoginController::class, 'logout'])->name('guest.logout');
 
 
 

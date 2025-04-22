@@ -7,6 +7,7 @@ use App\Models\Material;
 use App\Models\Progress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class MaterialController extends Controller
 {
@@ -74,24 +75,31 @@ class MaterialController extends Controller
             ->groupBy('material_id')
             ->get();
 
-        $materials = Material::with(['questions'])
-            ->get()
-            ->map(function($material) use ($progressStats) {
-                $totalQuestions = $material->questions->count();
-                $materialProgress = $progressStats->firstWhere('material_id', $material->id);
-                
-                $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
-                $progressPercentage = $totalQuestions > 0 
-                    ? min(100, round(($correctAnswers / $totalQuestions) * 100))
-                    : 0;
+        // Get all materials first
+        $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
+        
+        // If user is guest, only show half of the materials
+        if (auth()->user()->role_id === 4) {
+            $totalMaterials = $allMaterials->count();
+            $materialsToShow = ceil($totalMaterials / 2);
+            $allMaterials = $allMaterials->take($materialsToShow);
+        }
 
-                // Kembalikan model Material asli dengan properti tambahan
-                $material->progress_percentage = $progressPercentage;
-                $material->total_questions = $totalQuestions;
-                $material->completed_questions = $correctAnswers;
-                
-                return $material;
-            });
+        $materials = $allMaterials->map(function($material) use ($progressStats) {
+            $totalQuestions = $material->questions->count();
+            $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+            
+            $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
+            $progressPercentage = $totalQuestions > 0 
+                ? min(100, round(($correctAnswers / $totalQuestions) * 100))
+                : 0;
+
+            $material->progress_percentage = $progressPercentage;
+            $material->total_questions = $totalQuestions;
+            $material->completed_questions = $correctAnswers;
+            
+            return $material;
+        });
         
         return view('mahasiswa.materials.index', compact('materials'));
     }

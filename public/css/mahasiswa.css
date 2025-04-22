@@ -1490,3 +1490,29 @@ button.dropdown-item[type="submit"]::before {
     font-weight: 500;
     letter-spacing: 0.2px;
 }
+
+.btn-start-material {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--color-1), var(--color-2));
+    color: white;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(255, 123, 84, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-start-material:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 123, 84, 0.4);
+    color: white;
+    background: linear-gradient(135deg, var(--color-2), var(--color-1));
+}
+
+.btn-start-material i {
+    margin-right: 8px;
+}

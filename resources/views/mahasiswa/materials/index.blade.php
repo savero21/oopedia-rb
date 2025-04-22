@@ -3,6 +3,21 @@
 @section('title', 'Materi Pembelajaran')
 
 @section('content')
+@if(auth()->check() && auth()->user()->role_id === 4)
+
+
+<!-- Hidden forms for guest logout and redirect -->
+<form id="guest-logout-login-form" action="{{ route('guest.logout') }}" method="POST" style="display: none;">
+    @csrf
+    <input type="hidden" name="redirect" value="{{ route('login') }}">
+</form>
+
+<form id="guest-logout-register-form" action="{{ route('guest.logout') }}" method="POST" style="display: none;">
+    @csrf
+    <input type="hidden" name="redirect" value="{{ route('register') }}">
+</form>
+@endif
+
 <div class="dashboard-header text-center">
     <h1 class="main-title">Materi PBO</h1>
     <div class="title-underline"></div>

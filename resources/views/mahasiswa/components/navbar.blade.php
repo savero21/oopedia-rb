@@ -42,12 +42,36 @@
             </div>
         </div>
 
-        <!-- Right side - Profile/Logout -->
+        <!-- Right side - Profile/Logout/Login/Register -->
         <div class="d-flex align-items-center">
+            @if(auth()->user()->role_id === 4)
+                <!-- Login and Register buttons for guest users -->
+                <div class="me-3">
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('guest-logout-login-form').submit();" 
+                       class="btn btn-primary me-2">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('guest-logout-register-form').submit();" 
+                       class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i> Register
+                    </a>
+                </div>
+
+                <!-- Hidden forms for guest logout and redirect -->
+                <form id="guest-logout-login-form" action="{{ route('guest.logout') }}" method="POST" style="display: none;">
+                    @csrf
+                    <input type="hidden" name="redirect" value="{{ route('login') }}">
+                </form>
+
+                <form id="guest-logout-register-form" action="{{ route('guest.logout') }}" method="POST" style="display: none;">
+                    @csrf
+                    <input type="hidden" name="redirect" value="{{ route('register') }}">
+                </form>
+            @endif
             <div class="dropdown">
                 <a class="nav-link dropdown-toggle profile-dropdown" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ asset('images/profile.gif') }}" alt="Profile" class="profile-image me-2">
-                    <span class="me-2">{{ auth()->user()->name }}</span>
+                    <span class="me-2">{{ auth()->user()->role_id === 4 ? 'Tamu' : auth()->user()->name }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                     @if(auth()->user()->role_id !== 4)
@@ -58,12 +82,22 @@
                     </li>
                     @endif
                     <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item">
-                                <span>Logout</span>
-                            </button>
-                        </form>
+                        @if(auth()->user()->role_id === 4)
+                            <form method="POST" action="{{ route('guest.logout') }}">
+                                @csrf
+                                <input type="hidden" name="redirect" value="{{ route('login') }}">
+                                <button type="submit" class="dropdown-item">
+                                    <span>Logout</span>
+                                </button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item">
+                                    <span>Logout</span>
+                                </button>
+                            </form>
+                        @endif
                     </li>
                 </ul>
             </div>
