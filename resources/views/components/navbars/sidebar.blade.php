@@ -104,7 +104,7 @@
             {{-- Menu Admin hanya untuk Superadmin --}}
             @if(auth()->user()->role_id == 1)
             <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Data Admin</h6>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Data Dosen</h6>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white {{ $activePage == 'users' ? 'active bg-gradient-primary' : '' }}"
@@ -112,7 +112,7 @@
                     <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="material-icons opacity-10">person</i>
                     </div>
-                    <span class="nav-link-text ms-1">Data Admin</span>
+                    <span class="nav-link-text ms-1">Data Dosen</span>
                 </a>
             </li>
             
@@ -123,7 +123,7 @@
                     <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="material-icons opacity-10">person_add</i>
                     </div>
-                    <span class="nav-link-text ms-1">Admin Pending</span>
+                    <span class="nav-link-text ms-1">Dosen Pending</span>
                     @php
                         $pendingAdminsCount = \App\Models\User::where('role_id', 2)->where('is_approved', false)->count();
                     @endphp

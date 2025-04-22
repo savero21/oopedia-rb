@@ -74,6 +74,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/users/{user}/approve', [AdminUserController::class, 'approveAdmin'])->name('users.approve');
             Route::post('/users/{user}/reject', [AdminUserController::class, 'rejectAdmin'])->name('users.reject');
             
+            // Add these import routes
+            Route::get('/users/import', [AdminUserController::class, 'showImportForm'])->name('users.import');
+            Route::post('/users/import', [AdminUserController::class, 'processImport'])->name('users.process-import');
+            Route::get('/users/download-template', [AdminUserController::class, 'downloadTemplate'])->name('users.download-template');
+            
             Route::resource('users', AdminUserController::class)->except(['show']);
         });
     });
@@ -137,20 +142,10 @@ Route::middleware(['guest.access'])->name('guest.')->prefix('guest')->group(func
 // Guest login route
 Route::get('guest-login', [GuestLoginController::class, 'login'])->name('guest.login');
 
-// Rute untuk tamu (role_id = 4)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/mahasiswa/materials', [MahasiswaMaterialController::class, 'index'])
-        ->name('mahasiswa.materials.index');
-    
-    Route::get('/mahasiswa/materials/{material}', [MahasiswaMaterialController::class, 'show'])
-        ->name('mahasiswa.materials.show');
-    
-    Route::post('/mahasiswa/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])
-        ->name('mahasiswa.questions.check-answer');
-    
-    Route::post('/mahasiswa/materials/{material}/reset', [MahasiswaMaterialController::class, 'reset'])
-        ->name('mahasiswa.materials.reset');
-});
+// Admin import routes
+Route::get('/admin/users/import', [App\Http\Controllers\Admin\AdminUserController::class, 'showImportForm'])->name('admin.users.import');
+Route::post('/admin/users/import', [App\Http\Controllers\Admin\AdminUserController::class, 'processImport'])->name('admin.users.process-import');
+Route::get('/admin/users/download-template', [App\Http\Controllers\Admin\AdminUserController::class, 'downloadTemplate'])->name('admin.users.download-template');
 
 
 

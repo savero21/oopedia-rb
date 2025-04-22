@@ -11,6 +11,8 @@ use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AdminApproved;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
 {
@@ -261,5 +263,150 @@ class AdminUserController extends Controller
             return redirect()->route('admin.pending-admins')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+    
+    public function showImportForm()
+    {
+        // Only superadmin can access this feature
+        if (auth()->user()->role_id != 1) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Anda tidak memiliki akses untuk fitur ini');
+        }
+        
+        return view('admin.users.import');
+    }
+    
+    public function processImport(Request $request)
+    {
+        // Only superadmin can access this feature
+        if (auth()->user()->role_id != 1) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Anda tidak memiliki akses untuk fitur ini');
+        }
+        
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv,txt|max:2048', // 2MB max size
+        ]);
+        
+        $file = $request->file('excel_file');
+        $path = $file->getRealPath();
+        
+        // Read the Excel/CSV file
+        $data = [];
+        if (($handle = fopen($path, 'r')) !== false) {
+            // Read the header row
+            $header = fgetcsv($handle, 1000, ',');
+            
+            // Check if the file has the required columns
+            $requiredColumns = ['name', 'email', 'password'];
+            $missingColumns = array_diff($requiredColumns, $header);
+            
+            if (!empty($missingColumns)) {
+                return redirect()->back()->with('error', 'File tidak memiliki kolom yang diperlukan: ' . implode(', ', $missingColumns));
+            }
+            
+            // Map column indexes
+            $nameIndex = array_search('name', $header);
+            $emailIndex = array_search('email', $header);
+            $passwordIndex = array_search('password', $header);
+            
+            // Process each row
+            $rowNumber = 1; // Start from 1 to account for header row
+            $successCount = 0;
+            $errorRows = [];
+            
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+                $rowNumber++;
+                
+                // Skip empty rows
+                if (empty($row[$nameIndex]) && empty($row[$emailIndex])) {
+                    continue;
+                }
+                
+                // Validate the row data
+                $rowData = [
+                    'name' => $row[$nameIndex] ?? '',
+                    'email' => $row[$emailIndex] ?? '',
+                    'password' => $row[$passwordIndex] ?? '',
+                ];
+                
+                $validator = Validator::make($rowData, [
+                    'name' => 'required|string|max:255',
+                    'email' => [
+                        'required',
+                        'string',
+                        'email',
+                        'max:255',
+                        Rule::unique('users'),
+                    ],
+                    'password' => 'required|string|min:8',
+                ]);
+                
+                if ($validator->fails()) {
+                    $errorRows[] = [
+                        'row' => $rowNumber,
+                        'errors' => $validator->errors()->all(),
+                    ];
+                    continue;
+                }
+                
+                // Create the user with is_approved set to true
+                try {
+                    $user = new User();
+                    $user->name = $row[$nameIndex];
+                    $user->email = $row[$emailIndex];
+                    $user->password = Hash::make($row[$passwordIndex]);
+                    $user->role_id = 2; // Admin role
+                    $user->is_approved = true; // Explicitly set to true to ensure approval
+                    $user->save();
+                    
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errorRows[] = [
+                        'row' => $rowNumber,
+                        'errors' => [$e->getMessage()],
+                    ];
+                }
+            }
+            fclose($handle);
+            
+            // Prepare the result message
+            $message = "Berhasil menambahkan {$successCount} dosen.";
+            if (!empty($errorRows)) {
+                $message .= " Terdapat " . count($errorRows) . " baris dengan error.";
+            }
+            
+            return redirect()->route('admin.users.index')
+                ->with('success', $message)
+                ->with('importErrors', $errorRows);
+        }
+        
+        return redirect()->back()->with('error', 'Gagal membaca file. Pastikan format file benar.');
+    }
+    
+    public function downloadTemplate()
+    {
+        // Only superadmin can access this feature
+        if (auth()->user()->role_id != 1) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Anda tidak memiliki akses untuk fitur ini');
+        }
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="dosen_template.csv"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+        
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['name', 'email', 'password']);
+            fputcsv($file, ['Nama Dosen', 'dosen@example.com', 'password123']);
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
     }
 } 
