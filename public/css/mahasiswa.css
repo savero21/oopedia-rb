@@ -1061,7 +1061,7 @@ button.dropdown-item[type="submit"]::before {
 .heading-underline {
     width: 100px;
     height: 4px;
-    background: linear-gradient(to right, #e91e63, #f5365c);
+    background: linear-gradient(to right, #004E98, #0074D9);
     border-radius: 2px;
 }
 
@@ -1159,7 +1159,7 @@ button.dropdown-item[type="submit"]::before {
     top: 0;
     left: 1rem;
     font-size: 3rem;
-    color: #e91e63;
+    color: #0074D9;;
     opacity: 0.2;
 }
 
@@ -1180,21 +1180,21 @@ button.dropdown-item[type="submit"]::before {
     border-radius: 15px;
     box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
     margin-bottom: 2rem;
-    border: 2px solid #FF0080;
+    border: 2px solid #004E98;
     overflow: hidden;
 }
 
 .question-header {
-    background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(255, 0, 128, 0.05));
+    background: linear-gradient(135deg, rgba(0, 78, 152, 0.1), rgba(0, 78, 152, 0.05));
     padding: 1.25rem 1.5rem;
-    border-bottom: 2px solid #FF0080;
+    border-bottom: 2px solid #004E98;
     margin-bottom: 1.5rem;
 }
 
 .question-number {
     display: flex;
     align-items: center;
-    color: #e91e63;
+    color: #004E98;
     font-weight: 600;
     font-size: 1.1rem;
 }
@@ -1202,7 +1202,7 @@ button.dropdown-item[type="submit"]::before {
 .question-number i {
     font-size: 1.25rem;
     margin-right: 0.75rem;
-    color: #e91e63;
+    color: #004E98;
 }
 
 .question-content {
@@ -1223,7 +1223,7 @@ button.dropdown-item[type="submit"]::before {
 }
 
 .question-text:hover {
-    border: 3px solid #FF0080;
+    border: 3px solid #004E98;
     transition: all 0.3s ease;
 }
 
@@ -1243,7 +1243,7 @@ button.dropdown-item[type="submit"]::before {
 
 .answer-option:hover {
     transform: translateX(5px);
-    border: 3px solid #FF0080;
+    border: 3px solid #004E98;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -1261,8 +1261,8 @@ button.dropdown-item[type="submit"]::before {
 }
 
 .form-check-input:checked {
-    background-color: #FF0080;
-    border-color: #FF0080;
+    background-color: #004E98;
+    border-color: #004E98;
 }
 
 .form-check-label {
@@ -1296,7 +1296,7 @@ button.dropdown-item[type="submit"]::before {
 }
 
 .btn-check-answer {
-    background: linear-gradient(45deg, #FF0080, #7928CA);
+    background: linear-gradient(45deg, #004E98, #0074D9);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 10px;
@@ -1327,7 +1327,7 @@ button.dropdown-item[type="submit"]::before {
 }
 
 .badge.bg-gradient-primary {
-    background: linear-gradient(45deg, #FF0080, #7928CA);
+    background: linear-gradient(45deg, #004E98, #0074D9);
     color: white;
     font-size: 1rem;
     padding: 0.5rem 1rem;
@@ -1404,7 +1404,7 @@ button.dropdown-item[type="submit"]::before {
     border-radius: 20px;
     font-size: 0.9rem;
     font-weight: 500;
-    background: linear-gradient(45deg, #6f42c1, #007bff) !important;
+    background: linear-gradient(45deg, #004E98, #0074D9) !important;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
 }
