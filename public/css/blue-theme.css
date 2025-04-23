@@ -496,91 +496,141 @@ a:hover {
 
 .input-group-outline {
   position: relative;
-  margin-bottom: 1rem;
-}
-
-.input-group-outline .form-label {
-  position: absolute;
-  top: 0.6rem;
-  left: 0.75rem;
-  pointer-events: none;
-  transition: all 0.2s ease;
-  color: #7b809a;
+  margin-bottom: 1.5rem;
 }
 
 .input-group-outline .form-control {
-  border: 1px solid #d2d6da;
-  border-radius: 0.5rem;
-  padding: 0.6rem 0.75rem;
-  transition: all 0.2s ease;
-}
-
-.input-group-outline.is-filled .form-label,
-.input-group-outline .form-control:focus ~ .form-label {
-  top: -0.75rem;
-  left: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background-color: white;
-  padding: 0 0.5rem;
-  color: var(--blue-primary);
+  border: 2px solid #d2d6da;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 .input-group-outline .form-control:focus {
   border-color: var(--blue-primary);
-  box-shadow: 0 0 0 2px rgba(0, 78, 152, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 78, 152, 0.15);
+  background-color: white;
 }
 
-.form-check-input {
-  border: 1px solid #d2d6da;
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-top: 0.1rem;
+.input-group-outline.is-filled .form-control {
+  background-color: var(--blue-light);
+  border-color: var(--blue-secondary);
 }
 
-.form-check-input:checked {
+/* Form Label Styling */
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--blue-primary);
+  margin-bottom: 0.5rem;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+/* Enhanced Switch Styling */
+.form-check.form-switch {
+  padding-left: 3rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-check.form-switch .form-check-input {
+  height: 1.5rem;
+  width: 3rem;
+  border-radius: 1rem;
+  background-color: #e9ecef;
+  border: none;
+  cursor: pointer;
+  margin-left: -3rem;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.form-check.form-switch .form-check-input:checked {
   background-color: var(--blue-primary);
   border-color: var(--blue-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+  background-position: right center;
 }
 
-.form-check-label {
-  margin-left: 0.5rem;
-  font-size: 0.875rem;
-  color: #7b809a;
+.form-check.form-switch .form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 78, 152, 0.25);
 }
 
-.bg-gradient-blue {
-  background-image: var(--gradient-blue);
-}
-
-.opacity-6 {
-  opacity: 0.6;
-}
-
-.register-btn {
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.register-btn:before {
+.form-check.form-switch .form-check-input:before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: all 0.6s ease;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  top: 0.125rem;
+  left: 0.125rem;
+  transition: all 0.4s ease;
 }
 
-.register-btn:hover:before {
-  left: 100%;
+.form-check.form-switch .form-check-input:checked:before {
+  transform: translateX(1.5rem);
 }
 
-@keyframes btn-pulse {
+.form-check.form-switch .form-check-label {
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  transition: all 0.3s ease;
+}
+
+.form-check.form-switch:hover .form-check-label {
+  color: var(--blue-primary);
+}
+
+/* Styling untuk tombol register dengan peningkatan keterbacaan */
+.btn-register {
+  background: var(--gradient-blue);
+  color: white !important;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  border: none;
+  border-radius: 8px;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+.btn-register:hover {
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+  background: linear-gradient(195deg, #0074D9 0%, #003a75 100%);
+}
+
+.btn-register:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Memastikan teks pada tombol selalu terlihat dengan jelas */
+.btn-register span, 
+.btn-register .text-sm,
+.btn-register .text-xs,
+.btn-register .text-md,
+.btn-register .text-lg {
+  color: white !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-weight: 700;
+}
+
+.btn-pulse {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(0, 78, 152, 0.4);
+    box-shadow: 0 0 0 0 rgba(0, 78, 152, 0.7);
   }
   70% {
     box-shadow: 0 0 0 10px rgba(0, 78, 152, 0);
@@ -590,25 +640,23 @@ a:hover {
   }
 }
 
-.btn-pulse {
-  animation: btn-pulse 1.5s infinite;
+/* Error Message Styling */
+.text-danger.inputerror {
+  font-size: 0.75rem;
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  display: block;
 }
 
-.text-primary {
-  color: var(--blue-primary) !important;
+/* Card Animation */
+.card-plain {
+  transition: all 0.4s ease;
 }
 
-.text-gradient {
-  background-image: var(--gradient-blue);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-@media (max-width: 991.98px) {
-  .card-plain {
-    margin-top: 2rem;
-  }
+.card-plain:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 78, 152, 0.1);
 }
 
 /* Student Navbar Styling - Desain untuk Mahasiswa */
@@ -1055,4 +1103,116 @@ img.navbar-logo[src$="undefined"] ~ .logo-fallback {
     margin-top: 0.5rem;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   }
+}
+
+/* Custom Checkbox Styling */
+.custom-checkbox {
+  position: relative;
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  margin-left: 0.25rem;
+}
+
+.custom-checkbox .form-check-input {
+  width: 20px;
+  height: 20px;
+  margin-top: 0;
+  margin-right: 0;
+  margin-left: 0;
+  background-color: #fff;
+  border: 2px solid var(--blue-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.custom-checkbox .form-check-input:checked {
+  background-color: #0074D9 !important;
+  border-color: #0074D9 !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  animation: checkbox-pop 0.3s ease;
+}
+
+.custom-checkbox .form-check-input:focus {
+  border-color: #0074D9;
+  box-shadow: 0 0 0 0.25rem rgba(0, 116, 217, 0.25);
+}
+
+.custom-checkbox .form-check-label {
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  padding-left: 0.75rem;
+}
+
+.custom-checkbox .badge.bg-gradient-primary {
+  background: var(--gradient-blue);
+  font-size: 0.65rem;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0, 78, 152, 0.2);
+}
+
+.custom-checkbox .text-xxs {
+  font-size: 0.65rem;
+}
+
+@keyframes checkbox-pop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Hover effect untuk checkbox */
+.custom-checkbox:hover .form-check-input:not(:checked) {
+  border-color: var(--blue-accent);
+  background-color: rgba(58, 141, 255, 0.05);
+}
+
+/* Styling untuk label checkbox */
+.custom-checkbox .form-check-label span.ms-2 {
+  color: var(--text-dark);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.custom-checkbox:hover .form-check-label span.ms-2 {
+  color: var(--blue-primary);
+}
+
+/* Styling khusus untuk badge persetujuan */
+.badge-approval {
+  background: linear-gradient(45deg, #dc3545, #fd7e14) !important;
+  color: white !important;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  padding: 0.35rem 0.65rem !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(220, 53, 69, 0.4) !important;
+  margin-left: 0.5rem !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+.badge-approval:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.5) !important;
 }

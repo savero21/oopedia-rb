@@ -3,22 +3,24 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\{
     RegisteredUserController,
-    SessionsController
+    SessionsController,
+    GuestLoginController,
+    LogoutController
 };
 use App\Http\Controllers\Admin\{
     DashboardController as AdminDashboardController,
     MaterialController as AdminMaterialController,
     StudentController as AdminStudentController,
-    QuestionController as AdminQuestionController
+    QuestionController as AdminQuestionController,
+    AdminUserController,
+    PendingApprovalController
 };
 use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
     MaterialController as MahasiswaMaterialController,
     ProfileController as MahasiswaProfileController,
-    LogoutController,
     QuestionController as MahasiswaQuestionController
 };
-
 
 /*
 |--------------------------------------------------------------------------
@@ -31,88 +33,135 @@ use App\Http\Controllers\Mahasiswa\{
 |
 */
 
-// Redirect root to login
+// Redirect root to login or materials page based on authentication
 Route::get('/', function () {
-    return redirect()->route('login');
-});
-
-// Guest Routes
-Route::middleware('guest')->group(function () {
-    Route::get('login', [SessionsController::class, 'create'])->name('login');
-    Route::post('login', [SessionsController::class, 'store']);
-    Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('register', [RegisteredUserController::class, 'store']);
-    Route::get('/guest-login', [SessionsController::class, 'guestLogin'])->name('guest.login');
-});
-
-// Authenticated Routes
-Route::middleware('auth')->group(function () {
-    Route::post('logout', [LogoutController::class, 'logout'])->name('logout');
-
-    // Admin Routes
-    Route::middleware('role:1')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::resource('materials', AdminMaterialController::class);
-        Route::resource('questions', AdminQuestionController::class);
-        Route::resource('materials.questions', AdminQuestionController::class)->except(['show']);
-        Route::get('students', [AdminStudentController::class, 'index'])->name('students.index');
-        Route::get('students/{student}/progress', [AdminStudentController::class, 'progress'])
-            ->name('students.progress');
-    });
-
-    // Mahasiswa Routes
-    Route::middleware(['auth'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
-        // Routes that require student role
-        Route::middleware('role:2')->group(function () {
-            Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard');
-            Route::get('/dashboard/in-progress', [MahasiswaDashboardController::class, 'inProgress'])->name('dashboard.in-progress');
-            Route::get('/dashboard/complete', [MahasiswaDashboardController::class, 'complete'])->name('dashboard.complete');
-            Route::get('/profile', [MahasiswaProfileController::class, 'index'])->name('profile');
-            Route::put('/profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
-        });
-
-        // Routes accessible by both students and guests
-        Route::middleware('guest.access')->group(function () {
-            Route::get('/materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
-            Route::get('/materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
-            Route::get('/materials/{material}/question/{question?}', [MahasiswaMaterialController::class, 'show'])->name('materials.show.question');
-            Route::post('/materials/{material}/reset', [MahasiswaMaterialController::class, 'reset'])->name('materials.reset');
-            Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
-        });
-    });
-});
-
-// General Routes
-Route::get('/home', function () {
     if (auth()->check()) {
-        return redirect()->route(auth()->user()->role_id == 1 ? 'admin.dashboard' : 'mahasiswa.dashboard');
+        $user = auth()->user();
+        
+        if ($user->role_id <= 2) {
+            return redirect()->route('admin.dashboard');
+        } else if ($user->role_id == 3) {
+            return redirect()->route('mahasiswa.dashboard');
+        } else {
+            return redirect()->route('mahasiswa.materials.index');
+        }
     }
+    
     return redirect()->route('login');
 })->name('home');
 
+// Guest Routes (Unauthenticated)
+Route::middleware('guest')->group(function () {
+    // Authentication
+    Route::get('/login', [SessionsController::class, 'create'])->name('login');
+    Route::post('/login', [SessionsController::class, 'store']);
+    Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::post('/register', [RegisteredUserController::class, 'store']);
+    
+    // Guest login
+    Route::get('/guest-login', [GuestLoginController::class, 'login'])->name('guest.login');
+});
+
+// Logout routes (for all authenticated users)
+Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
+Route::post('/mahasiswa/logout', [LogoutController::class, 'logout'])->name('mahasiswa.logout');
+
+// Verification route
 Route::get('/verify', [SessionsController::class, 'verify'])->name('verify');
 
-Route::middleware(['web'])->group(function () {
-   
-});
+// Authenticated Routes
+Route::middleware('auth')->group(function () {
+    // Pending Approval Route - accessible by any authenticated user
+    Route::get('admin/pending-approval', [PendingApprovalController::class, 'index'])
+        ->name('admin.pending-approval');
 
-// Tambahkan atau pastikan route ini sudah ada
-Route::post('/mahasiswa/questions/check-answer', [App\Http\Controllers\Mahasiswa\MahasiswaQuestionController::class, 'checkAnswer'])->name('mahasiswa.questions.check-answer');
+    // Admin Routes (role 1 = superadmin, role 2 = admin)
+    Route::middleware(['role:1|2', 'admin.approved'])->name('admin.')->prefix('admin')->group(function () {
+        // Dashboard
+        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        
+        // Materials & Questions
+        Route::resource('materials', AdminMaterialController::class);
+        Route::resource('questions', AdminQuestionController::class);
+        Route::resource('materials.questions', AdminQuestionController::class)->except(['show']);
+        
+        // Students
+        Route::get('students', [AdminStudentController::class, 'index'])->name('students.index');
+        Route::get('students/{student}/progress', [AdminStudentController::class, 'progress'])
+            ->name('students.progress');
 
-Route::get('/mahasiswa/questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('mahasiswa.questions.show');
-
-// Guest Routes
-Route::middleware(['guest.access'])->name('guest.')->prefix('guest')->group(function () {
-    Route::controller(MaterialController::class)->group(function () {
-        Route::get('/materials', 'index')->name('materials.index');
-        Route::get('/materials/{material}', 'guestShow')->name('materials.show');
-        Route::post('/materials/{material}/reset', 'guestReset')->name('materials.reset');
+        // Admin management routes (only for superadmin - role 1)
+        Route::middleware(['superadmin'])->group(function () {
+            // Admin approval
+            Route::get('/pending-admins', [AdminUserController::class, 'pendingAdmins'])->name('pending-admins');
+            Route::post('/users/{user}/approve', [AdminUserController::class, 'approveAdmin'])->name('users.approve');
+            Route::post('/users/{user}/reject', [AdminUserController::class, 'rejectAdmin'])->name('users.reject');
+            
+            // User import
+            Route::get('/users/import', [AdminUserController::class, 'showImportForm'])->name('users.import');
+            Route::post('/users/import', [AdminUserController::class, 'processImport'])->name('users.process-import');
+            Route::get('/users/download-template', [AdminUserController::class, 'downloadTemplate'])->name('users.download-template');
+            
+            // User management
+            Route::resource('users', AdminUserController::class)->except(['show']);
+        });
     });
 
-    Route::controller(MahasiswaQuestionController::class)->group(function () {
-        Route::post('/questions/check-answer', 'checkAnswer')->name('questions.check-answer');
+    // Mahasiswa & Guest Routes (role 3 = mahasiswa, role 4 = guest)
+    Route::middleware(['role:3|4'])->name('mahasiswa.')->prefix('mahasiswa')->group(function () {
+        // Dashboard (only for mahasiswa)
+        Route::middleware(['role:3'])->group(function () {
+            Route::get('dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard');
+            Route::get('dashboard/in-progress', [MahasiswaDashboardController::class, 'inProgress'])->name('dashboard.in-progress');
+            Route::get('dashboard/completed', [MahasiswaDashboardController::class, 'complete'])->name('dashboard.completed');
+            
+            // Profile
+            Route::get('profile', [MahasiswaProfileController::class, 'show'])->name('profile');
+            Route::put('profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
+        });
+        
+        // Materials (for both mahasiswa and guest)
+        Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
+        Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+        
+        // Reset (conditional based on role)
+        Route::post('materials/{material}/reset', function($material) {
+            if (auth()->user()->role_id == 3) {
+                $controller = app()->make(App\Http\Controllers\Mahasiswa\MaterialController::class);
+                return $controller->reset($material);
+            } else {
+                $controller = app()->make(App\Http\Controllers\Mahasiswa\MaterialController::class);
+                return $controller->guestReset($material);
+            }
+        })->name('materials.reset');
+        
+        // Questions
+        Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
+        Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('questions.show');
     });
 });
+
+// Fallback route for 404 errors
+Route::fallback(function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        
+        if ($user->role_id <= 2) {
+            return redirect()->route('admin.dashboard');
+        } else if ($user->role_id == 3) {
+            return redirect()->route('mahasiswa.dashboard');
+        } else {
+            // Guest users (role_id = 4)
+            return redirect()->route('mahasiswa.materials.index')
+                ->with('info', 'Halaman yang Anda cari tidak tersedia untuk akun tamu.');
+        }
+    }
+    
+    return redirect()->route('login');
+});
+
+// Add this with your other guest routes
+Route::post('/guest-logout', [GuestLoginController::class, 'logout'])->name('guest.logout');
 
 
 

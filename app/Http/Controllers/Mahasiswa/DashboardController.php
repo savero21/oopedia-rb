@@ -150,12 +150,18 @@ class DashboardController extends Controller
         return view('mahasiswa.dashboard.complete', compact('materials'));
     }
 
+    public function completed()
+    {
+        $materials = Material::all();
+        return view('mahasiswa.dashboard.completed', compact('materials'));
+    }
+
     private function getActiveStudentsCount()
     {
         // Ambil mahasiswa yang memiliki aktivitas dalam 7 hari terakhir
         return DB::table('users')
             ->join('progress', 'users.id', '=', 'progress.user_id')
-            ->where('users.role_id', 2) // role mahasiswa
+            ->where('users.role_id', 3) // Role mahasiswa sekarang adalah 3
             ->where('progress.created_at', '>=', now()->subDays(7))
             ->distinct('users.id')
             ->count('users.id');

@@ -13,7 +13,7 @@ class AdminStudentController extends Controller
 {
     public function index()
     {
-        $students = User::where('role_id', 2)
+        $students = User::where('role_id', 3)
             ->get()
             ->map(function ($student) {
                 $student->overall_progress = $this->calculateOverallProgress($student);
@@ -25,7 +25,7 @@ class AdminStudentController extends Controller
 
     public function progress(User $student)
     {
-        if ($student->role_id !== 2) {
+        if ($student->role_id !== 3) {
             abort(404);
         }
 

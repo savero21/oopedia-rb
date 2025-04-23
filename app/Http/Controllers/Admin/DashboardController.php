@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $userRole = $user->role->role_name;
 
         // Statistics Cards
-        $totalStudents = User::where('role_id', 2)->count();
+        $totalStudents = User::where('role_id', 3)->count();
         $totalMaterials = Material::count();
         $totalQuestions = Question::count();
         
@@ -34,7 +34,7 @@ class DashboardController extends Controller
             ->get();
 
         // Student Progress Overview with completion percentage
-        $studentProgress = User::where('role_id', 2)
+        $studentProgress = User::where('role_id', 3)
             ->withCount(['progress as completed_questions' => function($query) {
                 $query->where('is_correct', true);
             }])

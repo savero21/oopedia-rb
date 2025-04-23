@@ -27,12 +27,27 @@
         </div>
     @endif
 
-    @if(auth()->user()->role_id === 3)
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-            <i class="fas fa-info-circle me-2"></i>
-            Anda masuk sebagai Tamu. Akses terbatas.
+    @if(auth()->check() && auth()->user()->role_id === 4)
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Mode Tamu Aktif!</strong> 
+            Anda hanya dapat melihat sebagian dari konten materi ini. Untuk akses penuh, silakan 
+            <a href="{{ route('login') }}" class="alert-link" onclick="event.preventDefault(); document.getElementById('guest-logout-login-form').submit();">login</a> 
+            atau 
+            <a href="{{ route('register') }}" class="alert-link" onclick="event.preventDefault(); document.getElementById('guest-logout-register-form').submit();">daftar</a> 
+            sebagai mahasiswa.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+
+        <!-- Hidden forms for guest logout and redirect -->
+        <form id="guest-logout-login-form" action="{{ route('guest.logout') }}" method="POST" style="display: none;">
+            @csrf
+            <input type="hidden" name="redirect" value="{{ route('login') }}">
+        </form>
+
+        <form id="guest-logout-register-form" action="{{ route('guest.logout') }}" method="POST" style="display: none;">
+            @csrf
+            <input type="hidden" name="redirect" value="{{ route('register') }}">
+        </form>
     @endif
 
     <!-- Content Section -->
@@ -64,7 +79,7 @@
 <script>
 function initializeQuestionForm() {
     const questionForm = document.getElementById('questionForm');
-    const isGuest = {{ auth()->user()->role_id === 3 ? 'true' : 'false' }};
+    const isGuest = {{ auth()->user()->role_id === 4 ? 'true' : 'false' }};
     const totalQuestions = {{ $material->questions->count() }};
     const maxQuestionsForGuest = Math.ceil(totalQuestions / 2);
     const currentQuestionNumber = {{ is_numeric($currentQuestionNumber) ? $currentQuestionNumber : 0 }};

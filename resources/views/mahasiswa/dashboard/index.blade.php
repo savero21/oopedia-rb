@@ -101,8 +101,8 @@ use Illuminate\Support\Str;
                                     </div>
                                     <div class="mt-3">
                                         <a href="{{ route('mahasiswa.materials.show', $materi->id) }}" 
-                                           class="btn btn-primary w-100">
-                                            <i class="fas fa-book-reader me-2"></i>
+                                           class="btn-start-material">
+                                            <i class="fas fa-book-reader"></i>
                                             {{ $materi->progress == 100 ? 'Lihat Kembali Materi' : 'Mulai Belajar' }}
                                         </a>
                                     </div>

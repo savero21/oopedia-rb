@@ -25,25 +25,36 @@ class SessionsController extends Controller
             'password' => 'required'
         ]);
 
-        if (Auth::attempt($credentials, $request->remember)) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $user = Auth::user();
             
-            // Redirect based on role
-            switch(Auth::user()->role_id) {
-                case 1:
-                    return redirect()->intended(route('admin.dashboard'));
-                case 2:
-                    return redirect()->intended(route('mahasiswa.dashboard'));
-                case 3:
-                    return redirect()->intended(route('mahasiswa.materials.index'));
-                default:
-                    return redirect()->intended('/');
+            // Refresh user data dari database
+            $user = User::find($user->id);
+            
+            // Cek role dan status approval
+            if ($user->role_id == 1) {
+                // Superadmin
+                return redirect()->intended('admin/dashboard');
+            } else if ($user->role_id == 2) {
+                // Admin
+                if ($user->is_approved) {
+                    return redirect()->intended('admin/dashboard');
+                } else {
+                    return redirect()->route('admin.pending-approval');
+                }
+            } else if ($user->role_id == 3) {
+                // Mahasiswa
+                return redirect()->intended('mahasiswa/dashboard');
+            } else {
+                // Tamu (role_id = 4)
+                return redirect()->intended('mahasiswa/materials');
             }
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password yang Anda masukkan salah.',
-        ])->withInput($request->only('email', 'remember'));
+            'email' => 'Email atau password salah',
+        ])->onlyInput('email');
     }
 
     public function show()
@@ -87,11 +98,21 @@ class SessionsController extends Controller
                     : back()->withErrors(['email' => [__($status)]]);
     }
 
-    public function destroy()
+    public function destroy(Request $request)
     {
-        auth()->logout();
+        $user = Auth::user();
+        $isGuest = $user && $user->role_id === 4;
         
-        return redirect('/login');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        if ($isGuest) {
+            // Hapus user tamu dari database
+            $user->delete();
+        }
+        
+        return redirect('/');
     }
 
     public function guestLogin()
@@ -101,7 +122,7 @@ class SessionsController extends Controller
             'name' => 'Tamu_' . Str::random(8),
             'email' => 'guest_' . Str::random(8) . '@temporary.com',
             'password' => Hash::make(Str::random(16)),
-            'role_id' => 3 // Guest role
+            'role_id' => 4 // Ubah dari 3 menjadi 4 jika ingin membedakan tamu, atau tetap 3 jika tamu dianggap mahasiswa
         ]);
 
         Auth::login($guestUser);
