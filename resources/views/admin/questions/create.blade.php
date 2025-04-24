@@ -76,6 +76,18 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tingkat Kesulitan</label>
+                                            <div class="input-group input-group-outline">
+                                                <select name="difficulty" class="form-control" required>
+                                                    <option value="beginner">Beginner</option>
+                                                    <option value="medium">Medium</option>
+                                                    <option value="hard">Hard</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div id="answers-container">

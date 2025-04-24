@@ -73,6 +73,19 @@
             </div>
         @endif
     @endif
+
+    <div class="filter-container mb-4">
+        <form method="GET" action="{{ route('mahasiswa.materials.show', $material->id) }}" class="d-flex align-items-center">
+            <label class="me-2">Filter Kesulitan:</label>
+            <select name="difficulty" class="form-control me-2" style="width: auto;">
+                <option value="">Semua Tingkat</option>
+                <option value="beginner" {{ request('difficulty') == 'beginner' ? 'selected' : '' }}>Beginner</option>
+                <option value="medium" {{ request('difficulty') == 'medium' ? 'selected' : '' }}>Medium</option>
+                <option value="hard" {{ request('difficulty') == 'hard' ? 'selected' : '' }}>Hard</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+        </form>
+    </div>
 </div>
 
 @push('scripts')

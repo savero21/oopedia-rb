@@ -11,10 +11,16 @@ use Illuminate\Support\Str;
 
 class MaterialController extends Controller
 {
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $material = Material::with(['questions' => function($query) {
-            $query->with('answers')->orderBy('id', 'asc');
+        $difficulty = $request->input('difficulty');
+        
+        $material = Material::with(['questions' => function($query) use ($difficulty) {
+            $query->with('answers')
+                  ->when($difficulty, function($q) use ($difficulty) {
+                      return $q->where('difficulty', $difficulty);
+                  })
+                  ->orderBy('id', 'asc');
         }])->findOrFail($id);
         
         // Acak urutan soal

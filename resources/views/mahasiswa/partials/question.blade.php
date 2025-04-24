@@ -11,6 +11,9 @@
                         <i class="fas fa-question-circle me-2"></i>
                         Soal {{ $currentQuestionNumber }} dari {{ $material->questions->count() }}
                     </span>
+                    <span class="badge bg-{{ $currentQuestion->difficulty == 'beginner' ? 'success' : ($currentQuestion->difficulty == 'medium' ? 'warning' : 'danger') }} ms-2">
+                        {{ ucfirst($currentQuestion->difficulty) }}
+                    </span>
                 </div>
 
                 <div class="question-content">

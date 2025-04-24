@@ -86,4 +86,20 @@
             </li>
         </ul>
     @endunless
+
+    {{-- Leaderboard Section Divider --}}
+    <div class="sidebar-header mt-4">
+        <h5 class="sidebar-title">Leaderboard</h5>
+    </div>
+    
+    {{-- Leaderboard Menu Item --}}
+    <ul class="nav-menu">
+        <li>
+            <a href="{{ route('mahasiswa.leaderboard') }}" 
+               class="menu-item {{ request()->routeIs('mahasiswa.leaderboard') ? 'active' : '' }}">
+                <i class="fas fa-trophy"></i>
+                <span>Peringkat</span>
+            </a>
+        </li>
+    </ul>
 </div>

@@ -5,12 +5,28 @@
         <div class="container-fluid py-4">
             <!-- Search Form -->
             <form method="GET" action="{{ $material ? route('admin.materials.questions.index', $material) : route('admin.questions.index') }}" class="mb-3">
-                <div class="input-group input-group-outline my-3">
-                    <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan soal, tipe soal, atau pembuat..." value="{{ request('search') }}" style="height: 50px;">
-                    <button class="btn btn-icon btn-3 btn-primary" type="submit" style="height: 50px;">
-                        <span class="btn-inner--icon"><i class="material-icons">search</i></span>
-                        <span class="btn-inner--text">Cari</span>
-                    </button>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group input-group-outline my-3">
+                            <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan soal, tipe soal, atau pembuat..." value="{{ request('search') }}" style="height: 50px;">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-outline my-3">
+                            <select name="difficulty" class="form-control" style="height: 50px;">
+                                <option value="">Semua Tingkat Kesulitan</option>
+                                <option value="beginner" {{ request('difficulty') == 'beginner' ? 'selected' : '' }}>Beginner</option>
+                                <option value="medium" {{ request('difficulty') == 'medium' ? 'selected' : '' }}>Medium</option>
+                                <option value="hard" {{ request('difficulty') == 'hard' ? 'selected' : '' }}>Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-icon btn-3 btn-primary" type="submit" style="height: 50px;">
+                            <span class="btn-inner--icon"><i class="material-icons">search</i></span>
+                            <span class="btn-inner--text">Cari</span>
+                        </button>
+                    </div>
                 </div>
             </form>
 
@@ -39,6 +55,7 @@
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Materi</th>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pertanyaan</th>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tipe Soal</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kesulitan</th>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Pembuat</th>
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
                                         </tr>
@@ -58,6 +75,11 @@
                                             </td>
                                             <td>
                                                 <p class="text-xs font-weight-bold mb-0">{{ $question->formatted_type }}</p>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ $question->difficulty == 'beginner' ? 'success' : ($question->difficulty == 'medium' ? 'warning' : 'danger') }}">
+                                                    {{ ucfirst($question->difficulty) }}
+                                                </span>
                                             </td>
                                             <td>
                                                 <p class="text-xs font-weight-bold mb-0">{{ $question->createdBy->name }}</p>

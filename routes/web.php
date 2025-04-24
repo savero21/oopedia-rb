@@ -13,13 +13,15 @@ use App\Http\Controllers\Admin\{
     StudentController as AdminStudentController,
     QuestionController as AdminQuestionController,
     AdminUserController,
-    PendingApprovalController
+    PendingApprovalController,
+    LogoutController as AdminLogoutController
 };
 use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
     MaterialController as MahasiswaMaterialController,
     ProfileController as MahasiswaProfileController,
-    QuestionController as MahasiswaQuestionController
+    QuestionController as MahasiswaQuestionController,
+    MahasiswaController
 };
 
 /*
@@ -74,7 +76,7 @@ Route::middleware('auth')->group(function () {
     // Pending Approval Route - accessible by any authenticated user
     Route::get('admin/pending-approval', [PendingApprovalController::class, 'index'])
         ->name('admin.pending-approval');
-
+        
     // Admin Routes (role 1 = superadmin, role 2 = admin)
     Route::middleware(['role:1|2', 'admin.approved'])->name('admin.')->prefix('admin')->group(function () {
         // Dashboard
@@ -138,7 +140,15 @@ Route::middleware('auth')->group(function () {
         // Questions
         Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
         Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('questions.show');
+
+        // Mahasiswa-specific routes
+        Route::get('/leaderboard', [MahasiswaController::class, 'leaderboard'])->name('leaderboard');
     });
+
+    // Admin logout route - keep this one
+    Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])
+        ->name('admin.logout')
+        ->middleware('auth'); // Only require authentication
 });
 
 // Fallback route for 404 errors
