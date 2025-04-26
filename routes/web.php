@@ -87,10 +87,15 @@ Route::middleware('auth')->group(function () {
         Route::resource('questions', AdminQuestionController::class);
         Route::resource('materials.questions', AdminQuestionController::class)->except(['show']);
         
-        // Students
-        Route::get('students', [AdminStudentController::class, 'index'])->name('students.index');
-        Route::get('students/{student}/progress', [AdminStudentController::class, 'progress'])
-            ->name('students.progress');
+        // Students management
+        Route::controller(AdminStudentController::class)->group(function () {
+            Route::get('students', 'index')->name('students.index');
+            Route::get('students/{student}/progress', 'progress')->name('students.progress');
+            Route::delete('students/{student}', 'destroy')->name('students.destroy');
+            Route::get('students/import', 'showImportForm')->name('students.import');
+            Route::post('students/import', 'processImport')->name('students.process-import');
+            Route::get('students/download-template', 'downloadTemplate')->name('students.download-template');
+        });
 
         // Admin management routes (only for superadmin - role 1)
         Route::middleware(['superadmin'])->group(function () {
