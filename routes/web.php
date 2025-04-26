@@ -10,7 +10,7 @@ use App\Http\Controllers\Auth\{
 use App\Http\Controllers\Admin\{
     DashboardController as AdminDashboardController,
     MaterialController as AdminMaterialController,
-    StudentController as AdminStudentController,
+    AdminStudentController,
     QuestionController as AdminQuestionController,
     AdminUserController,
     PendingApprovalController,

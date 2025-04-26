@@ -102,22 +102,17 @@ class AdminStudentController extends Controller
         }
         
         try {
-            // Gunakan transaksi database untuk memastikan perubahan tersimpan
             DB::beginTransaction();
             
-            // Hapus data terkait jika ada (misalnya progress, submissions, dll)
-            // Contoh: DB::table('progress')->where('user_id', $student->id)->delete();
-            
-            // Hapus user
+            // Hapus data terkait
+            $student->progress()->delete();
             $student->delete();
             
-            // Commit transaksi
             DB::commit();
             
             return redirect()->route('admin.students.index')
-                ->with('success', 'Mahasiswa berhasil dihapus');
+                ->with('success', 'Data mahasiswa telah berhasil dihapus dari sistem');
         } catch (\Exception $e) {
-            // Rollback jika terjadi error
             DB::rollBack();
             
             return redirect()->route('admin.students.index')
