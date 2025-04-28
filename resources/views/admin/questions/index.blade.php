@@ -5,15 +5,15 @@
         <div class="container-fluid py-4">
             <!-- Search Form -->
             <form method="GET" action="{{ $material ? route('admin.materials.questions.index', $material) : route('admin.questions.index') }}" class="mb-3">
-                <div class="row">
+                <div class="row align-items-center">
                     <div class="col-md-6">
-                        <div class="input-group input-group-outline my-3">
-                            <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan soal, tipe soal, atau pembuat..." value="{{ request('search') }}" style="height: 50px;">
+                        <div class="input-group input-group-outline my-2">
+                            <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan soal, tipe soal, atau pembuat..." value="{{ request('search') }}">
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="input-group input-group-outline my-3">
-                            <select name="difficulty" class="form-control" style="height: 50px;">
+                        <div class="input-group input-group-outline my-2">
+                            <select name="difficulty" class="form-control">
                                 <option value="">Semua Tingkat Kesulitan</option>
                                 <option value="beginner" {{ request('difficulty') == 'beginner' ? 'selected' : '' }}>Beginner</option>
                                 <option value="medium" {{ request('difficulty') == 'medium' ? 'selected' : '' }}>Medium</option>
@@ -22,7 +22,7 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <button class="btn btn-icon btn-3 btn-primary" type="submit" style="height: 50px;">
+                        <button class="btn btn-icon btn-3 btn-primary w-100 my-2" type="submit">
                             <span class="btn-inner--icon"><i class="material-icons">search</i></span>
                             <span class="btn-inner--text">Cari</span>
                         </button>

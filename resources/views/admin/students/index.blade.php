@@ -81,7 +81,7 @@
                                                 <p class="text-xs font-weight-bold mb-0">{{ $student->email }}</p>
                                             </td>
                                             <td class="align-middle text-center text-sm">
-                                                <span class="badge badge-sm bg-gradient-success">{{ $student->total_answered_questions }}</span>
+                                                <span class="text-xs font-weight-bold">{{ $student->total_answered_questions ?? 0 }}</span>
                                             </td>
                                             <td class="align-middle text-center">
                                                 <div class="progress" style="height: 8px; width: 80%; margin: 0 auto;">

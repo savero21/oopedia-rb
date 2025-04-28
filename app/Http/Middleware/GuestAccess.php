@@ -22,6 +22,9 @@ class GuestAccess
                 $allowedRoutes = [
                     'mahasiswa.materials.index',
                     'mahasiswa.materials.show',
+                    'mahasiswa.materials.questions.index',
+                    'mahasiswa.materials.questions.show',
+                    'mahasiswa.materials.questions.review',
                     'mahasiswa.questions.check-answer',
                     'mahasiswa.questions.show',
                     'mahasiswa.materials.reset',

@@ -16,63 +16,110 @@ use Illuminate\Support\Facades\DB;
 class AdminStudentController extends Controller
 {
     public function index(Request $request)
-    {
-        // Admin dan superadmin dapat mengakses daftar mahasiswa
-        if (auth()->user()->role_id > 2) {
-            return redirect()->route('admin.dashboard')
-                ->with('error', 'Anda tidak memiliki akses untuk melihat daftar mahasiswa');
-        }
-        
-        $query = User::where('role_id', 3); // Hanya tampilkan mahasiswa
-        
-        // Filter berdasarkan pencarian
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-        
-        $students = $query->paginate(10);
-        
-        return view('admin.students.index', compact('students'));
+{
+    // Admin dan superadmin dapat mengakses daftar mahasiswa
+    if (auth()->user()->role_id > 2) {
+        return redirect()->route('admin.dashboard')
+            ->with('error', 'Anda tidak memiliki akses untuk melihat daftar mahasiswa');
     }
+    
+    $query = User::where('role_id', 3); // Hanya tampilkan mahasiswa
+    
+    // Filter berdasarkan pencarian
+    if ($request->has('search') && !empty($request->search)) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%");
+        });
+    }
+    
+    // Get students with progress data
+    $students = $query->paginate(10);
+    
+    // Calculate progress for each student
+    foreach ($students as $student) {
+        // Get total questions count
+        $totalQuestions = DB::table('questions')->count();
+        
+        // Get correct answers count
+        $correctAnswers = DB::table('progress')
+            ->where('user_id', $student->id)
+            ->where('is_correct', true)
+            ->count();
+        
+        // Calculate progress percentage
+        $student->overall_progress = $totalQuestions > 0 
+            ? min(100, round(($correctAnswers / $totalQuestions) * 100))
+            : 0;
+        
+        // Set total answered questions
+        $student->total_answered_questions = DB::table('progress')
+            ->where('user_id', $student->id)
+            ->count();
+    }
+    
+    return view('admin.students.index', compact('students'));
+}
 
     public function progress(User $student)
     {
-        if ($student->role_id !== 3) {
-            abort(404);
-        }
-
-        // Get progress statistics
-        $progressStats = DB::table('progress')
+        // Ensure we're looking at a student
+        abort_if($student->role_id != 3, 404);
+    
+        // Get materials with progress
+        $materials = DB::table('materials')
+            ->leftJoin('questions', 'materials.id', '=', 'questions.material_id')
+            ->leftJoin('progress', function($join) use ($student) {
+                $join->on('questions.id', '=', 'progress.question_id')
+                    ->where('progress.user_id', '=', $student->id)
+                    ->where('progress.is_correct', '=', true);
+            })
             ->select(
-                'material_id',
-                DB::raw('COUNT(DISTINCT question_id) as answered_questions'),
-                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+                'materials.id',
+                'materials.title',
+                DB::raw('COUNT(DISTINCT questions.id) as total_questions'),
+                DB::raw('COUNT(DISTINCT progress.question_id) as answered_questions'),
+                DB::raw('MAX(progress.updated_at) as last_accessed')
             )
-            ->where('user_id', $student->id)
-            ->groupBy('material_id')
-            ->get();
-
-        $materials = Material::withCount('questions')
+            ->groupBy('materials.id', 'materials.title')
             ->get()
-            ->map(function($material) use ($progressStats) {
-                $progress = $progressStats->firstWhere('material_id', $material->id);
-                
-                $correctAnswers = $progress ? $progress->correct_answers : 0;
-                $progressPercentage = $material->questions_count > 0 
-                    ? min(100, round(($correctAnswers / $material->questions_count) * 100))
+            ->map(function($material) {
+                // Ensure progress is a numeric value
+                $material->progress = $material->total_questions > 0 
+                    ? round(($material->answered_questions / $material->total_questions) * 100)
                     : 0;
-
-                $material->progress_percentage = $progressPercentage;
-                $material->correct_answers = $correctAnswers;
+                
+                // Convert last_accessed to Carbon instance if it exists
+                $material->last_accessed = $material->last_accessed 
+                    ? \Carbon\Carbon::parse($material->last_accessed)
+                    : null;
                 
                 return $material;
             });
-
-        return view('admin.students.progress', compact('student', 'materials'));
+    
+        // Get recent activities
+        $recent_activities = DB::table('progress')
+            ->join('questions', 'progress.question_id', '=', 'questions.id')
+            ->join('materials', 'questions.material_id', '=', 'materials.id')
+            ->where('progress.user_id', $student->id)
+            ->select(
+                'materials.title as material_title',
+                'questions.question_text as question_title',
+                'progress.is_correct',
+                'progress.created_at'
+            )
+            ->orderBy('progress.created_at', 'desc')
+            ->limit(10)
+            ->get();
+    
+        return view('admin.students.progress', [
+            'student' => $student,
+            'materials' => $materials,
+            'recent_activities' => $recent_activities,
+            'userName' => auth()->user()->name,
+            'userRole' => auth()->user()->role->role_name
+        ]);
     }
 
     private function calculateOverallProgress($student)

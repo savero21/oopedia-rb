@@ -11,66 +11,28 @@ use Illuminate\Support\Str;
 
 class MaterialController extends Controller
 {
-    public function show($id, Request $request)
+    public function show($id)
     {
-        $difficulty = $request->input('difficulty');
+        $material = Material::findOrFail($id);
         
-        $material = Material::with(['questions' => function($query) use ($difficulty) {
-            $query->with('answers')
-                  ->when($difficulty, function($q) use ($difficulty) {
-                      return $q->where('difficulty', $difficulty);
-                  })
-                  ->orderBy('id', 'asc');
-        }])->findOrFail($id);
+        // Untuk sidebar
+        $materials = Material::orderBy('created_at', 'asc')->get();
         
-        // Acak urutan soal
-        $material->questions = $material->questions->shuffle();
-        
-        // Acak urutan jawaban untuk setiap soal
-        foreach ($material->questions as $question) {
-            if ($question->question_type !== 'fill_in_the_blank') {
-                $question->answers = $question->answers->shuffle();
-            }
-        }
-        
-        // If user is guest (role_id = 4), only show half of the questions
-        // For regular students (role_id = 3), show all questions
+        // If user is guest, only show half of the materials
         if (auth()->user()->role_id === 4) {
-            $totalQuestions = $material->questions->count();
-            $halfQuestions = ceil($totalQuestions / 2);
-            $material->questions = $material->questions->take($halfQuestions);
+            $totalMaterials = $materials->count();
+            $materialsToShow = ceil($totalMaterials / 2);
+            $materials = $materials->take($materialsToShow);
         }
         
-        $answeredQuestionIds = Progress::where('user_id', auth()->id())
-            ->where('material_id', $id)
-            ->where('is_correct', true)
-            ->pluck('question_id')
-            ->toArray();
-        
-        $currentQuestion = $material->questions
-            ->whereNotIn('id', $answeredQuestionIds)
-            ->first();
-        
-        if (!$currentQuestion && $material->questions->count() > 0) {
-            $currentQuestion = $material->questions->first();
-        }
-        
-        $answeredCount = count($answeredQuestionIds);
-        $currentQuestionNumber = $answeredCount + 1;
-
-        if ($answeredCount >= $material->questions->count()) {
-            $currentQuestionNumber = "Review";
-        }
-        
-        $materials = Material::all();
-        
-        return view('mahasiswa.materials.show', compact('material', 'materials', 'currentQuestion', 'currentQuestionNumber'));
+        return view('mahasiswa.materials.show', compact('material', 'materials'));
     }
 
     public function index()
     {
         $userId = auth()->id();
         
+        // Get progress statistics
         $progressStats = DB::table('progress')
             ->select(
                 'material_id',
@@ -117,7 +79,7 @@ class MaterialController extends Controller
             ->where('material_id', $id)
             ->delete();
 
-        return redirect()->route('mahasiswa.materials.show', ['material' => $id])
+        return redirect()->route('mahasiswa.materials.questions.show', ['material' => $id])
             ->with('success', 'Progress direset. Anda dapat mengerjakan soal kembali.');
     }
 

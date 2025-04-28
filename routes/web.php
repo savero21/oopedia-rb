@@ -21,8 +21,12 @@ use App\Http\Controllers\Mahasiswa\{
     MaterialController as MahasiswaMaterialController,
     ProfileController as MahasiswaProfileController,
     QuestionController as MahasiswaQuestionController,
-    MahasiswaController
+    MahasiswaController,
+    MaterialQuestionController
 };
+use App\Models\Material;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -129,7 +133,21 @@ Route::middleware('auth')->group(function () {
         
         // Materials (for both mahasiswa and guest)
         Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
+
+        // Questions index route (must come before the materials/{material} route)
+        Route::get('materials/questions', [MaterialQuestionController::class, 'index'])
+            ->name('materials.questions.index');
+
+        // Material show route
         Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+
+        // Material questions review route (must come before the questions show route)
+        Route::get('materials/{material}/questions/review', [MaterialQuestionController::class, 'review'])
+            ->name('materials.questions.review');
+
+        // Material questions show route
+        Route::get('materials/{material}/questions', [MaterialQuestionController::class, 'show'])
+            ->name('materials.questions.show');
         
         // Reset (conditional based on role)
         Route::post('materials/{material}/reset', function($material) {
@@ -148,6 +166,13 @@ Route::middleware('auth')->group(function () {
 
         // Mahasiswa-specific routes
         Route::get('/leaderboard', [MahasiswaController::class, 'leaderboard'])->name('leaderboard');
+
+        // Questions routes
+        Route::prefix('materials/{material}/questions')->name('materials.questions.')->group(function () {
+            Route::get('/', [MaterialQuestionController::class, 'show'])->name('show');
+            Route::post('/{question}/check', [MaterialQuestionController::class, 'checkAnswer'])->name('check');
+            Route::get('/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])->name('attempts');
+        });
     });
 
     // Admin logout route - keep this one
@@ -177,6 +202,9 @@ Route::fallback(function () {
 
 // Add this with your other guest routes
 Route::post('/guest-logout', [GuestLoginController::class, 'logout'])->name('guest.logout');
+
+Route::get('/mahasiswa/materials/{material}/questions/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])
+    ->name('mahasiswa.materials.questions.attempts');
 
 
 

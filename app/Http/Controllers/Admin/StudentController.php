@@ -16,17 +16,14 @@ class StudentController extends Controller
     {
         // Get all users with role_id 3 (students) with pagination
         $students = User::where('role_id', 3)
-            ->withCount(['answeredQuestions as total_answered_questions'])
-            ->with(['progress', 'materials' => function($query) {
-                $query->withCount('questions');
-            }])
             ->paginate(10) // Add pagination with 10 items per page
             ->through(function($student) {
-                // Calculate total questions from all materials
-                $totalQuestions = $student->materials->sum('questions_count');
+                // Get total questions count
+                $totalQuestions = DB::table('questions')->count();
                 
-                // Calculate total correct answers
-                $correctAnswers = $student->progress()
+                // Get correct answers count
+                $correctAnswers = DB::table('progress')
+                    ->where('user_id', $student->id)
                     ->where('is_correct', true)
                     ->count();
                 
@@ -34,6 +31,11 @@ class StudentController extends Controller
                 $student->overall_progress = $totalQuestions > 0 
                     ? min(100, round(($correctAnswers / $totalQuestions) * 100))
                     : 0;
+                
+                // Set total answered questions
+                $student->total_answered_questions = DB::table('progress')
+                    ->where('user_id', $student->id)
+                    ->count();
                 
                 return $student;
             });

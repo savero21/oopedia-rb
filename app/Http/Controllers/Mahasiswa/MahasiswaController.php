@@ -76,26 +76,86 @@ class MahasiswaController extends Controller
                 'users.id',
                 'users.name',
                 'users.email',
-                DB::raw('COUNT(DISTINCT progress.question_id) as total_answered'),
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 THEN questions.id END) as total_correct_questions'),
+                DB::raw('COUNT(DISTINCT questions.id) as total_attempted'),
                 DB::raw('SUM(CASE WHEN progress.is_correct = 1 THEN 1 ELSE 0 END) as correct_answers'),
                 DB::raw('MAX(progress.updated_at) as completion_date'),
-                DB::raw('SUM(CASE WHEN progress.is_correct = 1 AND questions.difficulty = "beginner" THEN 1 ELSE 0 END) as beginner_completed'),
-                DB::raw('SUM(CASE WHEN progress.is_correct = 1 AND questions.difficulty = "medium" THEN 1 ELSE 0 END) as medium_completed'),
-                DB::raw('SUM(CASE WHEN progress.is_correct = 1 AND questions.difficulty = "hard" THEN 1 ELSE 0 END) as hard_completed'),
-                // Tambahkan skor berbobot berdasarkan tingkat kesulitan
-                DB::raw('SUM(CASE 
-                    WHEN progress.is_correct = 1 AND questions.difficulty = "beginner" THEN 1
-                    WHEN progress.is_correct = 1 AND questions.difficulty = "medium" THEN 2
-                    WHEN progress.is_correct = 1 AND questions.difficulty = "hard" THEN 3
-                    ELSE 0 END) as weighted_score'),
-                // Tambahkan waktu penyelesaian rata-rata
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "beginner" THEN questions.id END) as beginner_completed'),
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "medium" THEN questions.id END) as medium_completed'),
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "hard" THEN questions.id END) as hard_completed'),
+                DB::raw('COUNT(progress.id) as total_attempts'),
+                DB::raw('SUM(
+                    CASE 
+                        WHEN progress.is_correct = 1 AND questions.difficulty = "beginner" THEN 
+                            CASE 
+                                WHEN (
+                                    SELECT COUNT(*) 
+                                    FROM progress p2 
+                                    WHERE p2.user_id = users.id 
+                                    AND p2.question_id = questions.id 
+                                    AND p2.created_at <= progress.created_at
+                                ) = 1 THEN 3
+                                WHEN (
+                                    SELECT COUNT(*) 
+                                    FROM progress p2 
+                                    WHERE p2.user_id = users.id 
+                                    AND p2.question_id = questions.id 
+                                    AND p2.created_at <= progress.created_at
+                                ) = 2 THEN 2
+                                ELSE 1
+                            END
+                        WHEN progress.is_correct = 1 AND questions.difficulty = "medium" THEN 
+                            CASE 
+                                WHEN (
+                                    SELECT COUNT(*) 
+                                    FROM progress p2 
+                                    WHERE p2.user_id = users.id 
+                                    AND p2.question_id = questions.id 
+                                    AND p2.created_at <= progress.created_at
+                                ) = 1 THEN 6
+                                WHEN (
+                                    SELECT COUNT(*) 
+                                    FROM progress p2 
+                                    WHERE p2.user_id = users.id 
+                                    AND p2.question_id = questions.id 
+                                    AND p2.created_at <= progress.created_at
+                                ) = 2 THEN 4
+                                ELSE 2
+                            END
+                        WHEN progress.is_correct = 1 AND questions.difficulty = "hard" THEN 
+                            CASE 
+                                WHEN (
+                                    SELECT COUNT(*) 
+                                    FROM progress p2 
+                                    WHERE p2.user_id = users.id 
+                                    AND p2.question_id = questions.id 
+                                    AND p2.created_at <= progress.created_at
+                                ) = 1 THEN 9
+                                WHEN (
+                                    SELECT COUNT(*) 
+                                    FROM progress p2 
+                                    WHERE p2.user_id = users.id 
+                                    AND p2.question_id = questions.id 
+                                    AND p2.created_at <= progress.created_at
+                                ) = 2 THEN 6
+                                WHEN (
+                                    SELECT COUNT(*) 
+                                    FROM progress p2 
+                                    WHERE p2.user_id = users.id 
+                                    AND p2.question_id = questions.id 
+                                    AND p2.created_at <= progress.created_at
+                                ) = 3 THEN 4
+                                ELSE 2
+                            END
+                        ELSE 0 
+                    END) as weighted_score'),
                 DB::raw('AVG(TIMESTAMPDIFF(SECOND, progress.created_at, progress.updated_at)) as avg_completion_time')
             )
-            ->where('users.role_id', 3) // Role mahasiswa
+            ->where('users.role_id', 3)
             ->groupBy('users.id', 'users.name', 'users.email')
-            ->orderByDesc('weighted_score') // Urutkan berdasarkan skor berbobot
-            ->orderByDesc('correct_answers') // Kemudian berdasarkan jawaban benar
-            ->orderBy('avg_completion_time') // Kemudian berdasarkan waktu penyelesaian (cepat ke lambat)
+            ->orderByDesc('weighted_score')
+            ->orderByDesc('correct_answers')
+            ->orderBy('avg_completion_time')
             ->get();
         
         // Hitung total soal per tingkat kesulitan
@@ -107,11 +167,17 @@ class MahasiswaController extends Controller
         $rank = 1;
         foreach ($leaderboardData as $index => $data) {
             $data->rank = $rank++;
+            
             $data->percentage = $totalQuestions > 0 
-                ? round(($data->correct_answers / $totalQuestions) * 100, 1) 
+                ? round(($data->total_correct_questions / $totalQuestions) * 100, 1) 
                 : 0;
             
-            // Tentukan level berdasarkan penyelesaian soal
+            if ($data->total_correct_questions >= $totalQuestions) {
+                $data->percentage = 100;
+            }
+            
+            $data->formatted_score = number_format($data->weighted_score, 0, ',', '.');
+            
             if ($data->hard_completed >= $totalHard && $totalHard > 0) {
                 $data->badge = 'Hard';
                 $data->badge_color = 'danger';
@@ -125,6 +191,16 @@ class MahasiswaController extends Controller
                 $data->badge = 'Learner';
                 $data->badge_color = 'secondary';
             }
+            
+            // Tambahkan perhitungan attempts per question
+            $data->attempts_per_question = DB::table('progress')
+                ->select('question_id', DB::raw('COUNT(*) as attempts'))
+                ->where('user_id', $data->id)
+                ->groupBy('question_id')
+                ->get()
+                ->avg('attempts');
+            
+            $data->show_attempts = $data->attempts_per_question > 1;
         }
         
         // Cari posisi user saat ini
