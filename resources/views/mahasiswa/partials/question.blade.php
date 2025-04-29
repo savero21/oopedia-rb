@@ -5,7 +5,7 @@
 <div class="materi-card shadow-sm rounded">
     <div class="materi-card-body p-4">
         <div id="questionContainer">
-            <form id="questionForm" action="{{ route('mahasiswa.questions.check-answer') }}" method="POST">
+            <form id="questionForm" action="{{ route('questions.check-answer') }}" method="POST">
                 @csrf
                 <input type="hidden" name="question_id" value="{{ $currentQuestion->id }}">
                 <input type="hidden" name="material_id" value="{{ $material->id }}">
@@ -45,25 +45,28 @@
                     </div>
                 </div>
                 
-                <!-- Question content -->
                 <div class="question-content mb-4">
-                    <h5 class="mb-3"><i class="fas fa-question me-2"></i>Pertanyaan</h5>
-                    <div class="question-text p-3 bg-light rounded">
+                    <div class="question-text p-3 rounded">
                         {{ $currentQuestion->question_text }}
                     </div>
                 </div>
                 
-                <!-- Answer options -->
-                <div class="answer-options mb-4">
-                    <h5 class="mb-3"><i class="fas fa-list-ul me-2"></i>Pilihan Jawaban</h5>
-                    <div class="options-container">
+                <div class="answers-container">
+                    <!-- Tampilkan input teks jika tipe soal adalah fill_in_the_blank -->
+                    @if($currentQuestion->question_type === 'fill_in_the_blank')
+                        <div class="fill-in-blank-container p-3 mb-3 rounded">
+                            <label for="fill_in_the_blank_answer" class="form-label">Jawaban Anda:</label>
+                            <input type="text" name="fill_in_the_blank_answer" id="fill_in_the_blank_answer" class="form-control" placeholder="Ketik jawaban Anda di sini..." required>
+                        </div>
+                    @else
+                        <!-- Tampilkan radio button untuk tipe soal lainnya -->
                         @foreach($currentQuestion->answers as $answer)
                             <div class="answer-option p-3 mb-3 rounded d-flex align-items-center">
-                                <input type="radio" name="answer" id="answer{{ $answer->id }}" value="{{ $answer->id }}" class="me-3">
+                                <input type="radio" name="answer" id="answer{{ $answer->id }}" value="{{ $answer->id }}" class="me-3" required>
                                 <label for="answer{{ $answer->id }}" class="mb-0 w-100">{{ $answer->answer_text }}</label>
                             </div>
                         @endforeach
-                    </div>
+                    @endif
                 </div>
                 
                 <div class="d-grid">

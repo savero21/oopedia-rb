@@ -88,6 +88,11 @@ class MaterialQuestionController extends Controller
         $currentQuestionNumber = 1;
         $totalFilteredQuestions = $filteredQuestions->count();
         
+        // Calculate current question number if needed
+        if (!$allAnswered && $unansweredQuestions->count() > 0) {
+            // Your calculation logic here
+        }
+        
         if ($request->ajax()) {
             return view('mahasiswa.partials.question', compact('material', 'materials', 'currentQuestion', 'currentQuestionNumber', 'totalFilteredQuestions'));
         }

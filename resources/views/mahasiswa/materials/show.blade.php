@@ -73,31 +73,58 @@
 <script>
 function initializeQuestionForm() {
     const questionForm = document.getElementById('questionForm');
-    const isGuest = @json(!auth()->check());
-    const totalQuestions = {{ $material->questions->count() }};
-    const maxQuestionsForGuest = Math.ceil(totalQuestions / 2);
-    const currentQuestionNumber = {{ is_numeric($currentQuestionNumber) ? $currentQuestionNumber : 0 }};
+    const checkAnswerBtn = document.getElementById('checkAnswerBtn');
+    const feedbackElement = document.querySelector('.exercise-feedback');
     
     if (questionForm) {
         questionForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const checkAnswerBtn = document.getElementById('checkAnswerBtn');
+            // Disable button to prevent multiple submissions
             if (checkAnswerBtn) {
                 checkAnswerBtn.disabled = true;
                 checkAnswerBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memeriksa...';
             }
-
+            
+            // Validasi untuk fill in the blank
+            const fillInBlankInput = document.getElementById('fill_in_the_blank_answer');
+            if (fillInBlankInput && fillInBlankInput.value.trim() === '') {
+                alert('Jawaban tidak boleh kosong');
+                if (checkAnswerBtn) {
+                    checkAnswerBtn.disabled = false;
+                    checkAnswerBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Periksa Jawaban';
+                }
+                return;
+            }
+            
+            // Debugging - log form data
+            console.log("Form data being sent:");
+            const formData = new FormData(this);
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+            
+            // Submit form via AJAX
             fetch(this.action, {
                 method: 'POST',
-                body: new FormData(this),
+                body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(JSON.stringify(errorData));
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
-                const feedbackElement = document.querySelector('.exercise-feedback');
+                console.log("Response data:", data);
+                
                 const feedbackStatus = document.getElementById('feedbackStatus');
                 const feedbackIcon = document.getElementById('feedbackIcon');
                 const explanationBox = document.getElementById('explanationBox');
@@ -204,7 +231,18 @@ function initializeQuestionForm() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat memeriksa jawaban. Silakan coba lagi.');
+                
+                try {
+                    const errorData = JSON.parse(error.message);
+                    if (errorData.message) {
+                        alert(errorData.message);
+                    } else {
+                        alert('Terjadi kesalahan saat memeriksa jawaban. Silakan coba lagi.');
+                    }
+                } catch (e) {
+                    alert('Terjadi kesalahan saat memeriksa jawaban. Silakan coba lagi.');
+                }
+                
                 if (checkAnswerBtn) {
                     checkAnswerBtn.disabled = false;
                     checkAnswerBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Periksa Jawaban';
@@ -212,6 +250,17 @@ function initializeQuestionForm() {
             });
         });
     }
+    
+    // Initialize clickable answer options
+    const answerOptions = document.querySelectorAll('.answer-option');
+    answerOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+        });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function() {

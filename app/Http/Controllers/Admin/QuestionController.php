@@ -75,16 +75,30 @@ class QuestionController extends Controller
 
     public function store(Request $request, Material $material = null)
     {
-        $request->validate([
+        // Validasi dasar untuk semua field kecuali answers
+        $baseValidation = [
             'question_text' => 'required|string',
             'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
             'difficulty' => 'required|in:beginner,medium,hard',
             'material_id' => 'required|exists:materials,id',
-            'answers' => 'required|array|min:2',
-            'answers.*.answer_text' => 'required|string',
-            'answers.*.is_correct' => 'required|boolean',
-            'answers.*.explanation' => 'nullable|string|max:500'
-        ]);
+        ];
+        
+        // Validasi khusus untuk answers berdasarkan tipe soal
+        if ($request->question_type === 'fill_in_the_blank') {
+            $answersValidation = ['answers' => 'required|array|min:1'];
+        } else {
+            $answersValidation = ['answers' => 'required|array|min:2'];
+        }
+        
+        // Gabungkan validasi
+        $validationRules = array_merge($baseValidation, $answersValidation);
+        
+        // Tambahkan validasi untuk setiap jawaban
+        $validationRules['answers.*.answer_text'] = 'required|string';
+        $validationRules['answers.*.is_correct'] = 'required|boolean';
+        $validationRules['answers.*.explanation'] = 'nullable|string|max:500';
+        
+        $request->validate($validationRules);
 
         $questionType = $request->question_type;
 
@@ -136,16 +150,30 @@ class QuestionController extends Controller
 
     public function update(Request $request, Material $material = null, Question $question)
     {
-        $request->validate([
+        // Validasi dasar untuk semua field kecuali answers
+        $baseValidation = [
             'question_text' => 'required|string',
             'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
             'difficulty' => 'required|in:beginner,medium,hard',
             'material_id' => 'required|exists:materials,id',
-            'answers' => 'required|array|min:2',
-            'answers.*.answer_text' => 'required|string',
-            'answers.*.is_correct' => 'required|boolean',
-            'answers.*.explanation' => 'nullable|string|max:500'
-        ]);
+        ];
+        
+        // Validasi khusus untuk answers berdasarkan tipe soal
+        if ($request->question_type === 'fill_in_the_blank') {
+            $answersValidation = ['answers' => 'required|array|min:1'];
+        } else {
+            $answersValidation = ['answers' => 'required|array|min:2'];
+        }
+        
+        // Gabungkan validasi
+        $validationRules = array_merge($baseValidation, $answersValidation);
+        
+        // Tambahkan validasi untuk setiap jawaban
+        $validationRules['answers.*.answer_text'] = 'required|string';
+        $validationRules['answers.*.is_correct'] = 'required|boolean';
+        $validationRules['answers.*.explanation'] = 'nullable|string|max:500';
+        
+        $request->validate($validationRules);
 
         $questionType = $request->question_type;
 

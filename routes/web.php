@@ -167,9 +167,8 @@ Route::middleware('auth')->group(function () {
         })->name('materials.reset');
         
         // Questions
-
-        Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
-        Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('questions.show');
+        Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])
+            ->name('questions.check-answer');
 
         // Mahasiswa-specific routes
         Route::get('/leaderboard', [MahasiswaController::class, 'leaderboard'])->name('leaderboard');
@@ -189,9 +188,9 @@ Route::middleware('auth')->group(function () {
         ->middleware('auth'); // Only require authentication
 });
 
-Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('mahasiswa.questions.check-answer');
-Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('mahasiswa.questions.show');
-
+// Tambahkan route baru yang dapat diakses tanpa middleware
+Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])
+    ->name('questions.check-answer');
 
 // Fallback route for 404 errors
 Route::fallback(function () {

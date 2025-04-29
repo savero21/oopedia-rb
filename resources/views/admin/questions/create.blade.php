@@ -141,28 +141,32 @@
 
         function handleQuestionTypeChange() {
             const questionType = document.querySelector('[name="question_type"]').value;
-            const container = document.getElementById('answers-container');
-            const existingAnswers = container.getElementsByClassName('answer-entry');
+            const answerContainer = document.getElementById('answers-container');
+            const addAnswerBtn = document.getElementById('add-answer-btn');
             
-            // Reset semua jawaban benar
-            Array.from(existingAnswers).forEach((answerEntry, index) => {
-                const formCheck = answerEntry.querySelector('.form-check');
-                
-                if (questionType === 'radio_button') {
-                    const isCorrect = formCheck.querySelector('input[name$="[is_correct]"]')?.value === '1';
-                    formCheck.innerHTML = `
-                        <input class="form-check-input" type="radio" name="correct_answer" value="${index}" ${isCorrect ? 'checked' : ''}>
-                        <label class="form-check-label">Jawaban Benar</label>
-                        <input type="hidden" name="answers[${index}][is_correct]" value="${isCorrect ? '1' : '0'}">
-                    `;
-                } else {
-                    const isCorrect = formCheck.querySelector('input[name$="[is_correct]"]')?.value === '1';
-                    formCheck.innerHTML = `
-                        <input class="form-check-input" type="checkbox" name="answers[${index}][is_correct]" value="1" ${isCorrect ? 'checked' : ''}>
-                        <label class="form-check-label">Jawaban Benar</label>
-                    `;
+            // Reset container
+            while (answerContainer.firstChild) {
+                answerContainer.removeChild(answerContainer.firstChild);
+            }
+            
+            // Add initial answers based on question type
+            if (questionType === 'fill_in_the_blank') {
+                addAnswer(); // Only add one answer for fill in the blank
+                // Optionally hide the add answer button for fill in the blank
+                if (addAnswerBtn) {
+                    addAnswerBtn.style.display = 'none';
                 }
-            });
+            } else {
+                // For other question types, add two answers and show the add button
+                addAnswer();
+                addAnswer();
+                if (addAnswerBtn) {
+                    addAnswerBtn.style.display = 'block';
+                }
+            }
+            
+            // Update UI based on question type
+            updateAnswerUI(questionType);
         }
 
         function addAnswer() {
@@ -192,6 +196,21 @@
             `;
             
             container.appendChild(newAnswer);
+        }
+
+        function updateAnswerUI(questionType) {
+            const answerEntries = document.querySelectorAll('.answer-entry');
+            
+            answerEntries.forEach((entry, index) => {
+                const radioInput = entry.querySelector('input[type="radio"]');
+                const isCorrectInput = entry.querySelector('input[name$="[is_correct]"]');
+                
+                if (questionType === 'fill_in_the_blank' && index === 0) {
+                    // For fill in the blank, automatically set the first answer as correct
+                    if (radioInput) radioInput.checked = true;
+                    if (isCorrectInput) isCorrectInput.value = '1';
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {

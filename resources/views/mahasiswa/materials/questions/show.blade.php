@@ -282,6 +282,7 @@ function initializeQuestionForm() {
     const explanationBox = document.getElementById('explanationBox');
     const explanationText = document.getElementById('explanationText');
     const isGuest = {{ auth()->user()->role_id === 4 ? 'true' : 'false' }};
+    const currentQuestionNumber = {{ $currentQuestionNumber ?? 1 }};
     
     // Fungsi untuk menampilkan pesan semua soal telah terjawab
     function showAllQuestionsCompleted() {

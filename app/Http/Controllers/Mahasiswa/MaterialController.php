@@ -57,7 +57,7 @@ class MaterialController extends Controller
 
         }
         
-        return view('mahasiswa.materials.show', compact('material', 'materials'));
+        return view('mahasiswa.materials.show', compact('material', 'materials', 'currentQuestionNumber'));
     }
 
     public function index()
