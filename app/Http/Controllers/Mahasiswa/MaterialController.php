@@ -13,13 +13,12 @@ class MaterialController extends Controller
 {
     public function show($id)
     {
-        $material = Material::with(['questions' => function($query) {
-            $query->with('answers')->orderBy('id', 'asc');
-        }])->findOrFail($id);
+        $material = Material::findOrFail($id);
         
-        // Acak urutan soal
-        $material->questions = $material->questions->shuffle();
+        // Untuk sidebar
+        $materials = Material::orderBy('created_at', 'asc')->get();
         
+
         // Acak urutan jawaban untuk setiap soal
         foreach ($material->questions as $question) {
             if ($question->question_type !== 'fill_in_the_blank') {
@@ -55,17 +54,17 @@ class MaterialController extends Controller
 
         if ($answeredCount >= $material->questions->count()) {
             $currentQuestionNumber = "Review";
+
         }
         
-        $materials = Material::all();
-        
-        return view('mahasiswa.materials.show', compact('material', 'materials', 'currentQuestion', 'currentQuestionNumber'));
+        return view('mahasiswa.materials.show', compact('material', 'materials'));
     }
 
     public function index()
     {
         $userId = auth()->id();
         
+        // Get progress statistics
         $progressStats = DB::table('progress')
             ->select(
                 'material_id',
@@ -113,7 +112,7 @@ class MaterialController extends Controller
             ->where('material_id', $id)
             ->delete();
 
-        return redirect()->route('mahasiswa.materials.show', ['material' => $id])
+        return redirect()->route('mahasiswa.materials.questions.show', ['material' => $id])
             ->with('success', 'Progress direset. Anda dapat mengerjakan soal kembali.');
     }
 

@@ -40,21 +40,21 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="progress me-2" style="height: 8px; width: 200px;">
-                                                        <div class="progress-bar bg-gradient-success" 
-                                                             role="progressbar" 
-                                                             style="width: {{ $material->progress }}%;" 
-                                                             aria-valuenow="{{ $material->progress }}" 
-                                                             aria-valuemin="0" 
+                                                        <div class="progress-bar bg-gradient-success"
+                                                             role="progressbar"
+                                                             style="width: {{ is_numeric($material->progress) ? $material->progress : 0 }}%;"
+                                                             aria-valuenow="{{ is_numeric($material->progress) ? $material->progress : 0 }}"
+                                                             aria-valuemin="0"
                                                              aria-valuemax="100">
                                                         </div>
                                                     </div>
-                                                    <span class="text-xs font-weight-bold">{{ $material->progress }}%</span>
+                                                    <span class="text-xs font-weight-bold">{{ is_numeric($material->progress) ? $material->progress : 0 }}%</span>
                                                 </div>
                                             </td>
                                             <td>
-                                                @if($material->progress == 100)
+                                                @if(is_numeric($material->progress) && $material->progress == 100)
                                                     <span class="badge bg-gradient-success">Selesai</span>
-                                                @elseif($material->progress > 0)
+                                                @elseif(is_numeric($material->progress) && $material->progress > 0)
                                                     <span class="badge bg-gradient-warning">Sedang Dikerjakan</span>
                                                 @else
                                                     <span class="badge bg-gradient-secondary">Belum Dimulai</span>

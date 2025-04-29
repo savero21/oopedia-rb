@@ -4,7 +4,6 @@
 
 @push('css')
 <link rel="stylesheet" href="{{ asset('css/material-show.css') }}">
-<link rel="stylesheet" href="{{ asset('css/question-review.css') }}">
 @endpush
 
 @section('content')
@@ -59,20 +58,15 @@
         </div>
     </div>
 
-    <!-- Exercise Section -->
-    <h2 class="section-heading mb-3">Latihan Soal</h2>
-    
-    @if($currentQuestionNumber === "Review")
-        @include('mahasiswa.partials.question-review')
-    @else
-        @if($currentQuestion)
-            @include('mahasiswa.partials.question')
-        @else
-            <div class="alert alert-info">
-                Tidak ada soal tersedia untuk materi ini.
-            </div>
-        @endif
-    @endif
+    <!-- Navigation Buttons -->
+    <div class="d-flex justify-content-between mt-4 mb-5">
+        <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar Materi
+        </a>
+        <a href="{{ route('mahasiswa.materials.questions.show', $material->id) }}" class="btn btn-primary">
+            Latihan Soal<i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
 </div>
 
 @push('scripts')
@@ -226,3 +220,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
+

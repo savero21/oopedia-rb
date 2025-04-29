@@ -10,17 +10,23 @@ use App\Http\Controllers\Auth\{
 use App\Http\Controllers\Admin\{
     DashboardController as AdminDashboardController,
     MaterialController as AdminMaterialController,
-    StudentController as AdminStudentController,
+    AdminStudentController,
     QuestionController as AdminQuestionController,
     AdminUserController,
-    PendingApprovalController
+    PendingApprovalController,
+    LogoutController as AdminLogoutController
 };
 use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
     MaterialController as MahasiswaMaterialController,
     ProfileController as MahasiswaProfileController,
-    QuestionController as MahasiswaQuestionController
+    QuestionController as MahasiswaQuestionController,
+    MahasiswaController,
+    MaterialQuestionController
 };
+use App\Models\Material;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,7 +84,7 @@ Route::middleware('auth')->group(function () {
     // Pending Approval Route - accessible by any authenticated user
     Route::get('admin/pending-approval', [PendingApprovalController::class, 'index'])
         ->name('admin.pending-approval');
-
+        
     // Admin Routes (role 1 = superadmin, role 2 = admin)
     Route::middleware(['role:1|2', 'admin.approved'])->name('admin.')->prefix('admin')->group(function () {
         // Dashboard
@@ -89,10 +95,15 @@ Route::middleware('auth')->group(function () {
         Route::resource('questions', AdminQuestionController::class);
         Route::resource('materials.questions', AdminQuestionController::class)->except(['show']);
         
-        // Students
-        Route::get('students', [AdminStudentController::class, 'index'])->name('students.index');
-        Route::get('students/{student}/progress', [AdminStudentController::class, 'progress'])
-            ->name('students.progress');
+        // Students management
+        Route::controller(AdminStudentController::class)->group(function () {
+            Route::get('students', 'index')->name('students.index');
+            Route::get('students/{student}/progress', 'progress')->name('students.progress');
+            Route::delete('students/{student}', 'destroy')->name('students.destroy');
+            Route::get('students/import', 'showImportForm')->name('students.import');
+            Route::post('students/import', 'processImport')->name('students.process-import');
+            Route::get('students/download-template', 'downloadTemplate')->name('students.download-template');
+        });
 
         // Admin management routes (only for superadmin - role 1)
         Route::middleware(['superadmin'])->group(function () {
@@ -125,8 +136,24 @@ Route::middleware('auth')->group(function () {
         });
         
         // Materials (for both mahasiswa and guest)
-        
-        // Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+
+        Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
+
+        // Questions index route (must come before the materials/{material} route)
+        Route::get('materials/questions', [MaterialQuestionController::class, 'index'])
+            ->name('materials.questions.index');
+
+        // Material show route
+        Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+
+        // Material questions review route (must come before the questions show route)
+        Route::get('materials/{material}/questions/review', [MaterialQuestionController::class, 'review'])
+            ->name('materials.questions.review');
+
+        // Material questions show route
+        Route::get('materials/{material}/questions', [MaterialQuestionController::class, 'show'])
+            ->name('materials.questions.show');
+
         
         // Reset (conditional based on role)
         Route::post('materials/{material}/reset', function($material) {
@@ -140,9 +167,26 @@ Route::middleware('auth')->group(function () {
         })->name('materials.reset');
         
         // Questions
-        // Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
-        // Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('questions.show');
+
+        Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
+        Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('questions.show');
+
+        // Mahasiswa-specific routes
+        Route::get('/leaderboard', [MahasiswaController::class, 'leaderboard'])->name('leaderboard');
+
+        // Questions routes
+        Route::prefix('materials/{material}/questions')->name('materials.questions.')->group(function () {
+            Route::get('/', [MaterialQuestionController::class, 'show'])->name('show');
+            Route::post('/{question}/check', [MaterialQuestionController::class, 'checkAnswer'])->name('check');
+            Route::get('/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])->name('attempts');
+        });
+
     });
+
+    // Admin logout route - keep this one
+    Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])
+        ->name('admin.logout')
+        ->middleware('auth'); // Only require authentication
 });
 
 Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('mahasiswa.questions.check-answer');
@@ -170,3 +214,8 @@ Route::fallback(function () {
 
 // Add this with your other guest routes
 Route::post('/guest-logout', [GuestLoginController::class, 'logout'])->name('guest.logout');
+
+
+Route::get('/mahasiswa/materials/{material}/questions/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])
+    ->name('mahasiswa.materials.questions.attempts');
+

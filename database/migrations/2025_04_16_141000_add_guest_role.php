@@ -9,9 +9,9 @@ class AddGuestRole extends Migration
 {
     public function up()
     {
-        // Add guest role with ID 3
+        // Add guest role with ID 4
         DB::table('roles')->insert([
-            'id' => 3,
+            'id' => 4,
             'role_name' => 'Tamu',
             'created_at' => now(),
             'updated_at' => now()
@@ -20,6 +20,6 @@ class AddGuestRole extends Migration
 
     public function down()
     {
-        DB::table('roles')->where('id', 3)->delete();
+        DB::table('roles')->where('id', 4)->delete();
     }
 } 

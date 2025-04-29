@@ -25,6 +25,9 @@
                     <i class="fas fa-question-circle"></i>
                     Soal {{ $index + 1 }} dari {{ $material->questions->count() }}
                 </span>
+                <span class="badge bg-{{ $question->difficulty == 'beginner' ? 'success' : ($question->difficulty == 'medium' ? 'warning' : 'danger') }} ms-2">
+                    {{ ucfirst($question->difficulty) }}
+                </span>
             </div>
             
             <div class="question-content">
@@ -57,8 +60,8 @@
     @endforeach
 
     <div class="navigation-buttons">
-        <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-primary me-2">
-            <i class="fas fa-book me-2"></i>Kembali ke Daftar Materi
+        <a href="{{ route('mahasiswa.materials.questions.index') }}" class="btn btn-primary me-2">
+            <i class="fas fa-list me-2"></i>Kembali ke Daftar Soal
         </a>
         @if(!auth()->check())
             <a href="{{ route('mahasiswa.dashboard') }}" class="btn btn-info">

@@ -12,61 +12,49 @@ class QuestionController extends Controller
 {
     public function checkAnswer(Request $request)
     {
-        $request->validate([
-            'question_id' => 'required|exists:questions,id',
-            'material_id' => 'required|exists:materials,id',
-        ]);
-
-        $question = Question::with('answers')->findOrFail($request->question_id);
+        $question = Question::findOrFail($request->question_id);
         $isCorrect = false;
-        $selectedAnswerText = null;
+        $selectedAnswerText = '';
         $correctAnswerText = null;
         $explanation = null;
-
-        // Cek apakah soal isian atau pilihan ganda
-        if ($question->question_type === 'fill_in_the_blank') {
-            // Validasi untuk soal isian
-            $request->validate([
-                'fill_in_the_blank_answer' => 'required|string',
-            ]);
-
-            // Ambil jawaban yang benar dari database
+        
+        // Validasi input
+        if ($request->has('answer_text')) {
+            // Logic for text-based answers
             $correctAnswer = Answer::where('question_id', $question->id)
-                                  ->where('is_correct', true)
-                                  ->first();
-
-            if ($correctAnswer) {
-                // Bandingkan jawaban user dengan jawaban yang benar (case insensitive)
-                $userAnswer = strtolower(trim($request->fill_in_the_blank_answer));
-                $dbAnswer = strtolower(trim($correctAnswer->answer_text));
-                
-                $isCorrect = ($userAnswer === $dbAnswer);
-                $selectedAnswerText = $request->fill_in_the_blank_answer;
+                                 ->where('is_correct', true)
+                                 ->first();
+            
+            $isCorrect = strtolower(trim($request->answer_text)) === strtolower(trim($correctAnswer->answer_text));
+            $selectedAnswerText = $request->answer_text;
+            
+            if (!$isCorrect) {
                 $correctAnswerText = $correctAnswer->answer_text;
-                $explanation = $correctAnswer->explanation;
             }
+            
+            $explanation = $correctAnswer->explanation;
         } else {
-            // Validasi untuk soal pilihan ganda
             $request->validate([
                 'answer' => 'required|exists:answers,id',
             ]);
 
-            // Ambil jawaban yang dipilih
             $selectedAnswer = Answer::findOrFail($request->answer);
             $isCorrect = $selectedAnswer->is_correct;
             $selectedAnswerText = $selectedAnswer->answer_text;
-            $explanation = $selectedAnswer->explanation;
 
-            // Jika jawaban salah, ambil jawaban yang benar
+            // Get correct answer if answer is wrong
             if (!$isCorrect) {
                 $correctAnswer = Answer::where('question_id', $question->id)
-                                       ->where('is_correct', true)
-                                       ->first();
+                                     ->where('is_correct', true)
+                                     ->first();
                 $correctAnswerText = $correctAnswer->answer_text ?? null;
+            } else {
+                // Only set explanation if answer is correct
+                $explanation = $selectedAnswer->explanation;
             }
         }
 
-        // Simpan progress mahasiswa
+        // Update progress
         Progress::updateOrCreate(
             [
                 'user_id' => auth()->id(),
@@ -79,26 +67,36 @@ class QuestionController extends Controller
             ]
         );
 
-        // Ambil soal berikutnya yang belum dijawab dengan benar
-        $answeredQuestionIds = Progress::where('user_id', auth()->id())
+        // Get next question based on difficulty if provided
+        $nextQuestionQuery = Question::where('material_id', $request->material_id)
+            ->whereNotIn('id', Progress::where('user_id', auth()->id())->pluck('question_id'));
+            
+        // Filter by difficulty if provided
+        if ($request->has('difficulty') && $request->difficulty != 'all') {
+            $nextQuestionQuery->where('difficulty', $request->difficulty);
+        }
+        
+        $nextQuestion = $nextQuestionQuery->first();
+
+        // Count answered questions
+        $answeredCount = Progress::where('user_id', auth()->id())
             ->where('material_id', $request->material_id)
             ->where('is_correct', true)
-            ->pluck('question_id')
-            ->toArray();
-            
-        $nextQuestion = Question::where('material_id', $request->material_id)
-            ->whereNotIn('id', $answeredQuestionIds)
-            ->first();
+            ->count();
 
-        // Response dalam format JSON
+        // Build the next URL with difficulty parameter if needed
+        $nextUrl = route('mahasiswa.materials.questions.show', ['material' => $request->material_id]);
+
         return response()->json([
             'status' => $isCorrect ? 'success' : 'error',
             'message' => $isCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!',
             'selectedAnswer' => $selectedAnswerText,
-            'correctAnswer' => !$isCorrect ? $correctAnswerText : null,
+            'correctAnswer' => $isCorrect ? null : $correctAnswerText,
             'explanation' => $explanation,
-            'hasNextQuestion' => (bool) $nextQuestion,
-            'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
+            'hasNextQuestion' => !is_null($nextQuestion),
+            'nextUrl' => $nextUrl,
+            'answeredCount' => $answeredCount,
+            'difficulty' => $request->difficulty ?? 'all'
         ]);
     }
 }

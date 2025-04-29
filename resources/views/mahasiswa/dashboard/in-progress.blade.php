@@ -3,7 +3,7 @@
 @section('title', 'Materi Sedang Dipelajari')
 
 @section('content')
-<div class="dashboard-header">
+<div class="dashboard-header text-center">
     <h1 class="main-title">Materi Sedang Dipelajari</h1>
     <div class="title-underline"></div>
 </div>
@@ -65,6 +65,32 @@
 @push('css')
 <link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
 <style>
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #e0e0e0;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state-description {
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+    }
+    
     .continue-learning-btn {
         display: inline-flex;
         align-items: center;
@@ -123,6 +149,26 @@
     .mt-4 {
         margin-top: auto !important;
         padding-top: 1rem;
+    }
+    
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .main-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #004E98;
+        margin-bottom: 0.5rem;
+    }
+    
+    .title-underline {
+        height: 4px;
+        width: 80px;
+        background: linear-gradient(to right, #004E98, #0074D9);
+        margin: 0 auto;
+        border-radius: 2px;
     }
 </style>
 @endpush

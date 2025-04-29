@@ -13,12 +13,11 @@ class GuestLoginController extends Controller
 {
     public function login()
     {
-        // Create a temporary guest user
         $guestUser = User::create([
             'name' => 'Tamu_' . Str::random(8),
             'email' => 'guest_' . Str::random(8) . '@temporary.com',
             'password' => Hash::make(Str::random(16)),
-            'role_id' => 4 // Guest role
+            'role_id' => 4 
         ]);
 
         // Auth::login($guestUser);

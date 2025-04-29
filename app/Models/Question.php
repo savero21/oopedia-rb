@@ -15,6 +15,7 @@ class Question extends Model
         'material_id',
         'question_text',
         'question_type',
+        'difficulty',
         'created_by'
     ];
 

@@ -14,6 +14,7 @@ class QuestionController extends Controller
     {
         $user = auth()->user();
         $search = $request->input('search');
+        $difficulty = $request->input('difficulty');
 
         $questions = Question::with(['createdBy', 'answers', 'material'])
             ->when($search, function ($query) use ($search) {
@@ -27,6 +28,9 @@ class QuestionController extends Controller
                             $materialQuery->where('title', 'like', "%{$search}%");
                         });
                 });
+            })
+            ->when($difficulty, function ($query) use ($difficulty) {
+                return $query->where('difficulty', $difficulty);
             })
             ->when($material, function ($query) use ($material) {
                 return $query->where('material_id', $material->id);
@@ -50,7 +54,8 @@ class QuestionController extends Controller
             'userName' => $user->name,
             'userRole' => $user->role->role_name,
             'material' => $material,
-            'search' => $search // Pass the search term back to the view
+            'search' => $search,
+            'difficulty' => $difficulty
         ]);
     }
 
@@ -71,10 +76,11 @@ class QuestionController extends Controller
     public function store(Request $request, Material $material = null)
     {
         $request->validate([
-            'material_id' => $material ? 'nullable' : 'required|exists:materials,id',
             'question_text' => 'required|string',
             'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
-            'answers' => 'required|array|min:1',
+            'difficulty' => 'required|in:beginner,medium,hard',
+            'material_id' => 'required|exists:materials,id',
+            'answers' => 'required|array|min:2',
             'answers.*.answer_text' => 'required|string',
             'answers.*.is_correct' => 'required|boolean',
             'answers.*.explanation' => 'nullable|string|max:500'
@@ -82,49 +88,19 @@ class QuestionController extends Controller
 
         $questionType = $request->question_type;
 
-
-        
         if (in_array($request->question_type, ['fill_in_the_blank','radio_button',])) {
             $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
             if ($correctAnswersCount !== 1) {
                 return redirect()->back()->withInput()->with('error', ucfirst(str_replace('_', ' ', $request->question_type)) . ' questions must have exactly one correct answer.');
-
-        // if ($questionType === 'fill_in_the_blank') {
-        //     if (count($request->answers) > 1) {
-        //         return redirect()
-        //             ->back()
-        //             ->withInput()
-        //             ->with('error', 'Soal Fill in the Blank hanya boleh memiliki satu jawaban.');
-
             }
         }
-        // // Ensure only one correct answer for radio button type
-        // if ($request->question_type === 'radio_button') {
-        //     $correctAnswers = collect($request->answers)->where('is_correct', true)->count();
-        //     if ($correctAnswers !== 1) {
-        //         return back()
-        //             ->withInput()
-        //             ->withErrors(['correct_answer' => 'Soal dengan tipe Radio Button harus memiliki tepat satu jawaban yang benar.'])
-        //             ->with('warning', 'Pilih satu jawaban yang benar untuk tipe soal Radio Button');
-        //     }
-        // }
-
-        if (in_array($request->question_type, ['fill_in_the_blank','radio_button', ])) {
-            $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
-            if ($correctAnswersCount !== 1) {
-                return redirect()
-                    ->back()
-                    ->withInput()
-                    ->with('error', 'Soal ' . ucfirst(str_replace('_', ' ', $questionType)) . ' hanya boleh memiliki 1 jawaban benar.');
-            }
-        }
-        
 
         $question = Question::create([
-            'material_id' => $material ? $material->id : $request->material_id,
             'question_text' => $request->question_text,
             'question_type' => $request->question_type,
-            'created_by' => auth()->id()
+            'difficulty' => $request->difficulty,
+            'material_id' => $request->material_id,
+            'created_by' => auth()->id(),
         ]);
 
         foreach ($request->answers as $answer) {
@@ -138,8 +114,7 @@ class QuestionController extends Controller
                 'blank_position' => $answer['blank_position'] ?? null
             ]);
         }
-        // return redirect()->route($material ? 'materials.questions.index' : 'questions.index', $material ?? [])
-        // ->with('success', 'Question created successfully.');
+
         if ($material) {
             return redirect()
                 ->route('admin.materials.questions.index', $material)
@@ -157,17 +132,16 @@ class QuestionController extends Controller
 
         $material = $question->material; // Get the question's material
         return view('admin.questions.edit', compact('question', 'materials', 'material'));
-        // $materials = Material::all();
-        // return view('questions.edit', compact('question', 'materials', 'material'));
     }
 
     public function update(Request $request, Material $material = null, Question $question)
     {
         $request->validate([
-            'material_id' => 'required|exists:materials,id',
             'question_text' => 'required|string',
             'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
-            'answers' => 'required|array|min:1',
+            'difficulty' => 'required|in:beginner,medium,hard',
+            'material_id' => 'required|exists:materials,id',
+            'answers' => 'required|array|min:2',
             'answers.*.answer_text' => 'required|string',
             'answers.*.is_correct' => 'required|boolean',
             'answers.*.explanation' => 'nullable|string|max:500'
@@ -184,21 +158,12 @@ class QuestionController extends Controller
                 ], 422);
             }
         }
-        // // Ensure only one correct answer for radio button type
-        // if ($request->question_type === 'radio_button') {
-        //     $correctAnswers = collect($request->answers)->where('is_correct', true)->count();
-        //     if ($correctAnswers !== 1) {
-        //         return response()->json([
-        //             'status' => 'error',
-        //             'message' => 'Radio button questions must have exactly one correct answer'
-        //         ], 422);
-        //     }
-        // }
 
         $question->update([
-            'material_id' => $material ? $material->id : $request->material_id,
             'question_text' => $request->question_text,
-            'question_type' => $request->question_type
+            'question_type' => $request->question_type,
+            'difficulty' => $request->difficulty,
+            'material_id' => $request->material_id,
         ]);
 
         // Delete existing answers
@@ -219,8 +184,6 @@ class QuestionController extends Controller
 
         $material = $question->material;
         
-        // return redirect()->route($material ? 'materials.questions.index' : 'questions.index', ['material' => $material?->id])
-        // ->with('success', 'Question updated successfully.');
         if ($material) {
             return redirect()
                 ->route('admin.materials.questions.index', $material)
