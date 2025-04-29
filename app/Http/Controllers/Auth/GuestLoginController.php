@@ -20,10 +20,10 @@ class GuestLoginController extends Controller
             'role_id' => 4 
         ]);
 
-        Auth::login($guestUser);
+        // Auth::login($guestUser);
         
-        // Set a flash message to inform the user they're in guest mode
-        session()->flash('info', 'Anda masuk sebagai tamu. Beberapa fitur dan konten materi akan terbatas.');
+        // // Set a flash message to inform the user they're in guest mode
+        // session()->flash('info', 'Anda masuk sebagai tamu. Beberapa fitur dan konten materi akan terbatas.');
         
         return redirect()->route('mahasiswa.materials.index');
     }

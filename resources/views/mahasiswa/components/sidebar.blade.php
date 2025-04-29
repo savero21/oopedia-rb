@@ -15,7 +15,7 @@
         </h5>
     </div>
 
-    @if(request()->routeIs('mahasiswa.profile') && auth()->user()->role_id !== 4)
+    @if(request()->routeIs('mahasiswa.profile') && auth()->check())
         {{-- Show only Dashboard and Profile menu when on profile page (except for guests) --}}
         <ul class="nav-menu">
             <li>
@@ -33,7 +33,7 @@
                 </a>
             </li>
         </ul>
-    @elseif(request()->routeIs('mahasiswa.dashboard*') && auth()->user()->role_id !== 4)
+    @elseif(request()->routeIs('mahasiswa.dashboard*') && auth()->check())
         {{-- Dashboard Sidebar Menu (except for guests) --}}
         <ul class="nav-menu">
             <li>
@@ -60,6 +60,7 @@
         </ul>
     @else
         {{-- Materials Sidebar Menu --}}
+
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.materials.index') }}" 
@@ -158,4 +159,5 @@
             </a>
         </li>
     </ul>
+
 </div>

@@ -130,7 +130,15 @@
                                     </span>
                                     <div class="timeline-content">
                                         <h6 class="text-dark text-sm font-weight-bold mb-0">
-                                            {{ $progress->user->name }} menyelesaikan soal
+                                        @if ($progress->user_id !=null)
+                                                {{ $progress->user->name }} menyelesaikan soal
+                                            
+                                            @else
+                                                'unknown'
+                                            
+                                            @endif
+                                            <!-- {{ $progress->user->name }} menyelesaikan soal -->
+
                                         </h6>
                                         <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">
                                             {{ $progress->material->title }}

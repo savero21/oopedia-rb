@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\DB;
 */
 
 // Redirect root to login or materials page based on authentication
-Route::get('/', function () {
+Route::get('/login', function () {
     if (auth()->check()) {
         $user = auth()->user();
         
@@ -53,8 +53,9 @@ Route::get('/', function () {
         }
     }
     
-    return redirect()->route('login');
-})->name('home');
+    // return redirect()->route('login');
+// })->name('mahasiswa.materials.index');
+});
 
 // Guest Routes (Unauthenticated)
 Route::middleware('guest')->group(function () {
@@ -74,6 +75,9 @@ Route::post('/mahasiswa/logout', [LogoutController::class, 'logout'])->name('mah
 
 // Verification route
 Route::get('/verify', [SessionsController::class, 'verify'])->name('verify');
+
+Route::get('/', [MahasiswaMaterialController::class, 'index'])->name('mahasiswa.materials.index');
+Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('mahasiswa.materials.show');
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
@@ -132,6 +136,7 @@ Route::middleware('auth')->group(function () {
         });
         
         // Materials (for both mahasiswa and guest)
+
         Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
 
         // Questions index route (must come before the materials/{material} route)
@@ -148,6 +153,7 @@ Route::middleware('auth')->group(function () {
         // Material questions show route
         Route::get('materials/{material}/questions', [MaterialQuestionController::class, 'show'])
             ->name('materials.questions.show');
+
         
         // Reset (conditional based on role)
         Route::post('materials/{material}/reset', function($material) {
@@ -161,6 +167,7 @@ Route::middleware('auth')->group(function () {
         })->name('materials.reset');
         
         // Questions
+
         Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('questions.check-answer');
         Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('questions.show');
 
@@ -173,6 +180,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/{question}/check', [MaterialQuestionController::class, 'checkAnswer'])->name('check');
             Route::get('/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])->name('attempts');
         });
+
     });
 
     // Admin logout route - keep this one
@@ -180,6 +188,10 @@ Route::middleware('auth')->group(function () {
         ->name('admin.logout')
         ->middleware('auth'); // Only require authentication
 });
+
+Route::post('questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])->name('mahasiswa.questions.check-answer');
+Route::get('questions/{question}', [MahasiswaQuestionController::class, 'show'])->name('mahasiswa.questions.show');
+
 
 // Fallback route for 404 errors
 Route::fallback(function () {
@@ -203,8 +215,7 @@ Route::fallback(function () {
 // Add this with your other guest routes
 Route::post('/guest-logout', [GuestLoginController::class, 'logout'])->name('guest.logout');
 
+
 Route::get('/mahasiswa/materials/{material}/questions/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])
     ->name('mahasiswa.materials.questions.attempts');
-
-
 

@@ -18,11 +18,43 @@ class MaterialController extends Controller
         // Untuk sidebar
         $materials = Material::orderBy('created_at', 'asc')->get();
         
-        // If user is guest, only show half of the materials
-        if (auth()->user()->role_id === 4) {
-            $totalMaterials = $materials->count();
-            $materialsToShow = ceil($totalMaterials / 2);
-            $materials = $materials->take($materialsToShow);
+
+        // Acak urutan jawaban untuk setiap soal
+        foreach ($material->questions as $question) {
+            if ($question->question_type !== 'fill_in_the_blank') {
+                $question->answers = $question->answers->shuffle();
+            }
+        }
+        
+        // If user is guest (role_id = 4), only show half of the questions
+        // For regular students (role_id = 3), show all questions
+        // if (auth()->user()->role_id === 4) {
+            if (auth()->check()==null) {
+            $totalQuestions = $material->questions->count();
+            $halfQuestions = ceil($totalQuestions / 2);
+            $material->questions = $material->questions->take($halfQuestions);
+        }
+        
+        $answeredQuestionIds = Progress::where('user_id', auth()->id())
+            ->where('material_id', $id)
+            ->where('is_correct', true)
+            ->pluck('question_id')
+            ->toArray();
+        
+        $currentQuestion = $material->questions
+            ->whereNotIn('id', $answeredQuestionIds)
+            ->first();
+        
+        if (!$currentQuestion && $material->questions->count() > 0) {
+            $currentQuestion = $material->questions->first();
+        }
+        
+        $answeredCount = count($answeredQuestionIds);
+        $currentQuestionNumber = $answeredCount + 1;
+
+        if ($answeredCount >= $material->questions->count()) {
+            $currentQuestionNumber = "Review";
+
         }
         
         return view('mahasiswa.materials.show', compact('material', 'materials'));
@@ -47,7 +79,8 @@ class MaterialController extends Controller
         $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
         
         // If user is guest, only show half of the materials
-        if (auth()->user()->role_id === 4) {
+        // if (auth()->user()->role_id === 4) {
+            if (auth()->user() == null) {
             $totalMaterials = $allMaterials->count();
             $materialsToShow = ceil($totalMaterials / 2);
             $allMaterials = $allMaterials->take($materialsToShow);

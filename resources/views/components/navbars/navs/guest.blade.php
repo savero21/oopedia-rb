@@ -4,7 +4,7 @@
     <div class="container">
         <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 text-white" href="{{ url('/') }}">
             <img src="{{ asset('images/logo.png') }}" alt="OOPedia" height="40" class="me-2 navbar-logo">
-            <!-- Fallback jika logo tidak muncul -->
+           
             <span class="logo-fallback">OOPedia</span>
         </a>
         <button class="navbar-toggler shadow-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,6 +16,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navigation">
             <ul class="navbar-nav ms-auto">
+               @guest
                 <li class="nav-item">
                     <a class="nav-link nav-link-icon me-2" href="{{ route($signin) }}">
                         <i class="fas fa-key me-1"></i>
@@ -28,11 +29,32 @@
                         <span class="nav-link-inner--text">Register</span>
                     </a>
                 </li>
+                @endguest
+
+                @auth
+                    @if(Auth::check())
+                        <li class="nav-item">
+                            <a class="nav-link text-warning fw-bold" href="#">
+                                Mode Tamu Aktif
+                            </a>
+                        </li>
+                    @endif
+                @endauth
             </ul>
         </div>
     </div>
 </nav>
 
+{{-- Flash message jika login sebagai tamu --}}
+<!-- @if(session('info')) -->
+    <div class="container mt-5 pt-3">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            'hahahahaahaa'
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+<!-- @endif -->
+ 
 <style>
     /* Navbar styling */
     .navbar {
