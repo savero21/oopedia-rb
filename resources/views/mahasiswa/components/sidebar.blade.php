@@ -11,7 +11,7 @@
         </h5>
     </div>
 
-    @if(request()->routeIs('mahasiswa.profile') && auth()->user()->role_id !== 4)
+    @if(request()->routeIs('mahasiswa.profile') && auth()->check())
         {{-- Show only Dashboard and Profile menu when on profile page (except for guests) --}}
         <ul class="nav-menu">
             <li>
@@ -29,7 +29,7 @@
                 </a>
             </li>
         </ul>
-    @elseif(request()->routeIs('mahasiswa.dashboard*') && auth()->user()->role_id !== 4)
+    @elseif(request()->routeIs('mahasiswa.dashboard*') && auth()->check())
         {{-- Dashboard Sidebar Menu (except for guests) --}}
         <ul class="nav-menu">
             <li>
@@ -56,20 +56,22 @@
         </ul>
     @else
         {{-- Materials Sidebar Menu --}}
-        <ul class="nav-menu">
-            @foreach($materials as $m)
-                <li>
-                    <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
-                       class="menu-item {{ isset($material) && $material->id == $m->id ? 'active' : '' }}">
-                        <i class="fas fa-book"></i>
-                        <span>{{ $m->title }}</span>
-                    </a>
-                </li>
-            @endforeach
-        </ul>
+        @isset($materials)
+            <ul class="nav-menu">
+                @foreach($materials as $m)
+                    <li>
+                        <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
+                           class="menu-item {{ isset($material) && $material->id == $m->id ? 'active' : '' }}">
+                            <i class="fas fa-book"></i>
+                            <span>{{ $m->title }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @endisset
     @endif
 
-    @unless(request()->routeIs('mahasiswa.profile') || auth()->user()->role_id === 4)
+    @unless(request()->routeIs('mahasiswa.profile') || auth()->check())
         {{-- Profile Section Divider (hide for guests) --}}
         <div class="sidebar-header mt-4">
             <h5 class="sidebar-title">Profil</h5>

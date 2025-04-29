@@ -10,7 +10,7 @@ class CreateProgressTable extends Migration
     {
         Schema::create('progress', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('user_id')->nullable()->unsigned();
             $table->bigInteger('material_id')->unsigned();
             $table->bigInteger('question_id')->unsigned();
             $table->boolean('is_answered')->default(false);

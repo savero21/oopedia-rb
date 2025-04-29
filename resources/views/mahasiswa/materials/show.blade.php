@@ -27,7 +27,7 @@
         </div>
     @endif
 
-    @if(auth()->check() && auth()->user()->role_id === 4)
+    @guest
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <strong>Mode Tamu Aktif!</strong> 
             Anda hanya dapat melihat sebagian dari konten materi ini. Untuk akses penuh, silakan 
@@ -48,7 +48,7 @@
             @csrf
             <input type="hidden" name="redirect" value="{{ route('register') }}">
         </form>
-    @endif
+    @endguest
 
     <!-- Content Section -->
     <div class="materi-card mb-4">
@@ -79,7 +79,7 @@
 <script>
 function initializeQuestionForm() {
     const questionForm = document.getElementById('questionForm');
-    const isGuest = {{ auth()->user()->role_id === 4 ? 'true' : 'false' }};
+    const isGuest = @json(!auth()->check());
     const totalQuestions = {{ $material->questions->count() }};
     const maxQuestionsForGuest = Math.ceil(totalQuestions / 2);
     const currentQuestionNumber = {{ is_numeric($currentQuestionNumber) ? $currentQuestionNumber : 0 }};
@@ -225,4 +225,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-@endsection 
+@endsection

@@ -3,7 +3,7 @@
 @section('title', 'Materi Pembelajaran')
 
 @section('content')
-@if(auth()->check() && auth()->user()->role_id === 4)
+@if(auth()->check() && auth()->user() === null)
 
 
 <!-- Hidden forms for guest logout and redirect -->
@@ -36,10 +36,13 @@
                     <div class="progress-info d-flex justify-content-between">
                         <span class="progress-text">Progress</span>
                         <span class="progress-percentage">
-                            @php
+                        @php
                                 $totalQuestions = $material->total_questions;
-                                if(auth()->user()->role_id === 4) {
+                                if(auth()->check()==null) {
                                     $totalQuestions = ceil($totalQuestions / 2);
+                                }
+                                else{
+                                $totalQuestions;
                                 }
                                 $correctAnswers = $material->completed_questions;
                                 $percentage = $totalQuestions > 0 ? min(100, round(($correctAnswers / $totalQuestions) * 100)) : 0;
@@ -53,8 +56,8 @@
                     <div class="progress-details mt-2">
                         <small>
                             {{ $correctAnswers }} dari {{ $totalQuestions }} soal selesai
-                            @if(auth()->user()->role_id === 4)
-                                (Mode Tamu)
+                            @if(auth()->check()==null) 
+                            (Mode Tamu)
                             @endif
                         </small>
                     </div>

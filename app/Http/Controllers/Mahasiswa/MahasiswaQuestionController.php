@@ -62,12 +62,17 @@ class MahasiswaQuestionController extends Controller
         }
     }
 
-    // Simpan progress mahasiswa
+    
+    // Simpan progress berdasarkan user_id atau session_id untuk tamu
+    $userId = auth()->check() ? auth()->id() : null;
+    $sessionId = session()->getId();
+
     Progress::updateOrCreate(
         [
-            'user_id' => auth()->id(),
             'material_id' => $request->material_id,
-            'question_id' => $question->id
+            'question_id' => $question->id,
+            'user_id' => $userId,
+            'session_id' => $userId ? null : $sessionId, // hanya isi session_id jika user tamu
         ],
         [
             'is_correct' => $isCorrect,
@@ -76,8 +81,13 @@ class MahasiswaQuestionController extends Controller
     );
 
     // Ambil soal berikutnya
+    $answeredQuestions = Progress::where('material_id', $request->material_id)
+    ->when($userId, fn($q) => $q->where('user_id', $userId))
+    ->when(!$userId, fn($q) => $q->where('session_id', $sessionId))
+    ->pluck('question_id');
+
     $nextQuestion = Question::where('material_id', $request->material_id)
-        ->whereNotIn('id', Progress::where('user_id', auth()->id())->pluck('question_id'))
+        ->whereNotIn('id', $answeredQuestions)
         ->first();
 
     return response()->json([
@@ -89,8 +99,7 @@ class MahasiswaQuestionController extends Controller
         'hasNextQuestion' => !is_null($nextQuestion),
         'nextUrl' => route('mahasiswa.materials.show', ['material' => $request->material_id])
     ]);
-    
-    }
+}
     /**
      * Check all answers for a material
      */

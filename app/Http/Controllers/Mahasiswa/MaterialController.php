@@ -29,7 +29,8 @@ class MaterialController extends Controller
         
         // If user is guest (role_id = 4), only show half of the questions
         // For regular students (role_id = 3), show all questions
-        if (auth()->user()->role_id === 4) {
+        // if (auth()->user()->role_id === 4) {
+            if (auth()->check()==null) {
             $totalQuestions = $material->questions->count();
             $halfQuestions = ceil($totalQuestions / 2);
             $material->questions = $material->questions->take($halfQuestions);
@@ -79,7 +80,8 @@ class MaterialController extends Controller
         $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
         
         // If user is guest, only show half of the materials
-        if (auth()->user()->role_id === 4) {
+        // if (auth()->user()->role_id === 4) {
+            if (auth()->user() == null) {
             $totalMaterials = $allMaterials->count();
             $materialsToShow = ceil($totalMaterials / 2);
             $allMaterials = $allMaterials->take($materialsToShow);
