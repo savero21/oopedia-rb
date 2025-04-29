@@ -14,6 +14,13 @@
             <!-- Navigation links -->
             <div class="nav-links">
                 <ul class="nav-menu">
+                    <li>
+                        <a href="{{ route('mahasiswa.dashboard') }}" 
+                           class="nav-link {{ request()->routeIs('mahasiswa.dashboard*') ? 'active' : '' }}">
+                            <i class="fas fa-home me-2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
                     @auth
                         <li>
                             <a href="{{ route('mahasiswa.materials.index') }}" 
@@ -31,20 +38,12 @@
                         </li>
                     @else
                         <li>
-                            <a href="{{ route('mahasiswa.dashboard') }}" 
-                               class="nav-link {{ request()->routeIs('mahasiswa.dashboard*') ? 'active' : '' }}">
-                                <i class="fas fa-chart-line me-2"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <li>
                             <a href="{{ route('mahasiswa.materials.index') }}" 
                                class="nav-link {{ request()->routeIs('mahasiswa.materials*') && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
                                 <i class="fas fa-book me-2"></i>
                                 <span>Materi</span>
                             </a>
                         </li>
-
                         <li>
                             <a href="{{ route('mahasiswa.materials.questions.index') }}" 
                                class="nav-link {{ request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">

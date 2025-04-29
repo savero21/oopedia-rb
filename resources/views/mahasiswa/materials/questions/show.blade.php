@@ -177,6 +177,39 @@
         background-color: #dc3545;
         border-color: #dc3545;
     }
+    
+    /* Trophy styles */
+    .trophy-circle {
+        background-color: #444;
+        transition: all 0.3s ease;
+    }
+    
+    .trophy-icon-disabled {
+        color: #777;
+        font-size: 20px;
+    }
+    
+    .trophy-icon {
+        color: #FFD700;
+        font-size: 20px;
+        text-shadow: 0 0 10px #FFD700;
+        animation: glow 1.5s infinite alternate;
+    }
+    
+    @keyframes glow {
+        from {
+            text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700;
+        }
+        to {
+            text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700;
+        }
+    }
+    
+    .trophy.completed .trophy-circle {
+        background-color: #444;
+        border: 2px solid #FFD700;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    }
 </style>
 @endpush
 
@@ -184,21 +217,6 @@
 <div class="container-fluid py-4">
     <h1 class="materi-heading">Latihan Soal: {{ $material->title }}</h1>
     <div class="heading-underline mb-4"></div>
-    
-    <div class="filter-buttons mb-4">
-        <a href="{{ route('mahasiswa.materials.questions.show', $material->id) }}" class="btn {{ request()->query('difficulty') == null ? 'btn-primary' : 'btn-outline-primary' }}">
-            <i class="fas fa-list-ul me-2"></i>Semua Soal
-        </a>
-        <a href="{{ route('mahasiswa.materials.questions.show', $material->id) }}?difficulty=beginner" class="btn {{ request()->query('difficulty') == 'beginner' ? 'btn-success' : 'btn-outline-success' }}">
-            <i class="fas fa-star me-2"></i>Beginner
-        </a>
-        <a href="{{ route('mahasiswa.materials.questions.show', $material->id) }}?difficulty=medium" class="btn {{ request()->query('difficulty') == 'medium' ? 'btn-warning' : 'btn-outline-warning' }}">
-            <i class="fas fa-star-half-alt me-2"></i>Medium
-        </a>
-        <a href="{{ route('mahasiswa.materials.questions.show', $material->id) }}?difficulty=hard" class="btn {{ request()->query('difficulty') == 'hard' ? 'btn-danger' : 'btn-outline-danger' }}">
-            <i class="fas fa-star me-2"></i>Hard
-        </a>
-    </div>
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -589,33 +607,38 @@ function submitAnswer() {
 
 function showFeedback(result, score, attemptNumber) {
     const feedbackElement = document.querySelector('.exercise-feedback');
-    feedbackElement.innerHTML = `
-        <div class="feedback-container ${result.status}">
-            <div class="feedback-icon">
-                <i class="fas fa-${result.status === 'success' ? 'check' : 'times'}-circle"></i>
-            </div>
-            <h3 class="feedback-title">${result.status === 'success' ? 'Jawaban Benar!' : 'Jawaban Salah'}</h3>
-            <p class="feedback-message">${result.message}</p>
-            ${result.status === 'success' ? `
-                <div class="score-info">
-                    <p>Skor: ${score} poin</p>
-                    <small>(Percobaan ke-${attemptNumber})</small>
+    
+    // Jika jawaban benar, langsung arahkan ke halaman level
+    if (result.status === 'success') {
+        // Tampilkan pesan sukses sebentar
+        Swal.fire({
+            title: 'Jawaban Benar!',
+            text: result.message,
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+        }).then(() => {
+            // Redirect ke halaman level
+            window.location.href = result.nextUrl;
+        });
+    } else {
+        // Jika jawaban salah, tampilkan feedback seperti biasa
+        feedbackElement.innerHTML = `
+            <div class="feedback-container ${result.status}">
+                <div class="feedback-icon">
+                    <i class="fas fa-times-circle"></i>
                 </div>
-            ` : ''}
-            <div class="feedback-actions">
-                ${result.status === 'success' ? `
-                    <button onclick="window.location.href='${result.nextUrl}'" class="btn btn-success">
-                        <i class="fas fa-arrow-right me-2"></i>Soal Berikutnya
-                    </button>
-                ` : `
+                <h3 class="feedback-title">Jawaban Salah</h3>
+                <p class="feedback-message">${result.message}</p>
+                <div class="feedback-actions">
                     <button onclick="retryQuestion()" class="btn btn-warning">
                         <i class="fas fa-redo me-2"></i>Coba Lagi
                     </button>
-                `}
+                </div>
             </div>
-        </div>
-    `;
-    feedbackElement.style.display = 'block';
+        `;
+        feedbackElement.style.display = 'block';
+    }
 }
 </script>
 @endpush 

@@ -142,6 +142,7 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // Konfeti untuk peringkat teratas
     document.addEventListener('DOMContentLoaded', function() {
@@ -164,5 +165,9 @@
             });
         @endif
     });
+
+    function showFeedback(result, score, attemptNumber) {
+        // Kode yang sudah dimodifikasi di atas
+    }
 </script>
 @endpush 

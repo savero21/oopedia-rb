@@ -69,4 +69,76 @@
             </a>
         @endif
     </div>
-</div> 
+</div>
+
+<div class="level-item trophy {{ count(array_filter($levels, function($level) { return $level['status'] !== 'completed'; })) === 0 ? 'completed' : '' }}">
+    <div class="level-circle trophy-circle">
+        <i class="fas fa-trophy trophy-icon"></i>
+    </div>
+</div>
+
+@push('styles')
+<style>
+    /* Existing styles... */
+    
+    /* Trophy Animation Styles */
+    .trophy-circle {
+        background: #444;
+        transition: all 0.5s ease;
+    }
+    
+    .trophy-icon {
+        font-size: 24px;
+        color: #777;
+        transition: all 0.5s ease;
+    }
+    
+    .trophy.completed .trophy-circle {
+        background: linear-gradient(145deg, #FFD700, #FFA500);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        animation: pulseGold 2s infinite;
+    }
+    
+    .trophy.completed .trophy-icon {
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        animation: rotateIcon 20s linear infinite;
+    }
+    
+    @keyframes pulseGold {
+        0% {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            transform: scale(1.05);
+        }
+        100% {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes rotateIcon {
+        0% {
+            transform: rotateY(0deg);
+        }
+        100% {
+            transform: rotateY(360deg);
+        }
+    }
+    
+    /* Connector to Trophy */
+    .level-item:last-child + .trophy {
+        margin-left: 20px;
+    }
+    
+    .level-connector:last-of-type {
+        background: linear-gradient(90deg, 
+            var(--connector-color) 0%,
+            #FFD700 100%
+        );
+    }
+</style>
+@endpush 

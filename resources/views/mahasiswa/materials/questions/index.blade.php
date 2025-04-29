@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="mt-3">
-                    <a href="{{ route('mahasiswa.materials.questions.show', $material->id) }}" class="btn-start-material">
+                    <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => 'beginner']) }}" class="btn-start-material">
                         <i class="fas fa-question-circle me-2"></i>Mulai Latihan
                     </a>
                 </div>

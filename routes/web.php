@@ -178,6 +178,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [MaterialQuestionController::class, 'show'])->name('show');
             Route::post('/{question}/check', [MaterialQuestionController::class, 'checkAnswer'])->name('check');
             Route::get('/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])->name('attempts');
+            Route::get('/levels', [MaterialQuestionController::class, 'showLevels'])->name('levels');
         });
 
     });

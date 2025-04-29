@@ -69,6 +69,14 @@
                     <span>Daftar Materi</span>
                 </a>
             </li>
+        </ul>
+
+        {{-- Daftar Soal Section Divider --}}
+        <div class="sidebar-header mt-3">
+            <h5 class="sidebar-title">Daftar Soal</h5>
+        </div>
+
+        <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.materials.questions.index') }}" 
                    class="menu-item {{ request()->routeIs('mahasiswa.materials.questions*') && !request()->segment(4) ? 'active' : '' }}">
@@ -112,22 +120,22 @@
                 
                 <ul class="nav-menu">
                     <li>
-                        <a href="{{ route('mahasiswa.materials.questions.show', ['material' => $currentMaterialId, 'difficulty' => 'beginner']) }}" 
-                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.show') && (request()->query('difficulty') == 'beginner' || !request()->query('difficulty')) ? 'active' : '' }}">
+                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $currentMaterialId, 'difficulty' => 'beginner']) }}" 
+                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.levels') && request()->query('difficulty') == 'beginner' ? 'active' : '' }}">
                             <i class="fas fa-star text-success"></i>
                             <span>Beginner</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('mahasiswa.materials.questions.show', ['material' => $currentMaterialId, 'difficulty' => 'medium']) }}" 
-                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.show') && request()->query('difficulty') == 'medium' ? 'active' : '' }}">
+                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $currentMaterialId, 'difficulty' => 'medium']) }}" 
+                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.levels') && request()->query('difficulty') == 'medium' ? 'active' : '' }}">
                             <i class="fas fa-star text-warning"></i>
                             <span>Medium</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('mahasiswa.materials.questions.show', ['material' => $currentMaterialId, 'difficulty' => 'hard']) }}" 
-                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.show') && request()->query('difficulty') == 'hard' ? 'active' : '' }}">
+                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $currentMaterialId, 'difficulty' => 'hard']) }}" 
+                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.levels') && request()->query('difficulty') == 'hard' ? 'active' : '' }}">
                             <i class="fas fa-star text-danger"></i>
                             <span>Hard</span>
                         </a>
