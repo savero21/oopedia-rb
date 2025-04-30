@@ -67,6 +67,30 @@
             Latihan Soal<i class="fas fa-arrow-right ms-2"></i>
         </a>
     </div>
+
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+        </div>
+        <h3 class="mb-3">Selamat! Semua Soal Telah Terjawab</h3>
+        <p class="text-muted mb-4">
+            Anda telah menyelesaikan semua soal pada materi ini.
+        </p>
+        <div class="mt-4">
+            <a href="{{ route('mahasiswa.materials.questions.levels', [
+                'material' => $material->id,
+                'difficulty' => request()->query('difficulty', 'all')
+            ]) }}" class="btn btn-success me-2">
+                <i class="fas fa-list-ol me-2"></i>Kembali ke Level {{ ucfirst(request()->query('difficulty', '')) }}
+            </a>
+            <a href="{{ route('mahasiswa.materials.show', $material->id) }}" class="btn btn-primary me-2">
+                <i class="fas fa-book me-2"></i>Kembali ke Materi
+            </a>
+            <a href="{{ route('mahasiswa.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-home me-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -161,7 +185,16 @@ function initializeQuestionForm() {
                         // Jika pengguna tamu dan tidak ada soal berikutnya
                         nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
                         nextQuestionBtn.onclick = () => window.location.reload();
-                    } else if (data.hasNextQuestion) {
+                    } else if (!data.hasNextQuestion) {
+                        // Jika tidak ada soal berikutnya untuk user biasa
+                        nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
+                        nextQuestionBtn.onclick = () => {
+                            window.location.href = "{{ route('mahasiswa.materials.questions.levels', [
+                                'material' => $material->id,
+                                'difficulty' => request()->query('difficulty', 'all')
+                            ]) }}";
+                        };
+                    } else {
                         nextQuestionBtn.innerHTML = 'Lanjut ke Soal Berikutnya <i class="fas fa-arrow-right ms-2"></i>';
                         nextQuestionBtn.onclick = () => {
                             // Save current scroll position
@@ -211,9 +244,6 @@ function initializeQuestionForm() {
                                 window.location.href = data.nextUrl; // Fallback to full page reload
                             });
                         };
-                    } else {
-                        nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
-                        nextQuestionBtn.onclick = () => window.location.reload();
                     }
                 } else {
                     tryAgainBtn.style.display = 'inline-block';

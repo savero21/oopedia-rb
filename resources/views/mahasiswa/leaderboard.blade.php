@@ -28,54 +28,71 @@
                     </div>
                 </div>
                 
-                <div class="card-body px-0 pb-2">
-                    @if($currentUserRank)
-                    <div class="current-user-rank p-4 mb-4 rounded mx-3">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <h5 class="mb-3 text-dark fw-bold">Peringkat Anda</h5>
-                                <div class="d-flex align-items-center">
-                                    <div class="rank-number me-3">
-                                        <div class="rank-badge">
-                                            <span>{{ $currentUserRank->rank }}</span>
-                                        </div>
+                <div class="card-body px-0 pb-2">    
+                    <div class="podium-wrapper mb-5">
+                        <div class="podium-display">
+                            <div class="podium-item second-place">
+                                @if(isset($leaderboardData[1]))
+                                    <div class="player-avatar">
+                                        <span class="medal-badge">🥈</span>
+                                        <h5 class="player-name">{{ $leaderboardData[1]->name }}</h5>
+                                        <span class="level-badge level-{{ $leaderboardData[1]->badge_color }}">
+                                            {{ $leaderboardData[1]->badge }}
+                                        </span>
                                     </div>
-                                    <div class="user-info">
-                                        <h6 class="mb-0">{{ $currentUserRank->name }}</h6>
-                                        <p class="mb-0">{{ $currentUserRank->email }}</p>
-                                    </div>
-                                </div>
+                                    <div class="podium-base second">2</div>
+                                @endif
                             </div>
-                            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                                <div class="stats">
-                                    <div class="d-flex justify-content-md-end align-items-center mb-2">
-                                        <span class="level-badge level-{{ $currentUserRank->badge_color }}">{{ $currentUserRank->badge }}</span>
+
+                            <div class="podium-item first-place">
+                                @if(isset($leaderboardData[0]))
+                                    <i class="fas fa-crown crown-icon"></i>
+                                    <div class="player-avatar">
+                                        <span class="medal-badge">🥇</span>
+                                        <h5 class="player-name">{{ $leaderboardData[0]->name }}</h5>
+                                        <span class="level-badge level-{{ $leaderboardData[0]->badge_color }}">
+                                            {{ $leaderboardData[0]->badge }}
+                                        </span>
                                     </div>
-                                    <div class="progress-container">
-                                        <div class="progress leaderboard-progress">
-                                            <div class="progress-bar leaderboard-progress-bar bg-gradient-{{ $currentUserRank->badge_color }}" role="progressbar" style="width: {{ $currentUserRank->percentage }}%;"></div>
-                                        </div>
-                                        <div class="progress-percentage text-end mt-1">
-                                            <span class="text-sm font-weight-bold">{{ $currentUserRank->percentage }}%</span>
-                                        </div>
+                                    <div class="podium-base first">1</div>
+                                @endif
+                            </div>
+
+                            <div class="podium-item third-place">
+                                @if(isset($leaderboardData[2]))
+                                    <div class="player-avatar">
+                                        <span class="medal-badge">🥉</span>
+                                        <h5 class="player-name">{{ $leaderboardData[2]->name }}</h5>
+                                        <span class="level-badge level-{{ $leaderboardData[2]->badge_color }}">
+                                            {{ $leaderboardData[2]->badge }}
+                                        </span>
                                     </div>
-                                </div>
+                                    <div class="podium-base third">3</div>
+                                @endif
                             </div>
                         </div>
                     </div>
-                   
-                    @endif
                     
                     <div class="table-responsive p-0 mx-3">
                         <div class="animated-border-table">
                             <table class="table leaderboard-table align-items-center mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="text-uppercase text-xxs font-weight-bolder opacity-7 ps-3">PERINGKAT</th>
-                                        <th class="text-uppercase text-xxs font-weight-bolder opacity-7 ps-3">MAHASISWA</th>
-                                        <th class="text-uppercase text-xxs font-weight-bolder opacity-7 ps-3">LEVEL</th>
-                                        <th class="text-center text-uppercase text-xxs font-weight-bolder opacity-7">TANGGAL SELESAI</th>
-                                        <th class="text-center text-uppercase text-xxs font-weight-bolder opacity-7">PROGRESS</th>
+                                        <th class="text-uppercase text-xxs font-weight-bolder opacity-7 ps-3">
+                                            <i class="fas fa-medal me-2"></i>PERINGKAT
+                                        </th>
+                                        <th class="text-uppercase text-xxs font-weight-bolder opacity-7 ps-3">
+                                            <i class="fas fa-user me-2"></i>MAHASISWA
+                                        </th>
+                                        <th class="text-uppercase text-xxs font-weight-bolder opacity-7 ps-3">
+                                            <i class="fas fa-star me-2"></i>LEVEL
+                                        </th>
+                                        <th class="text-center text-uppercase text-xxs font-weight-bolder opacity-7">
+                                            <i class="fas fa-calendar-check me-2"></i>TANGGAL SELESAI
+                                        </th>
+                                        <th class="text-center text-uppercase text-xxs font-weight-bolder opacity-7">
+                                            <i class="fas fa-chart-line me-2"></i>PROGRESS
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -84,9 +101,9 @@
                                         <td>
                                             <div class="d-flex px-3 py-2 justify-content-center">
                                                 @if($data->rank <= 3)
-                                                <div class="top-rank rank-{{ $data->rank }}">{{ $data->rank }}</div>
+                                                    <div class="top-rank rank-{{ $data->rank }}">{{ $data->rank }}</div>
                                                 @else
-                                                <span class="font-weight-bold">{{ $data->rank }}</span>
+                                                    <span class="font-weight-bold">{{ $data->rank }}</span>
                                                 @endif
                                             </div>
                                         </td>
@@ -103,24 +120,23 @@
                                             </div>
                                         </td>
                                         <td class="align-middle text-center">
-                                            @if($data->completion_date)
-                                                <span class="completion-date completed">
-                                                    <i class="fas fa-calendar-check"></i> {{ date('d M Y', strtotime($data->completion_date)) }}
-                                                </span>
-                                            @else
-                                                <span class="completion-date not-completed">
-                                                    <i class="fas fa-hourglass-half"></i> Belum selesai
-                                                </span>
-                                            @endif
+                                            <span class="completion-date {{ $data->completion_date ? 'completed' : 'not-completed' }}">
+                                                <i class="fas fa-{{ $data->completion_date ? 'calendar-check' : 'hourglass-half' }}"></i>
+                                                {{ $data->completion_date ? date('d M Y', strtotime($data->completion_date)) : 'Belum selesai' }}
+                                            </span>
                                         </td>
                                         <td class="align-middle">
-                                            <div class="progress-wrapper mx-auto" style="width: 80%">
+                                            <div class="progress-wrapper mx-auto">
                                                 <div class="progress leaderboard-progress">
-                                                    <div class="progress-bar leaderboard-progress-bar bg-gradient-{{ $data->badge_color }}" style="width: {{ $data->percentage }}%;"></div>
+                                                    <div class="progress-bar bg-gradient-{{ $data->badge_color }}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ $data->percentage }}%" 
+                                                         aria-valuenow="{{ $data->percentage }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
                                                 </div>
-                                                <div class="progress-percentage text-center mt-1">
-                                                    <span class="text-sm font-weight-bold">{{ $data->percentage }}%</span>
-                                                </div>
+                                                <div class="text-sm text-center mt-1">{{ $data->percentage }}%</div>
                                             </div>
                                         </td>
                                     </tr>

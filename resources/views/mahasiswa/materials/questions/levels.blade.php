@@ -7,10 +7,27 @@
     <div class="dashboard-header text-center">
         <h1 class="main-title">Level Soal: {{ $material->title }}</h1>
         <div class="title-underline"></div>
-        <div class="difficulty-badge">
-            <i class="fas fa-signal me-2"></i>
-            <span>Tingkat Kesulitan: {{ ucfirst($difficulty) }}</span>
+        
+        <!-- Add difficulty selector -->
+        <div class="difficulty-selector mb-4">
+            <form method="GET" action="{{ route('mahasiswa.materials.questions.levels', $material) }}" class="d-flex justify-content-center align-items-center">
+                <label class="me-2">Tingkat Kesulitan:</label>
+                <select name="difficulty" class="form-select" onchange="this.form.submit()" style="width: auto;">
+                    <option value="all" {{ $difficulty == 'all' ? 'selected' : '' }}>Semua</option>
+                    <option value="beginner" {{ $difficulty == 'beginner' ? 'selected' : '' }}>Beginner</option>
+                    <option value="medium" {{ $difficulty == 'medium' ? 'selected' : '' }}>Medium</option>
+                    <option value="hard" {{ $difficulty == 'hard' ? 'selected' : '' }}>Hard</option>
+                </select>
+            </form>
         </div>
+
+        <!-- Display current difficulty if filtered -->
+        @if($difficulty != 'all')
+        <div class="difficulty-badge mb-4">
+            <i class="fas fa-signal me-2"></i>
+            <span>Menampilkan Soal: {{ ucfirst($difficulty) }}</span>
+        </div>
+        @endif
     </div>
 
     <div class="level-container">
@@ -64,7 +81,11 @@
                             <i class="fas fa-check-circle completed-icon"></i>
                         </div>
                     @else
-                        <a href="{{ route('mahasiswa.materials.questions.show', ['material' => $material->id, 'question' => $level['question_id'], 'difficulty' => $difficulty]) }}" class="level-link">
+                        <a href="{{ route('mahasiswa.materials.questions.show', [
+                            'material' => $material->id,
+                            'question' => $level['question_id'],
+                            'difficulty' => $difficulty
+                        ]) }}" class="level-link">
                             <div class="level-circle unlocked">
                                 <span class="level-number">{{ $level['level'] }}</span>
                             </div>
@@ -557,6 +578,29 @@
 
     .start-label {
         animation: gentlePulse 3s infinite ease-in-out;
+    }
+
+    .difficulty-selector {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .difficulty-selector select {
+        min-width: 150px;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+
+    .difficulty-badge {
+        display: inline-block;
+        padding: 8px 15px;
+        background: #f8f9fa;
+        border-radius: 20px;
+        color: #666;
+        font-size: 0.9rem;
     }
 </style>
 @endsection 

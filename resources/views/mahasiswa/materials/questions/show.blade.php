@@ -262,15 +262,17 @@
             <div class="mb-4">
                 <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
             </div>
-            <h3 class="mb-3">Tidak Ada Soal Tersedia</h3>
+            <h3 class="mb-3">Selamat! Semua Soal Telah Terjawab</h3>
             <p class="text-muted mb-4">
-                @if(request()->query('difficulty'))
-                    Tidak ada soal tersisa untuk tingkat kesulitan ini.
-                @else
-                    Anda telah menyelesaikan semua soal pada materi ini.
-                @endif
+                Anda telah menyelesaikan semua soal pada materi ini.
             </p>
             <div class="mt-4">
+                <a href="{{ route('mahasiswa.materials.questions.levels', [
+                    'material' => $material->id,
+                    'difficulty' => $difficulty
+                ]) }}" class="btn btn-success me-2">
+                    <i class="fas fa-list-ol me-2"></i>Kembali ke Level
+                </a>
                 <a href="{{ route('mahasiswa.materials.show', $material->id) }}" class="btn btn-primary me-2">
                     <i class="fas fa-book me-2"></i>Kembali ke Materi
                 </a>
@@ -355,62 +357,7 @@ function initializeQuestionForm() {
             })
             .then(response => response.json())
             .then(data => {
-                // Set icon dan status berdasarkan hasil
-                if (data.status === 'success') {
-                    feedbackIcon.innerHTML = `<div class="rounded-circle bg-success d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;"><i class="fas fa-check-circle text-white" style="font-size: 40px;"></i></div>`;
-                    feedbackStatus.innerHTML = `
-                        <h3 class="feedback-title correct">Jawaban Benar!</h3>
-                        <p class="feedback-message">${data.message || 'Jawaban Anda benar.'}</p>
-                    `;
-                    feedbackElement.classList.add('correct');
-                    feedbackElement.classList.remove('incorrect');
-                } else {
-                    feedbackIcon.innerHTML = `<div class="rounded-circle bg-danger d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;"><i class="fas fa-times-circle text-white" style="font-size: 40px;"></i></div>`;
-                    feedbackStatus.innerHTML = `
-                        <h3 class="feedback-title incorrect">Jawaban Salah</h3>
-                        <p class="feedback-message">${data.message || 'Jawaban Anda salah.'}</p>
-                    `;
-                    feedbackElement.classList.add('incorrect');
-                    feedbackElement.classList.remove('correct');
-                }
-                
-                // Sembunyikan penjelasan (tidak ditampilkan lagi)
-                explanationBox.style.display = 'none';
-
-                // Tampilkan tombol yang sesuai
-                if (data.status === 'success') {
-                    tryAgainBtn.style.display = 'none';
-                    nextQuestionBtn.style.display = 'inline-block';
-                    
-                    if (data.hasNextQuestion) {
-                        // Jika masih ada soal berikutnya
-                        nextQuestionBtn.innerHTML = 'Lanjut ke Soal Berikutnya <i class="fas fa-arrow-right ms-2"></i>';
-                        
-                        // Tambahkan parameter difficulty jika ada
-                        let nextUrl = data.nextUrl;
-                        if (data.difficulty && data.difficulty !== 'all') {
-                            nextUrl += `?difficulty=${data.difficulty}`;
-                        }
-                        
-                        nextQuestionBtn.onclick = () => window.location.href = nextUrl;
-                    } else {
-                        // Jika tidak ada soal berikutnya, tampilkan tombol Selesai
-                        nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
-                        nextQuestionBtn.onclick = () => showAllQuestionsCompleted();
-                    }
-                } else {
-                    tryAgainBtn.style.display = 'inline-block';
-                    nextQuestionBtn.style.display = 'none';
-                    tryAgainBtn.onclick = () => {
-                        feedbackElement.style.display = 'none';
-                        questionForm.style.display = 'block';
-                        checkAnswerBtn.disabled = false;
-                        checkAnswerBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Periksa Jawaban';
-                    };
-                }
-
-                feedbackElement.style.display = 'block';
-                questionForm.style.display = 'none';
+                showFeedback(data);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -605,40 +552,80 @@ function submitAnswer() {
 }
 @endif
 
-function showFeedback(result, score, attemptNumber) {
+function showFeedback(data) {
     const feedbackElement = document.querySelector('.exercise-feedback');
+    const feedbackStatus = document.getElementById('feedbackStatus');
+    const feedbackIcon = document.getElementById('feedbackIcon');
+    const tryAgainBtn = document.getElementById('tryAgainBtn');
+    const nextQuestionBtn = document.getElementById('nextQuestionBtn');
     
-    // Jika jawaban benar, langsung arahkan ke halaman level
-    if (result.status === 'success') {
-        // Tampilkan pesan sukses sebentar
-        Swal.fire({
-            title: 'Jawaban Benar!',
-            text: result.message,
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-        }).then(() => {
-            // Redirect ke halaman level
-            window.location.href = result.nextUrl;
-        });
+    // Set status dan icon
+    feedbackStatus.innerHTML = `<h3 class="${data.status === 'success' ? 'text-success' : 'text-danger'}">${data.message}</h3>`;
+    feedbackIcon.className = `feedback-icon ${data.status === 'success' ? 'success' : 'error'}`;
+    feedbackIcon.innerHTML = `<i class="fas ${data.status === 'success' ? 'fa-check-circle' : 'fa-times-circle'} fa-3x"></i>`;
+
+    // Tampilkan tombol yang sesuai
+    if (data.status === 'success') {
+        tryAgainBtn.style.display = 'none';
+        nextQuestionBtn.style.display = 'inline-block';
+        
+        // Cek apakah ini soal terakhir
+        const currentNumber = {{ $currentQuestionNumber }};
+        const totalQuestions = {{ $totalFilteredQuestions }};
+        
+        if (currentNumber >= totalQuestions || !data.hasNextQuestion) {
+            // Jika soal terakhir, tampilkan tombol Selesai
+            nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
+            nextQuestionBtn.onclick = () => window.location.href = "{{ route('mahasiswa.materials.questions.levels', [
+                'material' => $material->id,
+                'difficulty' => request()->query('difficulty', 'all')
+            ]) }}";
+        } else {
+            // Jika masih ada soal berikutnya
+            nextQuestionBtn.innerHTML = 'Lanjut ke Soal Berikutnya <i class="fas fa-arrow-right ms-2"></i>';
+            nextQuestionBtn.onclick = () => window.location.href = data.nextUrl;
+        }
     } else {
-        // Jika jawaban salah, tampilkan feedback seperti biasa
-        feedbackElement.innerHTML = `
-            <div class="feedback-container ${result.status}">
-                <div class="feedback-icon">
-                    <i class="fas fa-times-circle"></i>
-                </div>
-                <h3 class="feedback-title">Jawaban Salah</h3>
-                <p class="feedback-message">${result.message}</p>
-                <div class="feedback-actions">
-                    <button onclick="retryQuestion()" class="btn btn-warning">
-                        <i class="fas fa-redo me-2"></i>Coba Lagi
-                    </button>
-                </div>
-            </div>
-        `;
-        feedbackElement.style.display = 'block';
+        tryAgainBtn.style.display = 'inline-block';
+        nextQuestionBtn.style.display = 'none';
     }
+
+    feedbackElement.style.display = 'block';
+    questionForm.style.display = 'none';
 }
+
+$(document).ready(function() {
+    $('#questionForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.status === 'success') {
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Benar!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        // Redirect to levels page
+                        window.location.href = response.nextUrl;
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: response.message
+                    });
+                }
+            }
+        });
+    });
+});
 </script>
 @endpush 

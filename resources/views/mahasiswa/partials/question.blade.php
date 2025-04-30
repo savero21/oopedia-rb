@@ -5,11 +5,15 @@
 <div class="materi-card shadow-sm rounded">
     <div class="materi-card-body p-4">
         <div id="questionContainer">
-            <form id="questionForm" action="{{ route('questions.check-answer') }}" method="POST">
+            <form id="questionForm" action="{{ route('questions.check-answer', [
+                'material' => $material->id,
+                'question' => $currentQuestion->id,
+                'difficulty' => $difficulty
+            ]) }}" method="POST">
                 @csrf
                 <input type="hidden" name="question_id" value="{{ $currentQuestion->id }}">
                 <input type="hidden" name="material_id" value="{{ $material->id }}">
-                <input type="hidden" name="difficulty" value="{{ request()->query('difficulty', 'all') }}">
+                <input type="hidden" name="difficulty" value="{{ $difficulty }}">
                 
                 <div class="question-header mb-4">
                     <div class="d-flex align-items-center justify-content-between">

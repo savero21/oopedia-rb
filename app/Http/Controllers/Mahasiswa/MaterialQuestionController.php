@@ -59,39 +59,36 @@ class MaterialQuestionController extends Controller
     public function show($id, Request $request)
     {
         $material = Material::with(['questions.answers'])->findOrFail($id);
+        $difficulty = $request->query('difficulty', 'all');
         
         // Get all materials for sidebar
         $materials = Material::orderBy('created_at', 'asc')->get();
         
-        // Get all questions without difficulty filtering
-        $filteredQuestions = $material->questions;
+        // Filter questions by difficulty if specified
+        $questions = $material->questions;
+        if ($difficulty !== 'all') {
+            $questions = $questions->where('difficulty', $difficulty);
+        }
         
-        // Convert to array with sequential indices
-        $filteredQuestions = $filteredQuestions->values();
+        // Convert to collection and get values
+        $filteredQuestions = $questions->values();
         
-        // Get the answered questions
+        // Get the answered questions for this difficulty
         $answeredQuestionIds = Progress::where('user_id', auth()->id())
             ->where('material_id', $material->id)
             ->where('is_correct', true)
             ->pluck('question_id');
-        
-        // Find index of last answered question
-        $lastAnsweredIndex = -1;
-        foreach ($filteredQuestions as $index => $question) {
-            if ($answeredQuestionIds->contains($question->id)) {
-                $lastAnsweredIndex = $index;
-            }
-        }
         
         // If there's a question_id parameter, use that
         if ($request->has('question')) {
             $questionId = $request->query('question');
             $currentQuestion = $filteredQuestions->firstWhere('id', $questionId);
             
-            // If question not found, redirect to levels page
+            // If question not found in current difficulty, redirect
             if (!$currentQuestion) {
                 return redirect()->route('mahasiswa.materials.questions.levels', [
-                    'material' => $material->id
+                    'material' => $material->id,
+                    'difficulty' => $difficulty
                 ])->with('error', 'Soal tidak ditemukan.');
             }
             
@@ -100,48 +97,63 @@ class MaterialQuestionController extends Controller
                 return $q->id == $questionId;
             });
             
-            // If question already answered, redirect to levels page
+            // If question already answered, redirect
             if ($answeredQuestionIds->contains($questionId)) {
                 return redirect()->route('mahasiswa.materials.questions.levels', [
-                    'material' => $material->id
-                ])->with('info', 'Soal ini sudah Anda jawab dengan benar. Silakan pilih soal berikutnya.');
+                    'material' => $material->id,
+                    'difficulty' => $difficulty
+                ])->with('info', 'Soal ini sudah Anda jawab dengan benar.');
             }
             
             // If not first question and previous question not answered, redirect
-            if ($questionIndex > 0 && $questionIndex > $lastAnsweredIndex + 1) {
-                return redirect()->route('mahasiswa.materials.questions.levels', [
-                    'material' => $material->id
-                ])->with('error', 'Anda harus menyelesaikan soal sebelumnya terlebih dahulu.');
+            if ($questionIndex > 0) {
+                $previousQuestion = $filteredQuestions[$questionIndex - 1];
+                if (!$answeredQuestionIds->contains($previousQuestion->id)) {
+                    return redirect()->route('mahasiswa.materials.questions.levels', [
+                        'material' => $material->id,
+                        'difficulty' => $difficulty
+                    ])->with('error', 'Anda harus menyelesaikan soal sebelumnya terlebih dahulu.');
+                }
             }
         } else {
-            // If no question_id parameter, direct to next unanswered question
-            $nextQuestionIndex = $lastAnsweredIndex + 1;
-            
-            // If all questions answered, return to levels page
-            if ($nextQuestionIndex >= $filteredQuestions->count()) {
-                return redirect()->route('mahasiswa.materials.questions.levels', [
-                    'material' => $material->id
-                ])->with('success', 'Selamat! Anda telah menyelesaikan semua soal.');
-            }
-            
-            $currentQuestion = $filteredQuestions[$nextQuestionIndex];
+            // If no question_id parameter, get first unanswered question
+            $currentQuestion = $filteredQuestions->first(function($question) use ($answeredQuestionIds) {
+                return !$answeredQuestionIds->contains($question->id);
+            });
         }
         
-        // If no questions available
         if (!$currentQuestion) {
             return redirect()->route('mahasiswa.materials.questions.levels', [
-                'material' => $material->id
-            ])->with('info', 'Tidak ada soal yang tersedia.');
+                'material' => $material->id,
+                'difficulty' => $difficulty
+            ])->with('success', 'Selamat! Anda telah menyelesaikan semua soal.');
         }
         
-        $currentQuestionNumber = 1;
+        $currentQuestionNumber = $filteredQuestions->search(function($q) use ($currentQuestion) {
+            return $q->id == $currentQuestion->id;
+        }) + 1;
+        
         $totalFilteredQuestions = $filteredQuestions->count();
         
         if ($request->ajax()) {
-            return view('mahasiswa.partials.question', compact('material', 'materials', 'currentQuestion', 'currentQuestionNumber', 'totalFilteredQuestions'));
+            return view('mahasiswa.partials.question', compact(
+                'material',
+                'materials',
+                'currentQuestion',
+                'currentQuestionNumber',
+                'totalFilteredQuestions',
+                'difficulty'
+            ));
         }
         
-        return view('mahasiswa.materials.questions.show', compact('materials', 'material', 'currentQuestion', 'currentQuestionNumber', 'totalFilteredQuestions'));
+        return view('mahasiswa.materials.questions.show', compact(
+            'materials',
+            'material',
+            'currentQuestion',
+            'currentQuestionNumber',
+            'totalFilteredQuestions',
+            'difficulty'
+        ));
     }
 
     public function review($id, Request $request)
@@ -198,6 +210,7 @@ class MaterialQuestionController extends Controller
     {
         $material = Material::findOrFail($materialId);
         $question = Question::findOrFail($questionId);
+        $difficulty = $request->query('difficulty', 'all');
         
         $request->validate([
             'answer' => 'required',
@@ -219,13 +232,15 @@ class MaterialQuestionController extends Controller
         ]);
 
         if ($isCorrect) {
+            // Redirect back to levels page with the same difficulty
             $nextUrl = route('mahasiswa.materials.questions.levels', [
-                'material' => $material->id
+                'material' => $material->id,
+                'difficulty' => $difficulty
             ]);
             
             return response()->json([
                 'status' => 'success',
-                'message' => 'Jawaban benar! Kembali ke halaman level untuk melanjutkan.',
+                'message' => 'Jawaban benar! Kembali ke halaman level.',
                 'hasNextQuestion' => false,
                 'nextUrl' => $nextUrl
             ]);
@@ -292,6 +307,7 @@ class MaterialQuestionController extends Controller
                 'level' => $questionIndex,
                 'question_id' => $question->id,
                 'status' => $status,
+                'difficulty' => $question->difficulty
             ];
         }
         
