@@ -9,6 +9,8 @@
                 Daftar Materi
             @elseif(request()->routeIs('mahasiswa.materials.questions*'))
                 Latihan Soal
+            @elseif(request()->routeIs('mahasiswa.ueq.create'))
+                UEQ Survey
             @else
                 Pembelajaran
             @endif
@@ -58,6 +60,17 @@
                 </a>
             </li>
         </ul>
+    @elseif(request()->routeIs('mahasiswa.ueq.create'))
+        {{-- UEQ Survey Sidebar Menu --}}
+        <ul class="nav-menu">
+            <li>
+                <a href="{{ route('mahasiswa.dashboard') }}" 
+                   class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+        </ul>
     @else
         {{-- Materials Sidebar Menu --}}
 
@@ -92,15 +105,17 @@
         </div>
         
         <ul class="nav-menu">
-            @foreach($materials as $m)
-                <li>
-                    <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
-                       class="menu-item {{ request()->is('mahasiswa/materials/'.$m->id) && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
-                        <i class="fas fa-book"></i>
-                        <span>{{ $m->title }}</span>
-                    </a>
-                </li>
-            @endforeach
+            @if(isset($materials))
+                @foreach($materials as $m)
+                    <li>
+                        <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
+                           class="menu-item {{ request()->is('mahasiswa/materials/'.$m->id) && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
+                            <i class="fas fa-book"></i>
+                            <span>{{ $m->title }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            @endif
         </ul>
 
         {{-- Tampilkan menu soal jika sedang di halaman soal untuk materi tertentu ATAU sedang melihat materi tertentu --}}
@@ -110,10 +125,10 @@
             @php
                 // Ambil ID materi dari URL
                 $currentMaterialId = request()->segment(3);
-                $currentMaterial = $materials->firstWhere('id', $currentMaterialId);
+                $currentMaterial = isset($materials) ? $materials->firstWhere('id', $currentMaterialId) : null;
             @endphp
             
-            @if($currentMaterial)
+            @if(isset($currentMaterial))
                 <div class="sidebar-header mt-3">
                     <h5 class="sidebar-title">Soal: {{ $currentMaterial->title }}</h5>
                 </div>
@@ -167,5 +182,23 @@
             </a>
         </li>
     </ul>
+
+    {{-- UEQ Survey Section Divider (hanya untuk mahasiswa yang login) --}}
+    @if(auth()->check() && auth()->user()->role_id == 3)
+    <div class="sidebar-header mt-4">
+        <h5 class="sidebar-title">Feedback</h5>
+    </div>
+    
+    {{-- UEQ Survey Menu Item --}}
+    <ul class="nav-menu">
+        <li>
+            <a href="{{ route('mahasiswa.ueq.create') }}" 
+               class="menu-item {{ request()->routeIs('mahasiswa.ueq.create') ? 'active' : '' }}">
+                <i class="fas fa-poll"></i>
+                <span>UEQ Survey</span>
+            </a>
+        </li>
+    </ul>
+    @endif
 
 </div>

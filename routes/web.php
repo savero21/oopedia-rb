@@ -14,7 +14,8 @@ use App\Http\Controllers\Admin\{
     QuestionController as AdminQuestionController,
     AdminUserController,
     PendingApprovalController,
-    LogoutController as AdminLogoutController
+    LogoutController as AdminLogoutController,
+    UeqSurveyController
 };
 use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
@@ -22,7 +23,8 @@ use App\Http\Controllers\Mahasiswa\{
     ProfileController as MahasiswaProfileController,
     QuestionController as MahasiswaQuestionController,
     MahasiswaController,
-    MaterialQuestionController
+    MaterialQuestionController,
+    UeqSurveyController as MahasiswaUeqSurveyController
 };
 use App\Models\Material;
 use Illuminate\Http\Request;
@@ -133,10 +135,14 @@ Route::middleware('auth')->group(function () {
             // Profile
             Route::get('profile', [MahasiswaProfileController::class, 'show'])->name('profile');
             Route::put('profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
+            
+            // UEQ Survey routes
+            Route::get('ueq-survey', [MahasiswaUeqSurveyController::class, 'create'])->name('ueq.create');
+            Route::post('ueq-survey', [MahasiswaUeqSurveyController::class, 'store'])->name('ueq.store');
+            Route::get('ueq-survey/thankyou', [MahasiswaUeqSurveyController::class, 'thankyou'])->name('ueq.thankyou');
         });
         
         // Materials (for both mahasiswa and guest)
-
         Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
 
         // Questions index route (must come before the materials/{material} route)
@@ -180,7 +186,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])->name('attempts');
             Route::get('/levels', [MaterialQuestionController::class, 'showLevels'])->name('levels');
         });
-
     });
 
     // Admin logout route - keep this one
@@ -218,4 +223,17 @@ Route::post('/guest-logout', [GuestLoginController::class, 'logout'])->name('gue
 
 Route::get('/mahasiswa/materials/{material}/questions/{question}/attempts', [MaterialQuestionController::class, 'getAttempts'])
     ->name('mahasiswa.materials.questions.attempts');
+
+// Mahasiswa routes
+Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
+    // Remove these lines
+    // Route::get('/ueq-survey', [MahasiswaUeqSurveyController::class, 'create'])->name('mahasiswa.ueq.create');
+    // Route::post('/ueq-survey', [MahasiswaUeqSurveyController::class, 'store'])->name('mahasiswa.ueq.store');
+});
+
+// Admin UEQ Survey routes
+Route::middleware(['auth', 'role:1|2'])->group(function () {
+    Route::get('/admin/ueq-survey', [UeqSurveyController::class, 'index'])->name('admin.ueq.index');
+    Route::get('/admin/ueq-survey/export', [UeqSurveyController::class, 'export'])->name('admin.ueq.export');
+});
 

@@ -133,6 +133,22 @@
                 </a>
             </li>
             @endif
+
+            {{-- Menu UEQ Survey Results hanya untuk Admin dan Superadmin --}}
+            @if(auth()->user()->role_id <= 2)
+            <li class="nav-item mt-3">
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Feedback</h6>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white {{ $activePage == 'ueq' ? 'active bg-gradient-primary' : '' }}"
+                    href="{{ route('admin.ueq.index') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="material-icons opacity-10">poll</i>
+                    </div>
+                    <span class="nav-link-text ms-1">UEQ Survey Results</span>
+                </a>
+            </li>
+            @endif
         </ul>
     </div>
 </aside>

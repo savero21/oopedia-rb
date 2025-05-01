@@ -2328,3 +2328,155 @@ button.dropdown-item[type="submit"]::before {
     padding-top: 15px;
     padding-bottom: 15px;
 }
+
+/* UEQ Survey Styles */
+.ueq-thankyou-card {
+    background: white;
+    border-radius: 15px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 78, 152, 0.1);
+    position: relative;
+    overflow: hidden;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border: 2px solid rgba(0, 78, 152, 0.1);
+    transition: all 0.3s ease;
+}
+
+.ueq-thankyou-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 78, 152, 0.15);
+    border-color: var(--color-1);
+}
+
+.ueq-thankyou-icon {
+    font-size: 5rem;
+    color: var(--color-1);
+    margin-bottom: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+.ueq-thankyou-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+}
+
+.ueq-thankyou-message {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.ueq-thankyou-decoration {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.ueq-decoration-item {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    opacity: 0.8;
+    animation: float 3s infinite ease-in-out;
+}
+
+.ueq-decoration-item:nth-child(1) {
+    animation-delay: 0s;
+    background: linear-gradient(135deg, var(--color-1), #3a7bd5);
+}
+
+.ueq-decoration-item:nth-child(2) {
+    animation-delay: 0.5s;
+    background: linear-gradient(135deg, #3a7bd5, var(--color-2));
+}
+
+.ueq-decoration-item:nth-child(3) {
+    animation-delay: 1s;
+    background: linear-gradient(135deg, var(--color-2), #00c6ff);
+}
+
+.ueq-thankyou-actions {
+    margin-top: 2rem;
+}
+
+.ueq-thankyou-actions .btn {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.ueq-thankyou-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 78, 152, 0.2);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Styling untuk tabel UEQ */
+.table-bordered {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+.table-bordered thead th {
+    background: var(--gradient-primary);
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border: none;
+}
+
+.table-bordered tbody tr:nth-child(odd) {
+    background-color: rgba(0, 78, 152, 0.05);
+}
+
+.table-bordered tbody tr:hover {
+    background-color: rgba(0, 78, 152, 0.1);
+}
+
+.table-bordered td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-color: #eee;
+}
+
+.table-bordered input[type="radio"] {
+    cursor: pointer;
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--color-1);
+}
+
+.table-bordered label {
+    cursor: pointer;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
