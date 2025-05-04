@@ -12,25 +12,37 @@ use Illuminate\Support\Str;
     <div class="title-underline"></div>
 </div>
 
+<div class="welcome-banner">
+    <div class="welcome-content">
+        <div class="welcome-icon">
+            <i class="fas fa-hand-sparkles"></i>
+        </div>
+        <div class="welcome-text">
+            <h2 class="welcome-title">Selamat Datang Kembali,</h2>
+            <h3 class="welcome-name">{{ auth()->user()->name }}</h3>
+            <p class="welcome-message">Lanjutkan perjalanan belajar Anda hari ini!</p>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid">
     <div class="row g-4">
-        <!-- Material Progress Overview -->
+        <!-- Material Overview (Modified) -->
         <div class="col-md-6">
             <div class="materi-card">
                 <div class="materi-card-body">
-                    <h3 class="materi-title">Progress Materi</h3>
-                    <div class="progress-container">
-                        <div class="progress-info">
-                            <span class="progress-text">Total Materi</span>
-                            <span class="progress-percentage">{{ $materialProgressPercentage }}%</span>
+                    <h3 class="materi-title">Materi Pembelajaran</h3>
+                    <div class="materi-overview">
+                        <div class="materi-count">
+                            <i class="fas fa-book me-2"></i>
+                            <span class="count-number">{{ $totalMaterials }}</span>
                         </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: {{ $materialProgressPercentage }}%"></div>
+                        <p class="materi-description">Total materi tersedia untuk dipelajari</p>
+                        <div class="button-container">
+                            <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-book me-2"></i>Lihat Semua Materi
+                            </a>
                         </div>
-                        <p class="progress-detail">{{ $completedMaterials }} dari {{ $totalMaterials }} materi selesai</p>
-                        <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-primary w-100 mt-3">
-                            <i class="fas fa-book me-2"></i>Lihat Semua Materi
-                        </a>
                     </div>
                 </div>
             </div>
@@ -40,19 +52,32 @@ use Illuminate\Support\Str;
         <div class="col-md-6">
             <div class="materi-card">
                 <div class="materi-card-body">
-                    <h3 class="materi-title">Progress Soal</h3>
-                    <div class="progress-container">
-                        <div class="progress-info">
-                            <span class="progress-text">Total Soal</span>
-                            <span class="progress-percentage">{{ $questionProgressPercentage }}%</span>
+                    <h3 class="materi-title">Latihan Soal</h3>
+                    <div class="materi-overview">
+                        <div class="materi-count">
+                            <i class="fas fa-question-circle me-2"></i>
+                            <span class="count-number">{{ $totalQuestions }}</span>
                         </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: {{ $questionProgressPercentage }}%"></div>
+                        <p class="materi-description">Total soal tersedia untuk latihan</p>
+                        <div class="difficulty-breakdown">
+                            <div class="difficulty-item">
+                                <span class="badge bg-success">Beginner</span>
+                                <span class="difficulty-count">{{ $easyQuestions }}</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <span class="badge bg-warning">Medium</span>
+                                <span class="difficulty-count">{{ $mediumQuestions }}</span>
+                            </div>
+                            <div class="difficulty-item">
+                                <span class="badge bg-danger">Hard</span>
+                                <span class="difficulty-count">{{ $hardQuestions }}</span>
+                            </div>
                         </div>
-                        <p class="progress-detail">{{ $totalCorrectQuestions }} dari {{ $totalQuestions }} soal selesai</p>
-                        <a href="{{ route('mahasiswa.materials.questions.index') }}" class="btn btn-primary w-100 mt-3">
-                            <i class="fas fa-question-circle me-2"></i>Latihan Soal
-                        </a>
+                        <div class="button-container">
+                            <a href="{{ route('mahasiswa.materials.questions.index') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-question-circle me-2"></i>Latihan Soal
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,7 +96,7 @@ use Illuminate\Support\Str;
                                     @elseif($activity->type === 'milestone') bg-warning
                                     @else bg-info @endif">
                                     @if($activity->type === 'achievement')
-                                        <i class="fas fa-trophy"></i>
+                                        <i class="fas fa-trophy" style="color: white;"></i>
                                     @elseif($activity->type === 'milestone')
                                         <i class="fas fa-star"></i>
                                     @else
@@ -93,7 +118,7 @@ use Illuminate\Support\Str;
         Menyelesaikan {{ $activity->total_correct }} soal di materi 
         <span class="fw-bold">{{ $activity->material_title }}</span>
     @elseif($activity->type === 'milestone')
-        Berhasil menyelesaikan soal level sulit di materi 
+        Berhasil menyelesaikan soal level hard di materi 
         <span class="fw-bold">{{ $activity->material_title }}</span>
     @else
         Mengerjakan soal {{ $activity->difficulty }} di materi 
@@ -110,37 +135,6 @@ use Illuminate\Support\Str;
                                 Belum ada aktivitas
                             </div>
                         @endforelse
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- All Materials Progress -->
-        <div class="col-12">
-            <div class="materi-card">
-                <div class="materi-card-body">
-                    <h3 class="materi-title">Progress Per Materi</h3>
-                    <div class="row g-4">
-                        @foreach($allMaterials as $material)
-                            <div class="col-md-4">
-                                <div class="progress-item-card">
-                                    <h4 class="progress-item-title">{{ $material->title }}</h4>
-                                    <div class="progress-container mt-3">
-                                        <div class="progress-info d-flex justify-content-between">
-                                            <span class="progress-text">Progress</span>
-                                            <span class="progress-percentage">{{ $material->progress }}%</span>
-                                        </div>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar" style="width: {{ $material->progress }}%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="question-info mt-3">
-                                        <i class="fas fa-check-circle text-success"></i>
-                                        <span>{{ $material->correct_answers }} / {{ $material->total_questions }} Soal</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
                     </div>
                 </div>
             </div>

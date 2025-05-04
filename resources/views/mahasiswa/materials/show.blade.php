@@ -63,33 +63,9 @@
         <a href="{{ route('mahasiswa.materials.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar Materi
         </a>
-        <a href="{{ route('mahasiswa.materials.questions.show', $material->id) }}" class="btn btn-primary">
+        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => 'beginner']) }}" class="btn btn-primary">
             Latihan Soal<i class="fas fa-arrow-right ms-2"></i>
         </a>
-    </div>
-
-    <div class="text-center py-5">
-        <div class="mb-4">
-            <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
-        </div>
-        <h3 class="mb-3">Selamat! Semua Soal Telah Terjawab</h3>
-        <p class="text-muted mb-4">
-            Anda telah menyelesaikan semua soal pada materi ini.
-        </p>
-        <div class="mt-4">
-            <a href="{{ route('mahasiswa.materials.questions.levels', [
-                'material' => $material->id,
-                'difficulty' => request()->query('difficulty', 'all')
-            ]) }}" class="btn btn-success me-2">
-                <i class="fas fa-list-ol me-2"></i>Kembali ke Level {{ ucfirst(request()->query('difficulty', '')) }}
-            </a>
-            <a href="{{ route('mahasiswa.materials.show', $material->id) }}" class="btn btn-primary me-2">
-                <i class="fas fa-book me-2"></i>Kembali ke Materi
-            </a>
-            <a href="{{ route('mahasiswa.dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-home me-2"></i>Dashboard
-            </a>
-        </div>
     </div>
 </div>
 

@@ -13,7 +13,6 @@
             <form method="GET" action="{{ route('mahasiswa.materials.questions.levels', $material) }}" class="d-flex justify-content-center align-items-center">
                 <label class="me-2">Tingkat Kesulitan:</label>
                 <select name="difficulty" class="form-select" onchange="this.form.submit()" style="width: auto;">
-                    <option value="all" {{ $difficulty == 'all' ? 'selected' : '' }}>Semua</option>
                     <option value="beginner" {{ $difficulty == 'beginner' ? 'selected' : '' }}>Beginner</option>
                     <option value="medium" {{ $difficulty == 'medium' ? 'selected' : '' }}>Medium</option>
                     <option value="hard" {{ $difficulty == 'hard' ? 'selected' : '' }}>Hard</option>

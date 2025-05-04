@@ -21,37 +21,20 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    @auth
-                        <li>
-                            <a href="{{ route('mahasiswa.materials.index') }}" 
-                               class="nav-link {{ request()->routeIs('mahasiswa.materials*') && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
-                                <i class="fas fa-book me-2"></i>
-                                <span>Materi</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('mahasiswa.materials.questions.index') }}" 
-                               class="nav-link {{ request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
-                                <i class="fas fa-question-circle me-2"></i>
-                                <span>Latihan Soal</span>
-                            </a>
-                        </li>
-                    @else
-                        <li>
-                            <a href="{{ route('mahasiswa.materials.index') }}" 
-                               class="nav-link {{ request()->routeIs('mahasiswa.materials*') && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
-                                <i class="fas fa-book me-2"></i>
-                                <span>Materi</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('mahasiswa.materials.questions.index') }}" 
-                               class="nav-link {{ request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
-                                <i class="fas fa-question-circle me-2"></i>
-                                <span>Latihan Soal</span>
-                            </a>
-                        </li>
-                    @endif
+                    <li>
+                        <a href="{{ route('mahasiswa.materials.index') }}" 
+                           class="nav-link {{ request()->routeIs('mahasiswa.materials*') && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
+                            <i class="fas fa-book me-2"></i>
+                            <span>Materi</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('mahasiswa.materials.questions.index') }}" 
+                           class="nav-link {{ request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
+                            <i class="fas fa-clipboard-check me-2"></i>
+                            <span>Latihan Soal</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -77,7 +60,7 @@
                         @auth
                             {{ auth()->user()->name }}
                         @else
-                            tamu
+                            Tamu
                         @endauth
                     </span>
                 </a>
@@ -88,24 +71,24 @@
                             <span>Profil Saya</span>
                         </a>
                     </li>
-                    @endauth
                     <li>
-                        @auth
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item">
-                                    <span>Logout</span>
-                                </button>
-                            </form>
-                        @else
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item">
-                                    <span>Logout</span>
-                                </button>
-                            </form>
-                        @endauth
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item">
+                                <span>Logout</span>
+                            </button>
+                        </form>
                     </li>
+                    @else
+                    <li>
+                        <form method="POST" action="{{ route('guest.logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item">
+                                <span>Keluar Mode Tamu</span>
+                            </button>
+                        </form>
+                    </li>
+                    @endauth
                 </ul>
             </div>
         </div>

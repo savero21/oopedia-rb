@@ -2,7 +2,7 @@
     <div class="sidebar-header">
         <h5 class="sidebar-title">
             @if(request()->routeIs('mahasiswa.dashboard*'))
-                Ringkasan Progress
+                Dashboard 
             @elseif(request()->routeIs('mahasiswa.profile'))
                 Profil
             @elseif(request()->routeIs('mahasiswa.materials*') && !request()->routeIs('mahasiswa.materials.questions*'))
@@ -71,30 +71,14 @@
                 </a>
             </li>
         </ul>
-    @else
-        {{-- Materials Sidebar Menu --}}
-
+    @elseif(request()->routeIs('mahasiswa.materials*') && !request()->routeIs('mahasiswa.materials.questions*'))
+        {{-- Hanya tampilkan daftar materi ketika di halaman materi --}}
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.materials.index') }}" 
-                   class="menu-item {{ request()->is('mahasiswa/materials') && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
-                    <i class="fas fa-book"></i>
-                    <span>Daftar Materi</span>
-                </a>
-            </li>
-        </ul>
-
-        {{-- Daftar Soal Section Divider --}}
-        <div class="sidebar-header mt-3">
-            <h5 class="sidebar-title">Daftar Soal</h5>
-        </div>
-
-        <ul class="nav-menu">
-            <li>
-                <a href="{{ route('mahasiswa.materials.questions.index') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.materials.questions*') && !request()->segment(4) ? 'active' : '' }}">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Latihan Soal</span>
+                   class="menu-item {{ request()->is('mahasiswa/materials') ? 'active' : '' }}">
+                    <i class="fas fa-list"></i>
+                    <span>Semua Materi</span>
                 </a>
             </li>
         </ul>
@@ -107,9 +91,9 @@
         <ul class="nav-menu">
             @if(isset($materials))
                 @foreach($materials as $m)
-                    <li>
+                    <li class="materi-item {{ request()->segment(3) == $m->id ? 'active' : '' }}">
                         <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
-                           class="menu-item {{ request()->is('mahasiswa/materials/'.$m->id) && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}">
+                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}">
                             <i class="fas fa-book"></i>
                             <span>{{ $m->title }}</span>
                         </a>
@@ -117,54 +101,99 @@
                 @endforeach
             @endif
         </ul>
+    @elseif(request()->routeIs('mahasiswa.materials.questions*'))
+        {{-- Sidebar untuk Latihan Soal --}}
+        <ul class="nav-menu">
+            <li>
+                <a href="{{ route('mahasiswa.materials.questions.index') }}" 
+                   class="menu-item {{ request()->is('mahasiswa/materials/questions') ? 'active' : '' }}">
+                    <i class="fas fa-list"></i>
+                    <span>Daftar Latihan Soal</span>
+                </a>
+            </li>
+        </ul>
 
-        {{-- Tampilkan menu soal jika sedang di halaman soal untuk materi tertentu ATAU sedang melihat materi tertentu --}}
-        @if((request()->is('mahasiswa/materials/*/questions*') && request()->segment(4)) || 
-            (request()->routeIs('mahasiswa.materials.show') && request()->segment(3)) ||
-            (request()->routeIs('mahasiswa.materials.questions.review') && request()->segment(4)))
-            @php
-                // Ambil ID materi dari URL
-                $currentMaterialId = request()->segment(3);
-                $currentMaterial = isset($materials) ? $materials->firstWhere('id', $currentMaterialId) : null;
-            @endphp
-            
-            @if(isset($currentMaterial))
-                <div class="sidebar-header mt-3">
-                    <h5 class="sidebar-title">Soal: {{ $currentMaterial->title }}</h5>
-                </div>
-                
-                <ul class="nav-menu">
+        {{-- Daftar Materi --}}
+        <div class="sidebar-header mt-3">
+            <h5 class="sidebar-title">Materi</h5>
+        </div>
+
+        <ul class="nav-menu">
+            @if(isset($materials))
+                @foreach($materials as $m)
                     <li>
-                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $currentMaterialId, 'difficulty' => 'beginner']) }}" 
-                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.levels') && request()->query('difficulty') == 'beginner' ? 'active' : '' }}">
-                            <i class="fas fa-star text-success"></i>
-                            <span>Beginner</span>
+                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'beginner']) }}" 
+                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}">
+                            <i class="fas fa-folder-open"></i>
+                            <span>{{ $m->title }}</span>
                         </a>
+                        
+                        @if(request()->segment(3) == $m->id)
+                            <div class="difficulty-menu">
+                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'beginner']) }}"
+                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'beginner' || request()->query('difficulty') == null ? 'active' : '' }}">
+                                    <i class="fas fa-star beginner-star"></i>
+                                    <span>Beginner</span>
+                                </a>
+                                
+                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'medium']) }}"
+                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'medium' ? 'active' : '' }}">
+                                    <i class="fas fa-star medium-star"></i>
+                                    <span>Medium</span>
+                                </a>
+                                
+                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'hard']) }}"
+                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'hard' ? 'active' : '' }}">
+                                    <i class="fas fa-star hard-star"></i>
+                                    <span>Hard</span>
+                                </a>
+                            </div>
+                        @endif
                     </li>
-                    <li>
-                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $currentMaterialId, 'difficulty' => 'medium']) }}" 
-                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.levels') && request()->query('difficulty') == 'medium' ? 'active' : '' }}">
-                            <i class="fas fa-star text-warning"></i>
-                            <span>Medium</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $currentMaterialId, 'difficulty' => 'hard']) }}" 
-                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.levels') && request()->query('difficulty') == 'hard' ? 'active' : '' }}">
-                            <i class="fas fa-star text-danger"></i>
-                            <span>Hard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('mahasiswa.materials.questions.review', ['material' => $currentMaterialId]) }}" 
-                           class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.review') ? 'active' : '' }}">
-                            <i class="fas fa-clipboard-check text-primary"></i>
-                            <span>Review Soal</span>
-                        </a>
-                    </li>
-                </ul>
+                @endforeach
             @endif
-        @endif
+        </ul>
+    @else
+        {{-- Default Sidebar Menu --}}
+        <ul class="nav-menu">
+            <li>
+                <a href="{{ route('mahasiswa.dashboard') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('mahasiswa.materials.index') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.materials.index') ? 'active' : '' }}">
+                    <i class="fas fa-book"></i>
+                    <span>Materi</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('mahasiswa.materials.questions.index') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.index') ? 'active' : '' }}">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Latihan Soal</span>
+                </a>
+            </li>
+            @auth
+                <li>
+                    <a href="{{ route('mahasiswa.profile') }}" 
+                       class="menu-item {{ request()->routeIs('mahasiswa.profile') ? 'active' : '' }}">
+                        <i class="fas fa-user"></i>
+                        <span>Profil Saya</span>
+                    </a>
+                </li>
+            @endauth
+            <li>
+                <a href="{{ route('mahasiswa.ueq.create') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.ueq.create') ? 'active' : '' }}">
+                    <i class="fas fa-poll"></i>
+                    <span>UEQ Survey</span>
+                </a>
+            </li>
+        </ul>
     @endif
 
     {{-- Leaderboard Section Divider --}}
@@ -200,5 +229,8 @@
         </li>
     </ul>
     @endif
-
 </div>
+
+@push('css')
+<!-- CSS dipindahkan ke mahasiswa.css -->
+@endpush

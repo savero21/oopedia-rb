@@ -254,6 +254,7 @@ button.dropdown-item[type="submit"]::before {
 }
 
 /* Updated Sidebar Styles */
+
 .sidebar {
     width: 250px;
     background-color: var(--bg-light);
@@ -262,23 +263,27 @@ button.dropdown-item[type="submit"]::before {
     height: calc(100vh - 70px);
     left: 0;
     top: 70px;
-    border-right: 1px solid rgba(255, 123, 84, 0.1);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
     z-index: 100;
     overflow-y: auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
 }
 
 .sidebar-header {
-    padding: 0 2rem;
-    margin-bottom: 2rem;
+    padding: 0 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .sidebar-title {
-    color: var(--color-1);
-    font-size: 1.2rem;
-    font-weight: 600;
+    color: #0056b3;
+    font-size: 1.1rem;
+    font-weight: 700;
     margin-bottom: 1rem;
     position: relative;
     padding-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .sidebar-title::after {
@@ -286,9 +291,9 @@ button.dropdown-item[type="submit"]::before {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 50px;
+    width: 40px;
     height: 3px;
-    background: linear-gradient(to right, var(--color-1), transparent);
+    background: #0056b3;
     border-radius: 2px;
 }
 
@@ -299,18 +304,44 @@ button.dropdown-item[type="submit"]::before {
 }
 
 .menu-item {
-    display: block;
-    padding: 0.75rem 2rem;
-    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: #495057;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     position: relative;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0 30px 30px 0;
+    font-weight: 500;
 }
 
 .menu-item:hover {
-    background: linear-gradient(to right, rgba(255, 123, 84, 0.1), transparent);
-    color: var(--color-1);
+    color: #0056b3;
+    background-color: rgba(0, 86, 179, 0.07);
+    transform: translateX(3px);
+}
+
+.menu-item.active {
+    background-color: #0056b3;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.2);
+}
+
+.menu-item i {
+    width: 20px;
+    margin-right: 10px;
+    text-align: center;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.menu-item:hover i {
+    transform: translateX(2px) scale(1.1);
+}
+
+.menu-item.active i {
+    color: white;
 }
 
 /* Enhanced Active Menu Item */
@@ -2479,4 +2510,679 @@ button.dropdown-item[type="submit"]::before {
     cursor: pointer;
     margin-bottom: 0;
     font-size: 0.9rem;
+}
+
+/* Welcome Banner Styles */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--color-1), var(--color-2));
+    border-radius: 15px;
+    padding: 25px 30px;
+    margin: 0 20px 30px 20px;
+    box-shadow: 0 10px 25px rgba(0, 78, 152, 0.15);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%);
+    transform: rotate(-30deg);
+    animation: shimmer 8s infinite linear;
+}
+
+.welcome-content {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.welcome-icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.welcome-icon i {
+    font-size: 32px;
+    color: white;
+    animation: wave 2s infinite;
+}
+
+.welcome-text {
+    color: white;
+}
+
+.welcome-title {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0;
+    animation: fadeInRight 0.5s ease-out 0.3s forwards;
+}
+
+.welcome-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 5px 0 10px 0;
+    opacity: 0;
+    animation: fadeInRight 0.5s ease-out 0.5s forwards;
+}
+
+.welcome-message {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.9;
+    opacity: 0;
+    animation: fadeInRight 0.5s ease-out 0.7s forwards;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+}
+
+@keyframes wave {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(15deg);
+    }
+    50% {
+        transform: rotate(0deg);
+    }
+    75% {
+        transform: rotate(-15deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes shimmer {
+    from {
+        transform: rotate(-30deg) translateX(-100%);
+    }
+    to {
+        transform: rotate(-30deg) translateX(100%);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .welcome-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .welcome-icon {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .welcome-title, .welcome-name, .welcome-message {
+        animation-name: fadeInUp;
+    }
+}
+
+.materi-overview {
+    text-align: center;
+    padding: 15px 0;
+}
+
+.materi-count {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #4e73df;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.count-number {
+    margin-left: 10px;
+}
+
+.materi-description {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.difficulty-breakdown {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.difficulty-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    width: 30%;
+}
+
+.difficulty-count {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.badge {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.materi-content-preview {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 10px 0;
+    height: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.progress-item-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.progress-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.progress-item-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-1);
+    margin-bottom: 10px;
+}
+
+.question-info {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.question-info i {
+    margin-right: 8px;
+    color: var(--color-2);
+}
+
+.button-container {
+    margin-top: 15px;
+    width: 100%;
+}
+
+.materi-overview {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.difficulty-breakdown {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.materi-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.materi-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.btn {
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2653d4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* CSS untuk warna bintang tingkat kesulitan */
+.difficulty-star.beginner,
+.difficulty-item .beginner-star {
+    color: #28a745; /* Hijau untuk tingkat Beginner */
+}
+
+.difficulty-star.medium,
+.difficulty-item .medium-star {
+    color: #ffc107; /* Kuning untuk tingkat Medium */
+}
+
+.difficulty-star.hard,
+.difficulty-item .hard-star {
+    color: #dc3545; /* Merah untuk tingkat Hard/Advanced */
+}
+
+/* Styling untuk item kesulitan pada sidebar */
+.difficulty-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 20px 8px 35px;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.difficulty-item:hover {
+    background-color: rgba(255, 123, 84, 0.1);
+    color: var(--color-1);
+}
+
+.difficulty-item.active {
+    background-color: #e9f0f7;
+    color: var(--color-1);
+    border-left: 3px solid var(--color-1);
+}
+
+/* Pastikan warna bintang tetap sesuai meskipun item active */
+.difficulty-item.active .beginner-star {
+    color: #28a745;
+}
+
+.difficulty-item.active .medium-star {
+    color: #ffc107;
+}
+
+.difficulty-item.active .hard-star {
+    color: #dc3545;
+}
+
+/* CSS untuk tingkat kesulitan di sidebar */
+.difficulty-menu {
+    padding-left: 0;
+    margin-top: 0;
+}
+
+/* Styling untuk sub-menu (difficulty levels) */
+.sub-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px 10px 35px;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+    background-color: #f8f9fa;
+    border-left: 3px solid transparent;
+}
+
+/* Hover effect pada sub-menu */
+.sub-menu-item:hover {
+    background-color: #e9f0f7;
+    color: var(--color-1);
+}
+
+/* Active state pada sub-menu */
+.sub-menu-item.active {
+    background-color: #e9f0f7;
+    color: var(--color-1);
+    border-left: 3px solid var(--color-1);
+}
+
+/* Warna untuk bintang tingkat kesulitan */
+.beginner-star {
+    color: #28a745 !important; /* Hijau */
+}
+
+.medium-star {
+    color: #ffc107 !important; /* Kuning */
+}
+
+.hard-star {
+    color: #dc3545 !important; /* Merah */
+}
+
+/* Override warna ikon bintang pada item active */
+.menu-item.active .beginner-star,
+.menu-item.active .medium-star,
+.menu-item.active .hard-star {
+    color: inherit !important;
+}
+
+/* Styling khusus untuk Beginner yang active */
+.menu-item.sub-menu-item.active .beginner-star {
+    color: #28a745 !important;
+}
+
+.menu-item.sub-menu-item.active .medium-star {
+    color: #ffc107 !important;
+}
+
+.menu-item.sub-menu-item.active .hard-star {
+    color: #dc3545 !important;
+}
+
+/* Styling untuk tampilan materi dan tingkat kesulitan */
+.sidebar-title {
+    color: #0056b3;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: #0056b3;
+    border-radius: 2px;
+}
+
+/* Styling untuk item materi */
+.material-menu-item {
+    background-color: #0056b3;
+    color: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 12px 15px !important;
+    transition: all 0.3s ease;
+    margin-bottom: 5px;
+}
+
+.material-menu-item:hover {
+    background-color: #004494;
+    transform: translateX(5px);
+}
+
+.material-menu-item.active {
+    background-color: #0056b3;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
+}
+
+.material-menu-item i {
+    color: #ffffff;
+}
+
+/* Styling untuk menu tingkat kesulitan */
+.difficulty-menu {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+}
+
+.difficulty-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 5px;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    position: relative;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+/* Styling spesifik untuk setiap tingkat kesulitan */
+.difficulty-item.beginner {
+    border-left: 4px solid #28a745;
+}
+
+.difficulty-item.beginner.active {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+    font-weight: 500;
+}
+
+.difficulty-item.medium {
+    border-left: 4px solid #ffc107;
+}
+
+.difficulty-item.medium.active {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #d39e00;
+    font-weight: 500;
+}
+
+.difficulty-item.hard {
+    border-left: 4px solid #dc3545;
+}
+
+.difficulty-item.hard.active {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+    font-weight: 500;
+}
+
+/* Hover effect untuk item kesulitan */
+.difficulty-item:hover {
+    transform: translateX(5px);
+}
+
+.difficulty-item.beginner:hover {
+    background-color: rgba(40, 167, 69, 0.08);
+}
+
+.difficulty-item.medium:hover {
+    background-color: rgba(255, 193, 7, 0.08);
+}
+
+.difficulty-item.hard:hover {
+    background-color: rgba(220, 53, 69, 0.08);
+}
+
+/* Styling untuk ikon bintang */
+.beginner-star {
+    color: #28a745 !important;
+    margin-right: 10px;
+    text-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
+}
+
+.medium-star {
+    color: #ffc107 !important;
+    margin-right: 10px;
+    text-shadow: 0 0 5px rgba(255, 193, 7, 0.4);
+}
+
+.hard-star {
+    color: #dc3545 !important;
+    margin-right: 10px;
+    text-shadow: 0 0 5px rgba(220, 53, 69, 0.4);
+}
+
+/* Animasi untuk bintang kesulitan */
+.difficulty-item:hover .beginner-star,
+.difficulty-item:hover .medium-star,
+.difficulty-item:hover .hard-star {
+    transform: rotate(15deg) scale(1.2);
+    transition: all 0.3s ease;
+}
+
+/* Pastikan menu active tetap terlihat jelas */
+.difficulty-item.active {
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling untuk item materi utama */
+.menu-item.active {
+    background-color: #0056b3;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.2);
+    border-radius: 10px;
+}
+
+/* Styling untuk menu tingkat kesulitan */
+.difficulty-menu {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+}
+
+/* Base styling untuk item kesulitan */
+.difficulty-item, 
+.menu-item.sub-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 5px;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    position: relative;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+/* Beginner difficulty styling */
+.difficulty-item.beginner.active,
+.menu-item.sub-menu-item.active:has(.beginner-star) {
+    background-color: #0056b3;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.2);
+}
+
+/* Medium difficulty styling */
+.difficulty-item.medium.active,
+.menu-item.sub-menu-item.active:has(.medium-star) {
+    background-color: #0056b3;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.2);
+}
+
+/* Hard difficulty styling */
+.difficulty-item.hard.active,
+.menu-item.sub-menu-item.active:has(.hard-star) {
+    background-color: #0056b3;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.2);
+}
+
+/* Hover styles */
+.difficulty-item:hover,
+.menu-item.sub-menu-item:hover {
+    transform: translateX(5px);
+    background-color: rgba(0, 86, 179, 0.1);
+}
+
+/* Star colors */
+.beginner-star {
+    color: #28a745 !important; /* Hijau */
+    margin-right: 10px;
+}
+
+.medium-star {
+    color: #ffc107 !important; /* Kuning */
+    margin-right: 10px;
+}
+
+.hard-star {
+    color: #dc3545 !important; /* Merah */
+    margin-right: 10px;
+}
+
+/* Ensure stars keep their colors even in active state */
+.menu-item.sub-menu-item.active .beginner-star {
+    color: #28a745 !important;
+}
+
+.menu-item.sub-menu-item.active .medium-star {
+    color: #ffc107 !important;
+}
+
+.menu-item.sub-menu-item.active .hard-star {
+    color: #dc3545 !important;
+}
+
+/* Hover animations for stars */
+.difficulty-item:hover .beginner-star,
+.difficulty-item:hover .medium-star,
+.difficulty-item:hover .hard-star,
+.menu-item.sub-menu-item:hover .beginner-star,
+.menu-item.sub-menu-item:hover .medium-star,
+.menu-item.sub-menu-item:hover .hard-star {
+    transform: rotate(15deg) scale(1.2);
+    transition: all 0.3s ease;
 }
