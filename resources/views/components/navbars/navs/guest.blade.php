@@ -3,7 +3,7 @@
 <nav class="navbar navbar-expand-lg position-absolute top-0 z-index-3 w-100 shadow-none my-3 navbar-transparent">
     <div class="container">
         <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 text-white" href="{{ url('/') }}">
-            <img src="{{ asset('images/logo.png') }}" alt="OOPedia" height="40" class="me-2 navbar-logo">
+            <img src="{{ asset('images/logo.png') }}" alt="OOPedia" height="50" class="me-2 navbar-logo">
            
             <span class="logo-fallback">OOPedia</span>
         </a>

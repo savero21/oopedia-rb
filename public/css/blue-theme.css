@@ -1062,11 +1062,7 @@ document.addEventListener('DOMContentLoaded', function() {
 */
 
 /* Logo styling */
-.navbar-logo {
-  height: 40px;
-  filter: brightness(0) invert(1); /* Membuat logo putih jika background gelap */
-  transition: all 0.3s ease;
-}
+
 
 .navbar-transparent.scrolled .navbar-logo {
   filter: none; /* Mengembalikan warna asli logo saat navbar scrolled */

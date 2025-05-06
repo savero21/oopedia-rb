@@ -1472,18 +1472,9 @@ button.dropdown-item[type="submit"]::before {
     font-size: 1rem;
 }
 
-/* Logo styling - membuat logo berwarna putih */
-.navbar-brand img {
-    filter: brightness(0) invert(1); /* Mengubah gambar menjadi putih */
-    transition: filter 0.3s ease;
-}
-
-/* Efek hover pada logo (opsional) */
-.navbar-brand:hover img {
-    filter: brightness(0) invert(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
-    transform: scale(1.05);
-}
-
+.navbar-brand {
+        background-color: transparent !important;
+    }
 /* Styling untuk gambar profil di navbar */
 .profile-image {
     width: 35px;
