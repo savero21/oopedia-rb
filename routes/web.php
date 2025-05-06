@@ -143,14 +143,14 @@ Route::middleware('auth')->group(function () {
         });
         
         // Materials (for both mahasiswa and guest)
-        Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
+        // Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
 
         // Questions index route (must come before the materials/{material} route)
         Route::get('materials/questions', [MaterialQuestionController::class, 'index'])
             ->name('materials.questions.index');
 
         // Material show route
-        Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+        // Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
 
         // Material questions review route (must come before the questions show route)
         Route::get('materials/{material}/questions/review', [MaterialQuestionController::class, 'review'])
@@ -193,7 +193,11 @@ Route::middleware('auth')->group(function () {
         ->name('admin.logout')
         ->middleware('auth'); // Only require authentication
 });
-
+// ✅ TAMU bisa akses materi
+Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+    Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
+    Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+});
 // Tambahkan route baru yang dapat diakses tanpa middleware
 Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])
     ->name('questions.check-answer');
