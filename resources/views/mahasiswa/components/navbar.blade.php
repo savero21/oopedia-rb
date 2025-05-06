@@ -150,7 +150,7 @@
 @push('scripts')
 <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
 <script>
-    // Simpan URL route dari Laravel ke dalam variabel JavaScript
+    // Simpan URL route
     const routeLogin = "{{ route('login') }}";
     const routeRegister = "{{ route('register') }}";
     const routeDashboard = "{{ route('mahasiswa.dashboard') }}";
@@ -158,70 +158,90 @@
     const routeSoal = "{{ route('mahasiswa.materials.questions.index') }}";
     const isLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
 
+    // Variabel untuk menandai klik sidebar
+    let sidebarClicked = false;
+
     document.addEventListener('DOMContentLoaded', function () {
-        // Inisialisasi tooltip Bootstrap
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+        // Inisialisasi tooltip
+        var tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltips.map(function(el) {
+            return new bootstrap.Tooltip(el);
         });
 
-        // Onboarding akan selalu muncul setiap kali halaman dimuat
-        function startTutorial() {
-            // Langkah-langkah dasar
-            let steps = [
-                {
-                    intro: "Halo! Mari kita mulai dengan mengenal tampilan website ini."
-                }
-            ];
+        // Jika bukan dari klik sidebar, jalankan tour
+        if (!sidebarClicked && !sessionStorage.getItem('skip_tour')) {
+            startTutorial();
+        }
+    });
 
-            // Tambahkan langkah untuk login/register jika user belum login
-            if (!isLoggedIn) {
-                steps.push(
-                    {
-                        element: document.querySelector('a.btn[href="' + routeLogin + '"]'),
-                        intro: "Klik tombol Login ini untuk masuk ke akun Anda"
-                    },
-                    {
-                        element: document.querySelector('a.btn[href="' + routeRegister + '"]'),
-                        intro: "Atau klik tombol Register untuk membuat akun baru"
-                    }
-                );
+    // Fungsi untuk memulai tutorial
+    function startTutorial() {
+        let steps = [
+            {
+                intro: "Halo! Mari kita mulai dengan mengenal tampilan website ini."
             }
+        ];
 
-            // Langkah-langkah menu navigasi
+        if (!isLoggedIn) {
             steps.push(
                 {
-                    element: document.querySelector('.nav-link[href="' + routeDashboard + '"]'),
-                    intro: "Ini adalah dashboard. Kamu bisa melihat ringkasan aktivitas di sini."
+                    element: document.querySelector('a.btn[href="' + routeLogin + '"]'),
+                    intro: "Klik tombol Login ini untuk masuk ke akun Anda"
                 },
                 {
-                    element: document.querySelector('.nav-link[href="' + routeMateri + '"]'),
-                    intro: "Di sini kamu bisa belajar berbagai materi pembelajaran."
-                },
-                {
-                    element: document.querySelector('.nav-link[href="' + routeSoal + '"]'),
-                    intro: "Cek pemahamanmu di bagian latihan soal ini!"
-                },
-                {
-                    intro: "Siap menjelajah? Klik di mana saja untuk menyelesaikan tutorial ini!"
+                    element: document.querySelector('a.btn[href="' + routeRegister + '"]'),
+                    intro: "Atau klik tombol Register untuk membuat akun baru"
                 }
             );
-
-            introJs().setOptions({
-                steps: steps,
-                showProgress: true,
-                exitOnOverlayClick: true,
-                showBullets: false,
-                scrollToElement: true,
-                nextLabel: 'Berikutnya',
-                prevLabel: 'Sebelumnya',
-                doneLabel: 'Selesai',
-                // skipLabel: 'Lewati'
-            }).start();
         }
 
-        // Mulai tutorial setiap kali halaman dimuat
-        startTutorial();
+        steps.push(
+            {
+                element: document.querySelector('.nav-link[href="' + routeDashboard + '"]'),
+                intro: "Ini adalah dashboard. Kamu bisa melihat ringkasan aktivitas di sini."
+            },
+            {
+                element: document.querySelector('.nav-link[href="' + routeMateri + '"]'),
+                intro: "Di sini kamu bisa belajar berbagai materi pembelajaran."
+            },
+            {
+                element: document.querySelector('.nav-link[href="' + routeSoal + '"]'),
+                intro: "Cek pemahamanmu di bagian latihan soal ini!"
+            },
+            {
+                intro: "Siap menjelajah? Klik di mana saja untuk menyelesaikan tutorial ini!"
+            }
+        );
+
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Selesai'
+        }).start();
+    }
+
+    // Tambahkan event listener untuk semua link di sidebar
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', function(event) {
+            // Tandai bahwa ini klik dari sidebar
+            sidebarClicked = true;
+            
+            // Untuk latihan soal, tetap arahkan ke login jika tamu
+            if (this.href.includes('/questions') && !isLoggedIn) {
+                event.preventDefault();
+                alert('Silakan login untuk mengakses latihan soal');
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
+            
+            // Untuk materi, biarkan lanjut tanpa tour
+            sessionStorage.setItem('skip_tour', 'true');
+        });
     });
 </script>
 @endpush

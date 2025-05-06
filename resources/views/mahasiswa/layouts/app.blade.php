@@ -6,7 +6,7 @@
     <title>OOPEDIA - @yield('title')</title>
     
     <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+    <!-- <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script> -->
 
     <!-- Global CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
