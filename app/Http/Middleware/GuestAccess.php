@@ -25,6 +25,7 @@ class GuestAccess
                     'mahasiswa.materials.questions.index',
                     'mahasiswa.materials.questions.show',
                     'mahasiswa.materials.questions.review',
+                    'mahasiswa.materials.questions.levels',
                     'mahasiswa.questions.check-answer',
                     'mahasiswa.questions.show',
                     'mahasiswa.materials.reset',

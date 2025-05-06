@@ -18,7 +18,6 @@ class MaterialController extends Controller
         // Untuk sidebar
         $materials = Material::orderBy('created_at', 'asc')->get();
         
-
         // Acak urutan jawaban untuk setiap soal
         foreach ($material->questions as $question) {
             if ($question->question_type !== 'fill_in_the_blank') {
@@ -26,13 +25,13 @@ class MaterialController extends Controller
             }
         }
         
-        // If user is guest (role_id = 4), only show half of the questions
-        // For regular students (role_id = 3), show all questions
-        // if (auth()->user()->role_id === 4) {
-            if (auth()->check()==null) {
-            $totalQuestions = $material->questions->count();
-            $halfQuestions = ceil($totalQuestions / 2);
-            $material->questions = $material->questions->take($halfQuestions);
+        // Limit questions for guest users (both when logged in as guest or not logged in)
+        if ((auth()->check() && auth()->user()->role_id === 4) || !auth()->check()) {
+            // Get the first 3 questions only
+            $limitedQuestions = $material->questions->take(3);
+            
+            // Replace the original questions collection with the limited one
+            $material->setRelation('questions', $limitedQuestions);
         }
         
         $answeredQuestionIds = Progress::where('user_id', auth()->id())
@@ -79,8 +78,7 @@ class MaterialController extends Controller
         $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
         
         // If user is guest, only show half of the materials
-        // if (auth()->user()->role_id === 4) {
-            if (auth()->user() == null) {
+        if (!auth()->check() || (auth()->check() && auth()->user()->role_id === 4)) {
             $totalMaterials = $allMaterials->count();
             $materialsToShow = ceil($totalMaterials / 2);
             $allMaterials = $allMaterials->take($materialsToShow);

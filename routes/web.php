@@ -197,6 +197,12 @@ Route::middleware('auth')->group(function () {
 Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
     Route::get('materials', [MahasiswaMaterialController::class, 'index'])->name('materials.index');
     Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
+    
+    // Tambahan untuk latihan soal yang bisa diakses tamu
+    Route::get('materials/questions', [MaterialQuestionController::class, 'index'])->name('materials.questions.index');
+    Route::get('materials/{material}/questions', [MaterialQuestionController::class, 'show'])->name('materials.questions.show');
+    Route::get('materials/{material}/questions/levels', [MaterialQuestionController::class, 'showLevels'])->name('materials.questions.levels');
+    Route::get('materials/{material}/questions/review', [MaterialQuestionController::class, 'review'])->name('materials.questions.review');
 });
 // Tambahkan route baru yang dapat diakses tanpa middleware
 Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])

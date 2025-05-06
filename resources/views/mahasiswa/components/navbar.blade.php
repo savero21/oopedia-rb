@@ -39,9 +39,12 @@
                            class="nav-link {{ request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}"
                            data-bs-toggle="tooltip" 
                            data-bs-placement="bottom" 
-                           title="@auth Latihan soal untuk menguji pemahaman pengguna @else Dapat diakses setelah login @endauth">
+                           title="@auth Latihan soal untuk menguji pemahaman pengguna @else Latihan soal untuk menguji pemahaman @endauth">
                             <i class="fas fa-clipboard-check me-2"></i>
                             <span>Latihan Soal</span>
+                            @guest
+                                <small class="badge bg-warning text-dark ms-1">Terbatas</small>
+                            @endguest
                         </a>
                     </li>
                 </ul>
@@ -56,13 +59,13 @@
                     <a href="{{ route('login') }}" class="btn btn-primary me-2" 
                        data-bs-toggle="tooltip" 
                        data-bs-placement="bottom" 
-                       title="Pengguna dapat mengakses semua fitur setelah login">
+                       title="Login untuk akses semua soal latihan tanpa batasan">
                         <i class="fas fa-sign-in-alt me-1"></i> Login
                     </a>
                     <a href="{{ route('register') }}" class="btn btn-primary"
                        data-bs-toggle="tooltip" 
                        data-bs-placement="bottom" 
-                       title="Buat akun baru untuk mengakses semua fitur">
+                       title="Buat akun baru untuk akses semua soal latihan tanpa batasan">
                         <i class="fas fa-user-plus me-1"></i> Register
                     </a>
                 </div>
@@ -113,11 +116,10 @@
 <!-- Add this section to display the login reminder only for guests -->
 @if(request()->routeIs('mahasiswa.dashboard*'))
 <div class="container-fluid px-4 pt-3">
-
         @guest
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
-                Silakan login untuk mengakses semua fitur pembelajaran
+                Silakan login untuk mengakses semua fitur pembelajaran. <strong>Mode tamu hanya memiliki akses 3 soal per materi.</strong>
             </div>
         @endguest
         

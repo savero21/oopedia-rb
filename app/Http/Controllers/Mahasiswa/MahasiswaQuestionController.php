@@ -97,8 +97,8 @@ class MahasiswaQuestionController extends Controller
                 $explanation = $selectedAnswer->explanation;
             }
             
-            // Update progress jika user login
-            if (auth()->check()) {
+            // Update progress jika user login, simpan ke session jika guest
+            if (auth()->check() && auth()->user()->role_id !== 4) {
                 Progress::updateOrCreate(
                     [
                         'user_id' => auth()->id(),
@@ -110,6 +110,36 @@ class MahasiswaQuestionController extends Controller
                         'attempt_number' => DB::raw('attempt_number + 1')
                     ]
                 );
+            } else {
+                // For guest users (not logged in or role_id = 4), track in session
+                // Format untuk session guest_progress
+                $sessionKey = 'guest_progress';
+                $guestProgress = session($sessionKey, []);
+                
+                $progressKey = $request->material_id . '_' . $question->id;
+                $guestProgress[$progressKey] = [
+                    'is_correct' => $isCorrect,
+                    'attempt_number' => isset($guestProgress[$progressKey]) ? 
+                        $guestProgress[$progressKey]['attempt_number'] + 1 : 1
+                ];
+                
+                session([$sessionKey => $guestProgress]);
+                
+                // Update format untuk level unlocking jika jawaban benar
+                if ($isCorrect) {
+                    $materialProgress = session('guest_progress.' . $request->material_id, []);
+                    if (!in_array($question->id, $materialProgress)) {
+                        $materialProgress[] = $question->id;
+                        session(['guest_progress.' . $request->material_id => $materialProgress]);
+                    }
+                    
+                    // Log debug untuk memeriksa data
+                    \Log::debug('Guest progress updated', [
+                        'material_id' => $request->material_id,
+                        'question_id' => $question->id,
+                        'session_data' => $materialProgress
+                    ]);
+                }
             }
             
             // Cek apakah ada soal berikutnya
