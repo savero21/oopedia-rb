@@ -204,33 +204,63 @@
     {{-- Leaderboard Menu Item --}}
     <ul class="nav-menu">
         <li>
-            <a href="{{ route('mahasiswa.leaderboard') }}" 
-               class="menu-item {{ request()->routeIs('mahasiswa.leaderboard') ? 'active' : '' }}">
-                <i class="fas fa-trophy"></i>
-                <span>Peringkat</span>
-            </a>
+            @auth
+                <a href="{{ route('mahasiswa.leaderboard') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.leaderboard') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat peringkat pengguna">
+                    <i class="fas fa-trophy"></i>
+                    <span>Peringkat</span>
+                </a>
+            @else
+                <a href="#" 
+                   class="menu-item"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Silakan login untuk melihat peringkat">
+                    <i class="fas fa-trophy"></i>
+                    <span>Peringkat</span>
+                    <span class="badge bg-warning text-dark ms-2">Perlu Login</span>
+                </a>
+            @endauth
         </li>
     </ul>
 
-    {{-- UEQ Survey Section Divider (hanya untuk mahasiswa yang login) --}}
-    @if(auth()->check() && auth()->user()->role_id == 3)
-    <div class="sidebar-header mt-4">
-        <h5 class="sidebar-title">Feedback</h5>
-    </div>
-    
-    {{-- UEQ Survey Menu Item --}}
-    <ul class="nav-menu">
-        <li>
-            <a href="{{ route('mahasiswa.ueq.create') }}" 
-               class="menu-item {{ request()->routeIs('mahasiswa.ueq.create') ? 'active' : '' }}">
-                <i class="fas fa-poll"></i>
-                <span>UEQ Survey</span>
-            </a>
-        </li>
-    </ul>
-    @endif
+    {{-- UEQ Survey Section Divider (only for logged-in students) --}}
+    @auth
+        @if(auth()->user()->role_id == 3)
+        <div class="sidebar-header mt-4">
+            <h5 class="sidebar-title">Feedback</h5>
+        </div>
+        
+        <ul class="nav-menu">
+            <li>
+                <a href="{{ route('mahasiswa.ueq.create') }}" 
+                   class="menu-item {{ request()->routeIs('mahasiswa.ueq.create') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Berikan feedback tentang sistem">
+                    <i class="fas fa-poll"></i>
+                    <span>UEQ Survey</span>
+                </a>
+            </li>
+        </ul>
+        @endif
+    @endauth
 </div>
 
 @push('css')
-<!-- CSS dipindahkan ke mahasiswa.css -->
+<style>
+    /* Additional styles for the disabled menu items */
+    .menu-item.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .badge-login-required {
+        font-size: 0.7rem;
+        margin-left: 8px;
+    }
+</style>
 @endpush

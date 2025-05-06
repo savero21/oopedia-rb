@@ -114,46 +114,39 @@
                 </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header pb-0">
-                            <h6>Aktivitas Penyelesaian Terbaru</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="timeline timeline-one-side">
-                                @foreach($recentProgress as $progress)
-                                <div class="timeline-block mb-3">
-                                    <span class="timeline-step">
-                                        <i class="material-icons text-success">check_circle</i>
-                                    </span>
-                                    <div class="timeline-content">
-                                        <h6 class="text-dark text-sm font-weight-bold mb-0">
-                                        @if ($progress->user_id !=null)
-                                                {{ $progress->user->name }} menyelesaikan soal
-                                            
-                                            @else
-                                                'unknown'
-                                            
-                                            @endif
-                                            <!-- {{ $progress->user->name }} menyelesaikan soal -->
-
-                                        </h6>
-                                        <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">
-                                            {{ $progress->material->title }}
-                                        </p>
-                                        <p class="text-sm mt-3 mb-0">
-                                            {{ $progress->created_at->diffForHumans() }}
-                                        </p>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
+<!-- Recent Activity -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <h6>Aktivitas Penyelesaian Terbaru</h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="timeline timeline-one-side">
+                    @foreach($recentProgress as $progress)
+                    <div class="timeline-block mb-3">
+                        <span class="timeline-step">
+                            <i class="material-icons text-success">check_circle</i>
+                        </span>
+                        <div class="timeline-content">
+                            <h6 class="text-dark text-sm font-weight-bold mb-0">
+                                {{ optional($progress->user)->name ?? 'unknown' }} menyelesaikan soal
+                            </h6>
+                            <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">
+                                {{ optional($progress->material)->title ?? '-' }}
+                            </p>
+                            <p class="text-sm mt-3 mb-0">
+                                {{ $progress->created_at->diffForHumans() }}
+                            </p>
                         </div>
                     </div>
+                    @endforeach
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
             <x-footers.auth></x-footers.auth>
         </div>
     </main>
