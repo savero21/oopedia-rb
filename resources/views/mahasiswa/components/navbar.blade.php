@@ -1,6 +1,8 @@
 @push('css')
 <link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
+<link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
 @endpush
+
 
 <nav class="navbar">
     <div class="container-fluid">
@@ -54,7 +56,6 @@
         <!-- Right side - Profile/Logout/Login/Register -->
         <div class="d-flex align-items-center">
             @guest
-                <!-- Login and Register buttons - ONLY SHOWN FOR GUESTS -->
                 <div class="me-3">
                     <a href="{{ route('login') }}" class="btn btn-primary me-2" 
                        data-bs-toggle="tooltip" 
@@ -113,34 +114,137 @@
     </div>
 </nav>
 
-<!-- Add this section to display the login reminder only for guests -->
 @if(request()->routeIs('mahasiswa.dashboard*'))
 <div class="container-fluid px-4 pt-3">
-        @guest
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                Silakan login untuk mengakses semua fitur pembelajaran. <strong>Mode tamu hanya memiliki akses 3 soal per materi.</strong>
-            </div>
-        @endguest
-        
-        @auth
-            <div class="welcome-message">
-                <h4>Selamat datang, {{ auth()->user()->name }}!</h4>
-                <p class="text-muted">Anda dapat mengakses semua materi dan latihan soal</p>
-            </div>
-        @endauth
-    </div>
-@endif
+    @guest
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Silakan login untuk mengakses semua fitur pembelajaran
+        </div>
+    @endguest
 
+    <!-- @auth
+        <div class="welcome-message">
+            <h4>Selamat datang, {{ auth()->user()->name }}!</h4>
+            <p class="text-muted">Anda dapat mengakses semua materi dan latihan soal</p>
+        </div>
+    @endauth
+</div>
+@endif -->
+
+
+@if(request()->routeIs('mahasiswa.dashboard*'))
+<!-- <div class="container-fluid px-4 pt-3">
+    @guest
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Silakan login untuk mengakses semua fitur pembelajaran
+        </div>
+    @endguest -->
+
+    @auth
+        <div class="welcome-message">
+            <h4>Selamat datang, {{ auth()->user()->name }}!</h4>
+            <p class="text-muted">Anda dapat mengakses semua materi dan latihan soal</p>
+        </div>
+    @endauth
+</div>
+@endif
 @push('scripts')
+<script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
 <script>
-    // Inisialisasi tooltip Bootstrap
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
+    // Simpan URL route
+    const routeLogin = "{{ route('login') }}";
+    const routeRegister = "{{ route('register') }}";
+    const routeDashboard = "{{ route('mahasiswa.dashboard') }}";
+    const routeMateri = "{{ route('mahasiswa.materials.index') }}";
+    const routeSoal = "{{ route('mahasiswa.materials.questions.index') }}";
+    const isLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
+
+    // Variabel untuk menandai klik sidebar
+    let sidebarClicked = false;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Inisialisasi tooltip
+        var tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltips.map(function(el) {
+            return new bootstrap.Tooltip(el);
+        });
+
+        // Jika bukan dari klik sidebar, jalankan tour
+        if (!sidebarClicked && !sessionStorage.getItem('skip_tour')) {
+            startTutorial();
+        }
+    });
+
+    // Fungsi untuk memulai tutorial
+    function startTutorial() {
+        let steps = [
+            {
+                intro: "Halo! Mari kita mulai dengan mengenal tampilan website ini."
+            }
+        ];
+
+        if (!isLoggedIn) {
+            steps.push(
+                {
+                    element: document.querySelector('a.btn[href="' + routeLogin + '"]'),
+                    intro: "Klik tombol Login ini untuk masuk ke akun Anda"
+                },
+                {
+                    element: document.querySelector('a.btn[href="' + routeRegister + '"]'),
+                    intro: "Atau klik tombol Register untuk membuat akun baru"
+                }
+            );
+        }
+
+        steps.push(
+            {
+                element: document.querySelector('.nav-link[href="' + routeDashboard + '"]'),
+                intro: "Ini adalah dashboard. Kamu bisa melihat ringkasan aktivitas di sini."
+            },
+            {
+                element: document.querySelector('.nav-link[href="' + routeMateri + '"]'),
+                intro: "Di sini kamu bisa belajar berbagai materi pembelajaran."
+            },
+            {
+                element: document.querySelector('.nav-link[href="' + routeSoal + '"]'),
+                intro: "Cek pemahamanmu di bagian latihan soal ini!"
+            },
+            {
+                intro: "Siap menjelajah? Klik di mana saja untuk menyelesaikan tutorial ini!"
+            }
+        );
+
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Selesai'
+        }).start();
+    }
+
+    // Tambahkan event listener untuk semua link di sidebar
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', function(event) {
+            // Tandai bahwa ini klik dari sidebar
+            sidebarClicked = true;
+            
+            // Untuk latihan soal, tetap arahkan ke login jika tamu
+            if (this.href.includes('/questions') && !isLoggedIn) {
+                event.preventDefault();
+                alert('Silakan login untuk mengakses latihan soal');
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
+            
+            // Untuk materi, biarkan lanjut tanpa tour
+            sessionStorage.setItem('skip_tour', 'true');
+        });
     });
 </script>
 @endpush
-
