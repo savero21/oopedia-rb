@@ -405,4 +405,53 @@
 }
 </style>
 @endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if tour has been shown for this page
+        if (!sessionStorage.getItem('question_index_tour_complete')) {
+            setTimeout(startQuestionsIndexTour, 500);
+        }
+    });
+
+    function startQuestionsIndexTour() {
+        const steps = [
+            {
+                intro: "Selamat datang di halaman Latihan Soal OOPEDIA!"
+            },
+            {
+                element: document.querySelector('.material-card:first-child'),
+                intro: "Ini adalah kartu materi latihan soal. Pilih salah satu materi untuk mulai berlatih."
+            },
+            {
+                element: document.querySelector('.progress-container'),
+                intro: "Di sini Anda dapat melihat progres pengerjaan soal untuk setiap materi."
+            },
+            {
+                element: document.querySelector('.material-actions .btn-read-material'),
+                intro: "Klik tombol ini untuk mulai mengerjakan latihan soal dari materi yang dipilih."
+            },
+            {
+                intro: "Selamat berlatih soal PBO di OOPEDIA!"
+            }
+        ];
+
+        // Start the tutorial
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Mulai'
+        }).oncomplete(function() {
+            // Mark as completed in session storage
+            sessionStorage.setItem('question_index_tour_complete', 'true');
+        }).start();
+    }
+</script>
+@endpush
 @endsection 

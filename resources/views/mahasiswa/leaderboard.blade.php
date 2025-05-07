@@ -165,9 +165,9 @@
         @if($currentUserRank && $currentUserRank->rank <= 3)
             // Konfeti untuk peringkat 1-3
             const colors = [
-                ['#FFD700', '#FFC107'], // Gold
-                ['#C0C0C0', '#9E9E9E'], // Silver
-                ['#CD7F32', '#BF360C']  // Bronze
+                ['#004e98', '#0074d9'], // Dark blue - peringkat 1
+                ['#0074d9', '#3498db'], // Medium blue - peringkat 2
+                ['#3498db', '#4fc3f7']  // Light blue - peringkat 3
             ];
             
             const selectedColors = colors[{{ $currentUserRank->rank - 1 }}];
@@ -177,8 +177,23 @@
                 spread: 70,
                 origin: { y: 0.6 },
                 colors: selectedColors,
-                disableForReducedMotion: true
+                startVelocity: 30,
+                gravity: 0.5,
+                ticks: 200,
+                shapes: ['square', 'circle'],
+                zIndex: 1000
             });
+            
+            // Tampilkan pesan selamat
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Selamat!',
+                    text: 'Anda berada di peringkat {{ $currentUserRank->rank }} leaderboard!',
+                    icon: 'success',
+                    confirmButtonText: 'Terima Kasih',
+                    confirmButtonColor: '#004e98'
+                });
+            }, 1000);
         @endif
     });
 

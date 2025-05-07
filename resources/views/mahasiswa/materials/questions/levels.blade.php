@@ -602,4 +602,57 @@
         font-size: 0.9rem;
     }
 </style>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if this is first time visiting the levels page
+        if (!sessionStorage.getItem('question_levels_tutorial_complete')) {
+            setTimeout(startLevelsTutorial, 500);
+        }
+    });
+
+    function startLevelsTutorial() {
+        // Define the tutorial steps - focusing directly on level 1
+        const steps = [
+            {
+                intro: "Selamat datang di halaman Level Soal! Di sini Anda dapat melihat progres pengerjaan soal."
+            },
+            {
+                element: document.querySelector('.level-map'),
+                intro: "Ini adalah peta level. Anda harus menyelesaikan satu level untuk membuka level berikutnya."
+            },
+            {
+                element: document.querySelector('.level-item:first-child .level-circle'),
+                intro: "Klik pada Level 1 ini untuk mulai mengerjakan soal. Level berikutnya akan terbuka setelah Anda menyelesaikan level ini."
+            },
+            {
+                element: document.querySelector('.level-item.trophy'),
+                intro: "Selesaikan semua level untuk mendapatkan trofi ini!"
+            }
+        ];
+
+        // Start the tutorial
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Mulai Latihan'
+        }).oncomplete(function() {
+            // Mark as completed in session storage
+            sessionStorage.setItem('question_levels_tutorial_complete', 'true');
+            
+            // Redirect to first level
+            const firstLevelLink = document.querySelector('.level-item:first-child .level-link');
+            if (firstLevelLink) {
+                window.location.href = firstLevelLink.href;
+            }
+        }).start();
+    }
+</script>
+@endpush
 @endsection 

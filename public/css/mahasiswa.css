@@ -2075,48 +2075,60 @@ button.dropdown-item[type="submit"]::before {
 }
 
 .first-place .player-avatar {
-    padding-top: 80px;
+    padding-top: 40px;
     padding-bottom: 30px;
     min-width: 250px;
     position: relative;
     margin-top: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e6f2ff 100%);
+    border: 2px solid rgba(0, 116, 217, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 116, 217, 0.2);
 }
 
 .second-place .player-avatar {
-    background: linear-gradient(135deg, #C0C0C0 0%, #E0E0E0 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+    border: 2px solid rgba(108, 117, 125, 0.3);
+    min-width: 250px; /* Match first place width */
+    padding-top: 30px; /* Similar padding to first place */
+    padding-bottom: 30px;
 }
 
 .third-place .player-avatar {
-    background: linear-gradient(135deg, #CD7F32 0%, #D4A676 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff5e6 100%);
+    border: 2px solid rgba(205, 127, 50, 0.3);
+    min-width: 250px; /* Match first place width */
+    padding-top: 30px; /* Similar padding to first place */
+    padding-bottom: 30px;
 }
 
 .podium-base {
-    width: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     font-weight: 700;
-    color: rgba(0,0,0,0.5);
-    border-radius: 20px;
-    margin-top: -10px;
+    color: white;
+    border-radius: 10px;
+    margin-top: 0;
+    width: 100%;
 }
 
 .podium-base.first {
-    height: 120px;
-    background: linear-gradient(135deg, #ffd700 0%, #ffeb3b 100%);
+    height: 100px;
+    background: linear-gradient(135deg, #0074D9 0%, #004E98 100%);
+    box-shadow: 0 5px 15px rgba(0, 78, 152, 0.3);
 }
 
 .podium-base.second {
-    height: 90px;
-    width: 250px;
-    background: linear-gradient(135deg, #C0C0C0 0%, #E0E0E0 100%);
+    height: 80px;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
 }
 
 .podium-base.third {
     height: 60px;
-    width: 250px;
-    background: linear-gradient(135deg, #CD7F32 0%, #D4A676 100%);
+    background: linear-gradient(135deg, #CD7F32 0%, #A06030 100%);
+    box-shadow: 0 3px 10px rgba(205, 127, 50, 0.3);
 }
 
 .player-name {
@@ -2293,22 +2305,32 @@ button.dropdown-item[type="submit"]::before {
 /* Crown styling */
 .crown-icon {
     position: absolute;
-    top: -45px;
+    top: -35px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 48px;
+    font-size: 48px; /* Larger size */
     color: #FFD700;
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
-    animation: floatCrown 2s ease-in-out infinite;
-    z-index: 1;
+    text-shadow: 
+        0 0 5px rgba(255, 215, 0, 0.8),
+        0 0 10px rgba(255, 140, 0, 0.5),
+        0 1px 2px rgba(0, 0, 0, 0.7);
+    filter: 
+        drop-shadow(0 3px 3px rgba(0, 0, 0, 0.3))
+        drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
+    animation: floatCrown 3s ease-in-out infinite;
+    z-index: 5;
 }
 
+/* More realistic floating animation */
 @keyframes floatCrown {
-    0%, 100% {
-        transform: translateX(-50%) translateY(0);
+    0% { 
+        transform: translateX(-50%) translateY(0) rotate(-2deg);
     }
-    50% {
-        transform: translateX(-50%) translateY(-5px);
+    50% { 
+        transform: translateX(-50%) translateY(-7px) rotate(2deg);
+    }
+    100% { 
+        transform: translateX(-50%) translateY(0) rotate(-2deg);
     }
 }
 
@@ -3176,4 +3198,272 @@ button.dropdown-item[type="submit"]::before {
 .menu-item.sub-menu-item:hover .hard-star {
     transform: rotate(15deg) scale(1.2);
     transition: all 0.3s ease;
+}
+
+/* Podium Styling - Blue Theme */
+.podium-wrapper {
+    margin-top: 30px;
+    padding: 20px 0;
+}
+
+.podium-display {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    position: relative;
+}
+
+/* Player Avatar Styling */
+.player-avatar {
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    text-align: center;
+    width: 180px;
+    box-shadow: 0 8px 24px rgba(0, 78, 152, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.player-avatar:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 78, 152, 0.25);
+}
+
+.player-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 10px 0 8px;
+    color: var(--text-dark);
+}
+
+/* Podium Base Styling */
+.podium-base {
+    height: 40px;
+    text-align: center;
+    color: white;
+    font-weight: 700;
+    line-height: 40px;
+    font-size: 1.2rem;
+    border-radius: 0 0 8px 8px;
+    position: relative;
+    margin-top: 10px;
+}
+
+/* First Place Styling */
+.first-place .player-avatar {
+    background: linear-gradient(145deg, #f9f9f9, #f0f8ff);
+    border: 2px solid #0074D9;
+    box-shadow: 0 10px 25px rgba(0, 116, 217, 0.3);
+}
+
+.podium-base.first {
+    background: linear-gradient(145deg, #0074D9, #004E98);
+    height: 80px;
+    box-shadow: 0 5px 15px rgba(0, 78, 152, 0.3);
+}
+
+.first-place .medal-badge {
+    background: linear-gradient(145deg, #FFD700, #FFC107);
+    border: 2px solid #FFC107;
+}
+
+/* Second Place Styling */
+.second-place .player-avatar {
+    background: linear-gradient(145deg, #f9f9f9, #f0f8ff);
+    border: 2px solid #6c757d;
+    box-shadow: 0 8px 20px rgba(108, 117, 125, 0.2);
+}
+
+.podium-base.second {
+    background: linear-gradient(145deg, #6c757d, #495057);
+    height: 60px;
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+.second-place .medal-badge {
+    background: linear-gradient(145deg, #C0C0C0, #A9A9A9);
+    border: 2px solid #A9A9A9;
+}
+
+/* Third Place Styling */
+.third-place .player-avatar {
+    background: linear-gradient(145deg, #f9f9f9, #f0f8ff);
+    border: 2px solid #CD7F32;
+    box-shadow: 0 8px 20px rgba(205, 127, 50, 0.2);
+}
+
+.podium-base.third {
+    background: linear-gradient(145deg, #CD7F32, #8B4513);
+    height: 40px;
+    box-shadow: 0 5px 15px rgba(205, 127, 50, 0.3);
+}
+
+.third-place .medal-badge {
+    background: linear-gradient(145deg, #CD7F32, #8B4513);
+    border: 2px solid #8B4513;
+}
+
+/* Medal Badge Styling */
+.medal-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Crown Icon Styling */
+.crown-icon {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #FFD700;
+    font-size: 24px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    animation: floatCrown 3s ease-in-out infinite;
+}
+
+@keyframes floatCrown {
+    0% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-5px); }
+    100% { transform: translateX(-50%) translateY(0); }
+}
+
+/* Level Badge Styling */
+.level-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Level Badge Colors - Keep existing color scheme for consistency */
+.level-primary {
+    background-color: rgba(0, 116, 217, 0.2);
+    color: #0074D9;
+}
+
+.level-success {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.level-warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.level-danger {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.level-info {
+    background-color: rgba(23, 162, 184, 0.2);
+    color: #17a2b8;
+}
+
+/* Base player avatar styling */
+.player-avatar {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,78,152,0.1);
+    text-align: center;
+    min-width: 200px;
+    margin-bottom: 15px; /* Added space between avatar and podium */
+    border: 2px solid rgba(0, 78, 152, 0.1);
+    transition: all 0.3s ease;
+}
+
+.player-avatar:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+}
+
+.first-place .player-avatar {
+    padding-top: 40px;
+    padding-bottom: 30px;
+    min-width: 250px;
+    position: relative;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e6f2ff 100%);
+    border: 2px solid rgba(0, 116, 217, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 116, 217, 0.2);
+}
+
+.second-place .player-avatar {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
+    border: 2px solid rgba(108, 117, 125, 0.3);
+    min-width: 250px; /* Match first place width */
+    padding-top: 30px; /* Similar padding to first place */
+    padding-bottom: 30px;
+}
+
+.third-place .player-avatar {
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff5e6 100%);
+    border: 2px solid rgba(205, 127, 50, 0.3);
+    min-width: 250px; /* Match first place width */
+    padding-top: 30px; /* Similar padding to first place */
+    padding-bottom: 30px;
+}
+
+/* Podium base styling to match avatar widths */
+.podium-base {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    border-radius: 10px; /* Changed from pointy to more rounded */
+    margin-top: 0;
+    width: 100%; /* Match the width of the avatar above */
+}
+
+.podium-base.first {
+    height: 100px;
+    background: linear-gradient(135deg, #0074D9 0%, #004E98 100%);
+    box-shadow: 0 5px 15px rgba(0, 78, 152, 0.3);
+}
+
+.podium-base.second {
+    height: 80px;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+}
+
+.podium-base.third {
+    height: 60px;
+    background: linear-gradient(135deg, #CD7F32 0%, #A06030 100%);
+    box-shadow: 0 3px 10px rgba(205, 127, 50, 0.3);
+}
+
+/* Ensure the podium items have the right structure */
+.podium-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 10px; /* Add some horizontal spacing between podium items */
+}
+
+/* Add more space in podium display */
+.podium-display {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px; /* Increased gap between podium items */
+    padding: 0 2rem;
 }

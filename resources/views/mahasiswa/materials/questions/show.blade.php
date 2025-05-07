@@ -652,5 +652,51 @@ $(document).ready(function() {
         });
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if this is first time visiting a question
+    if (!sessionStorage.getItem('question_answer_tutorial_complete')) {
+        setTimeout(startQuestionAnswerTutorial, 700);
+    }
+});
+
+function startQuestionAnswerTutorial() {
+    // Define the tutorial steps
+    const steps = [
+        {
+            intro: "Sekarang Anda berada di halaman soal. Mari kita pelajari cara menjawab soal."
+        },
+        {
+            element: document.querySelector('.question-text'),
+            intro: "Ini adalah teks pertanyaan yang harus Anda jawab."
+        },
+        {
+            element: document.querySelector('.options-container'),
+            intro: "Pilih salah satu jawaban yang menurut Anda benar."
+        },
+        {
+            element: document.getElementById('checkAnswerBtn'),
+            intro: "Setelah memilih jawaban, klik tombol ini untuk memeriksa jawaban Anda."
+        },
+        {
+            intro: "Jika jawaban benar, Anda dapat melanjutkan ke soal berikutnya. Jika salah, Anda dapat mencoba lagi."
+        }
+    ];
+
+    // Start the tutorial
+    introJs().setOptions({
+        steps: steps,
+        showProgress: true,
+        exitOnOverlayClick: true,
+        showBullets: false,
+        scrollToElement: true,
+        nextLabel: 'Berikutnya',
+        prevLabel: 'Sebelumnya',
+        doneLabel: 'Mulai Menjawab'
+    }).oncomplete(function() {
+        // Mark as completed in session storage
+        sessionStorage.setItem('question_answer_tutorial_complete', 'true');
+    }).start();
+}
 </script>
 @endpush 
