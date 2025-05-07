@@ -19,7 +19,7 @@
 @if(!auth()->check() || (auth()->check() && auth()->user()->role_id === 4))
 <div class="alert alert-warning mb-4">
     <strong>Mode Tamu Aktif!</strong> 
-    Anda hanya dapat melihat sebagian materi dan hanya 3 soal latihan dari setiap materi yang ditampilkan. 
+    Anda hanya dapat melihat sebagian materi dan hanya 3 soal latihan dari setiap tingkat kesulitan yang ditampilkan. 
     Untuk akses penuh, silakan 
     <a href="{{ route('login') }}" class="alert-link">login</a> 
     atau 
@@ -59,11 +59,13 @@
                                     
                                     // Check if user is logged in first before checking role_id
                                     if(auth()->check() && auth()->user()->role_id === 4) {
-                                        $totalQuestions = ceil($totalQuestions / 2);
+                                        // 3 soal per tingkat kesulitan (beginner, medium, hard)
+                                        $totalQuestions = min(9, $totalQuestions);
                                     }
                                     // If not logged in, treat as guest with limited access
                                     elseif(!auth()->check()) {
-                                        $totalQuestions = min(3, $totalQuestions);
+                                        // 3 soal per tingkat kesulitan (beginner, medium, hard)
+                                        $totalQuestions = min(9, $totalQuestions);
                                     }
                                     
                                     $correctAnswers = $material->completed_questions ?? 0;
@@ -90,7 +92,13 @@
                     <div class="material-meta">
                         <div class="meta-item">
                             <i class="fas fa-tasks"></i>
-                            <span>{{ $material->is_guest_limited ? '3' : $material->total_questions }} Soal</span>
+                            <span>
+                                @if(auth()->check() && auth()->user()->role_id === 4 || !auth()->check())
+                                    9 Soal
+                                @else
+                                    {{ $material->total_questions }} Soal
+                                @endif
+                            </span>
                         </div>
                         
                         <div class="meta-item">
