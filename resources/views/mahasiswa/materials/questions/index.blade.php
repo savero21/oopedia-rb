@@ -16,6 +16,18 @@
 </form>
 @endif
 
+@if(!auth()->check() || (auth()->check() && auth()->user()->role_id === 4))
+<div class="alert alert-warning mb-4">
+    <strong>Mode Tamu Aktif!</strong> 
+    Anda hanya dapat melihat sebagian materi dan hanya 3 soal latihan dari setiap tingkat kesulitan yang ditampilkan. 
+    Untuk akses penuh, silakan 
+    <a href="{{ route('login') }}" class="alert-link">login</a> 
+    atau 
+    <a href="{{ route('register') }}" class="alert-link">daftar</a> 
+    sebagai mahasiswa.
+</div>
+@endif
+
 <div class="dashboard-header text-center">
     <h1 class="main-title">Latihan Soal PBO</h1>
     <div class="title-underline"></div>
@@ -44,10 +56,19 @@
                             <span class="progress-percentage">
                                 @php
                                     $totalQuestions = $material->total_questions;
-                                    if(auth()->user()->role_id === 4) {
-                                        $totalQuestions = ceil($totalQuestions / 2);
+                                    
+                                    // Check if user is logged in first before checking role_id
+                                    if(auth()->check() && auth()->user()->role_id === 4) {
+                                        // 3 soal per tingkat kesulitan (beginner, medium, hard)
+                                        $totalQuestions = min(9, $totalQuestions);
                                     }
-                                    $correctAnswers = $material->completed_questions;
+                                    // If not logged in, treat as guest with limited access
+                                    elseif(!auth()->check()) {
+                                        // 3 soal per tingkat kesulitan (beginner, medium, hard)
+                                        $totalQuestions = min(9, $totalQuestions);
+                                    }
+                                    
+                                    $correctAnswers = $material->completed_questions ?? 0;
                                     $percentage = $totalQuestions > 0 ? min(100, round(($correctAnswers / $totalQuestions) * 100)) : 0;
                                 @endphp
                                 {{ $percentage }}%
@@ -59,7 +80,9 @@
                         <div class="progress-details mt-2">
                             <small>
                                 {{ $correctAnswers }} dari {{ $totalQuestions }} soal selesai
-                                @if(auth()->user()->role_id === 4)
+                                @if(auth()->check() && auth()->user()->role_id === 4)
+                                    (Mode Tamu)
+                                @elseif(!auth()->check())
                                     (Mode Tamu)
                                 @endif
                             </small>
@@ -69,7 +92,13 @@
                     <div class="material-meta">
                         <div class="meta-item">
                             <i class="fas fa-tasks"></i>
-                            <span>{{ $material->total_questions }} Soal</span>
+                            <span>
+                                @if(auth()->check() && auth()->user()->role_id === 4 || !auth()->check())
+                                    9 Soal
+                                @else
+                                    {{ $material->total_questions }} Soal
+                                @endif
+                            </span>
                         </div>
                         
                         <div class="meta-item">
@@ -88,7 +117,8 @@
                     @endif
 
                     <div class="material-actions">
-                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => 'beginner']) }}" class="btn-read-material">
+                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => 'beginner']) }}" 
+                           class="btn-read-material">
                             <span>Mulai Latihan</span>
                             <i class="fas fa-arrow-right"></i>
                         </a>
@@ -260,8 +290,9 @@
 }
 
 .material-actions {
+    position: relative;
+    padding-top: 5px;
     margin-top: auto;
-    padding-top: 1rem;
 }
 
 .btn-read-material {
@@ -344,6 +375,33 @@
         flex-direction: column;
         gap: 0.5rem;
     }
+}
+
+.guest-limited {
+    background: linear-gradient(135deg, #ffa000, #ff6f00) !important;
+    position: relative;
+    padding-top: 12px !important;
+    margin-top: 10px !important;
+}
+
+.guest-limited::before {
+    content: "Terbatas";
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: #ff3d00;
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.guest-limited span, 
+.guest-limited i {
+    position: relative;
+    z-index: 0;
 }
 </style>
 @endpush

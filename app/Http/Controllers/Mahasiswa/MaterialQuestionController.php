@@ -14,41 +14,51 @@ class MaterialQuestionController extends Controller
 {
     public function index()
     {
-        $userId = auth()->id();
-        
-        // Get progress statistics
-        $progressStats = DB::table('progress')
-            ->select(
-                'material_id',
-                DB::raw('COUNT(DISTINCT question_id) as answered_questions'),
-                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
-            )
-            ->where('user_id', $userId)
-            ->groupBy('material_id')
-            ->get();
-
         // Get all materials first
         $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
         
+        // Determine if user is guest (not logged in or role_id = 4)
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
         // If user is guest, only show half of the materials
-        if (auth()->user()->role_id === 4) {
+        if ($isGuest) {
             $totalMaterials = $allMaterials->count();
             $materialsToShow = ceil($totalMaterials / 2);
             $allMaterials = $allMaterials->take($materialsToShow);
         }
 
-        $materials = $allMaterials->map(function($material) use ($progressStats) {
+        $materials = $allMaterials->map(function($material) use ($isGuest) {
             $totalQuestions = $material->questions->count();
-            $materialProgress = $progressStats->firstWhere('material_id', $material->id);
             
-            $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
-            $progressPercentage = $totalQuestions > 0 
-                ? min(100, round(($correctAnswers / $totalQuestions) * 100))
-                : 0;
-
-            $material->progress_percentage = $progressPercentage;
-            $material->total_questions = $totalQuestions;
-            $material->completed_questions = $correctAnswers;
+            if ($isGuest) {
+                // For guest users, handle progress from session
+                $guestProgress = session('guest_progress.' . $material->id, []);
+                $correctAnswers = count($guestProgress);
+                
+                // Limit to 3 questions for guest users
+                $limitedTotalQuestions = min(3, $totalQuestions);
+                $progressPercentage = $limitedTotalQuestions > 0 
+                    ? min(100, round(($correctAnswers / $limitedTotalQuestions) * 100))
+                    : 0;
+                    
+                $material->progress_percentage = $progressPercentage;
+                $material->total_questions = $limitedTotalQuestions;
+                $material->completed_questions = $correctAnswers;
+            } else {
+                // For logged-in users, get from database
+                $materialProgress = Progress::where('user_id', auth()->id())
+                    ->where('material_id', $material->id)
+                    ->where('is_correct', true)
+                    ->count();
+                    
+                $progressPercentage = $totalQuestions > 0 
+                    ? min(100, round(($materialProgress / $totalQuestions) * 100))
+                    : 0;
+                    
+                $material->progress_percentage = $progressPercentage;
+                $material->total_questions = $totalQuestions;
+                $material->completed_questions = $materialProgress;
+            }
             
             return $material;
         });
@@ -73,11 +83,25 @@ class MaterialQuestionController extends Controller
         // Convert to collection and get values
         $filteredQuestions = $questions->values();
         
+        // Determine if user is guest (not logged in or role_id = 4)
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
+        // Jika user tamu, batasi hanya 3 soal pertama
+        if ($isGuest) {
+            $filteredQuestions = $filteredQuestions->take(3)->values();
+        }
+        
         // Get the answered questions for this difficulty
-        $answeredQuestionIds = Progress::where('user_id', auth()->id())
-            ->where('material_id', $material->id)
-            ->where('is_correct', true)
-            ->pluck('question_id');
+        if ($isGuest) {
+            // For guests, get from session
+            $answeredQuestionIds = collect(session('guest_progress.' . $material->id, []));
+        } else {
+            // For logged-in users, get from database
+            $answeredQuestionIds = Progress::where('user_id', auth()->id())
+                ->where('material_id', $material->id)
+                ->where('is_correct', true)
+                ->pluck('question_id');
+        }
         
         // If there's a question_id parameter, use that
         if ($request->has('question')) {
@@ -142,7 +166,8 @@ class MaterialQuestionController extends Controller
                 'currentQuestion',
                 'currentQuestionNumber',
                 'totalFilteredQuestions',
-                'difficulty'
+                'difficulty',
+                'isGuest'
             ));
         }
         
@@ -152,7 +177,8 @@ class MaterialQuestionController extends Controller
             'currentQuestion',
             'currentQuestionNumber',
             'totalFilteredQuestions',
-            'difficulty'
+            'difficulty',
+            'isGuest'
         ));
     }
 
@@ -171,13 +197,22 @@ class MaterialQuestionController extends Controller
             $questions = $questions->where('difficulty', $difficulty);
         }
         
-        // Get only questions that the user has answered
-        $answeredQuestionIds = Progress::where('user_id', auth()->id())
-            ->where('material_id', $material->id)
-            ->where('is_answered', true)
-            ->pluck('question_id');
+        // Determine if user is guest
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
         
-        $questions = $questions->whereIn('id', $answeredQuestionIds);
+        // Get only questions that the user has answered
+        if ($isGuest) {
+            // For guests, filter questions based on session data
+            $answeredQuestionIds = collect(session('guest_progress.' . $material->id, []));
+            $questions = $questions->whereIn('id', $answeredQuestionIds);
+        } else {
+            // For logged-in users, get from database
+            $answeredQuestionIds = Progress::where('user_id', auth()->id())
+                ->where('material_id', $material->id)
+                ->where('is_answered', true)
+                ->pluck('question_id');
+            $questions = $questions->whereIn('id', $answeredQuestionIds);
+        }
         
         if ($request->ajax()) {
             return view('mahasiswa.partials.question-review-filtered', [
@@ -190,18 +225,30 @@ class MaterialQuestionController extends Controller
         // For direct access, return the full review page
         return view('mahasiswa.materials.questions.review', [
             'material' => $material,
-            'materials' => $materials,  // Make sure to pass this variable
+            'materials' => $materials,
             'questions' => $questions,
-            'difficulty' => $difficulty
+            'difficulty' => $difficulty,
+            'isGuest' => $isGuest
         ]);
     }
 
     public function getAttempts(Material $material, Question $question)
     {
-        $attempts = Progress::where('user_id', auth()->id())
-            ->where('material_id', $material->id)
-            ->where('question_id', $question->id)
-            ->count();
+        // Determine if user is guest
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
+        if ($isGuest) {
+            // For guest users, get attempts from session
+            $progressKey = $material->id . '_' . $question->id;
+            $guestProgress = session('guest_progress', []);
+            $attempts = isset($guestProgress[$progressKey]) ? $guestProgress[$progressKey]['attempt_number'] : 0;
+        } else {
+            // For logged-in users, get from database
+            $attempts = Progress::where('user_id', auth()->id())
+                ->where('material_id', $material->id)
+                ->where('question_id', $question->id)
+                ->count();
+        }
         
         return response()->json(['attempts' => $attempts]);
     }
@@ -267,11 +314,25 @@ class MaterialQuestionController extends Controller
             $questions = $questions->where('difficulty', $difficulty);
         }
         
-        // Dapatkan ID pertanyaan yang sudah dijawab dengan benar
-        $answeredQuestionIds = Progress::where('user_id', auth()->id())
-            ->where('material_id', $materialId)
-            ->where('is_correct', true)
-            ->pluck('question_id');
+        // Determine if user is guest
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
+        // Jika user tamu, batasi hanya 3 soal pertama
+        if ($isGuest) {
+            $questions = $questions->take(3);
+        }
+        
+        // Get answered question IDs based on user type
+        if ($isGuest) {
+            // For guests, get answered questions from session
+            $answeredQuestionIds = collect(session('guest_progress.' . $materialId, []));
+        } else {
+            // For logged-in users, get from database
+            $answeredQuestionIds = Progress::where('user_id', auth()->id())
+                ->where('material_id', $materialId)
+                ->where('is_correct', true)
+                ->pluck('question_id');
+        }
         
         // Buat array level dengan status (terkunci/terbuka/selesai)
         $levels = [];
@@ -284,13 +345,8 @@ class MaterialQuestionController extends Controller
             $questionIndex++;
             $isAnswered = $answeredQuestionIds->contains($question->id);
             
-            // Logika baru:
-            // 1. Level pertama selalu terbuka
-            // 2. Level berikutnya terbuka hanya jika level sebelumnya sudah dijawab
-            // 3. Level yang sudah dijawab ditandai sebagai completed (disabled)
-            
             if ($isAnswered) {
-                // Soal sudah dijawab benar, tandai sebagai completed (disabled)
+                // Soal sudah dijawab benar, tandai sebagai completed
                 $status = 'completed';
             } elseif ($questionIndex === 1) {
                 // Soal pertama selalu terbuka
@@ -315,7 +371,8 @@ class MaterialQuestionController extends Controller
             'material', 
             'materials', 
             'levels', 
-            'difficulty'
+            'difficulty',
+            'isGuest'
         ));
     }
 } 

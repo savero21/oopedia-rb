@@ -22,14 +22,20 @@
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.dashboard') }}"
-                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat statistik dan progres pembelajaran Anda">
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li>
                 <a href="{{ route('mahasiswa.profile') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.profile') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.profile') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat dan ubah profil Anda">
                     <i class="fas fa-user"></i>
                     <span>Profil Saya</span>
                 </a>
@@ -40,21 +46,30 @@
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.dashboard') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') && !request()->routeIs('mahasiswa.dashboard.*') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') && !request()->routeIs('mahasiswa.dashboard.*') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat ringkasan progres pembelajaran Anda">
                     <i class="fas fa-home"></i>
                     <span>Beranda</span>
                 </a>
             </li>
             <li>
                 <a href="{{ route('mahasiswa.dashboard.in-progress') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard.in-progress') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard.in-progress') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat materi yang sedang Anda pelajari">
                     <i class="fas fa-spinner"></i>
                     <span>Sedang Dipelajari</span>
                 </a>
             </li>
             <li>
                 <a href="{{ route('mahasiswa.dashboard.completed') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard.completed') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard.completed') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat materi yang telah Anda selesaikan">
                     <i class="fas fa-check-circle"></i>
                     <span>Selesai</span>
                 </a>
@@ -65,7 +80,10 @@
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.dashboard') }}" 
-                   class="menu-item">
+                   class="menu-item"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Kembali ke dashboard">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
@@ -76,7 +94,10 @@
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.materials.index') }}" 
-                   class="menu-item {{ request()->is('mahasiswa/materials') ? 'active' : '' }}">
+                   class="menu-item {{ request()->is('mahasiswa/materials') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat semua materi pembelajaran">
                     <i class="fas fa-list"></i>
                     <span>Semua Materi</span>
                 </a>
@@ -93,7 +114,10 @@
                 @foreach($materials as $m)
                     <li class="materi-item {{ request()->segment(3) == $m->id ? 'active' : '' }}">
                         <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
-                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}">
+                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}"
+                           data-bs-toggle="tooltip" 
+                           data-bs-placement="right" 
+                           title="Pelajari materi {{ $m->title }}">
                             <i class="fas fa-book"></i>
                             <span>{{ $m->title }}</span>
                         </a>
@@ -106,7 +130,10 @@
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.materials.questions.index') }}" 
-                   class="menu-item {{ request()->is('mahasiswa/materials/questions') ? 'active' : '' }}">
+                   class="menu-item {{ request()->is('mahasiswa/materials/questions') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat daftar latihan soal per materi">
                     <i class="fas fa-list"></i>
                     <span>Daftar Latihan Soal</span>
                 </a>
@@ -123,7 +150,10 @@
                 @foreach($materials as $m)
                     <li>
                         <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'beginner']) }}" 
-                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}">
+                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}"
+                           data-bs-toggle="tooltip" 
+                           data-bs-placement="right" 
+                           title="Latihan soal untuk materi {{ $m->title }}">
                             <i class="fas fa-folder-open"></i>
                             <span>{{ $m->title }}</span>
                         </a>
@@ -131,19 +161,28 @@
                         @if(request()->segment(3) == $m->id)
                             <div class="difficulty-menu">
                                 <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'beginner']) }}"
-                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'beginner' || request()->query('difficulty') == null ? 'active' : '' }}">
+                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'beginner' || request()->query('difficulty') == null ? 'active' : '' }}"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="right" 
+                                   title="Soal tingkat pemula">
                                     <i class="fas fa-star beginner-star"></i>
                                     <span>Beginner</span>
                                 </a>
                                 
                                 <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'medium']) }}"
-                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'medium' ? 'active' : '' }}">
+                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'medium' ? 'active' : '' }}"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="right" 
+                                   title="Soal tingkat menengah">
                                     <i class="fas fa-star medium-star"></i>
                                     <span>Medium</span>
                                 </a>
                                 
                                 <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'hard']) }}"
-                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'hard' ? 'active' : '' }}">
+                                   class="menu-item sub-menu-item {{ request()->query('difficulty') == 'hard' ? 'active' : '' }}"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="right" 
+                                   title="Soal tingkat sulit">
                                     <i class="fas fa-star hard-star"></i>
                                     <span>Hard</span>
                                 </a>
@@ -158,21 +197,30 @@
         <ul class="nav-menu">
             <li>
                 <a href="{{ route('mahasiswa.dashboard') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.dashboard') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Lihat statistik dan progres pembelajaran Anda">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li>
                 <a href="{{ route('mahasiswa.materials.index') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.materials.index') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.materials.index') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Akses materi pembelajaran PBO">
                     <i class="fas fa-book"></i>
                     <span>Materi</span>
                 </a>
             </li>
             <li>
                 <a href="{{ route('mahasiswa.materials.questions.index') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.index') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.materials.questions.index') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Uji pemahaman Anda dengan latihan soal">
                     <i class="fas fa-question-circle"></i>
                     <span>Latihan Soal</span>
                 </a>
@@ -180,7 +228,10 @@
             @auth
                 <li>
                     <a href="{{ route('mahasiswa.profile') }}" 
-                       class="menu-item {{ request()->routeIs('mahasiswa.profile') ? 'active' : '' }}">
+                       class="menu-item {{ request()->routeIs('mahasiswa.profile') ? 'active' : '' }}"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="right" 
+                       title="Lihat dan ubah profil Anda">
                         <i class="fas fa-user"></i>
                         <span>Profil Saya</span>
                     </a>
@@ -188,7 +239,10 @@
             @endauth
             <li>
                 <a href="{{ route('mahasiswa.ueq.create') }}" 
-                   class="menu-item {{ request()->routeIs('mahasiswa.ueq.create') ? 'active' : '' }}">
+                   class="menu-item {{ request()->routeIs('mahasiswa.ueq.create') ? 'active' : '' }}"
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="right" 
+                   title="Berikan feedback tentang sistem">
                     <i class="fas fa-poll"></i>
                     <span>UEQ Survey</span>
                 </a>

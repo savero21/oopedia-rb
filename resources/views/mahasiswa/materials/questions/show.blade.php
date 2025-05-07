@@ -210,6 +210,14 @@
         border: 2px solid #FFD700;
         box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
     }
+    
+    #tryAgainBtn.btn-warning:hover {
+        background-color: #ffc107; /* Same as the default */
+        color: #212529;
+        border-color: #ffc107;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+    }
 </style>
 @endpush
 
@@ -301,7 +309,7 @@ function initializeQuestionForm() {
     const nextQuestionBtn = document.getElementById('nextQuestionBtn');
     const explanationBox = document.getElementById('explanationBox');
     const explanationText = document.getElementById('explanationText');
-    const isGuest = {{ auth()->user()->role_id === 4 ? 'true' : 'false' }};
+    const isGuest = {{ auth()->check() ? (auth()->user()->role_id === 4 ? 'true' : 'false') : 'true' }};
     const currentQuestionNumber = {{ $currentQuestionNumber ?? 1 }};
     
     // Fungsi untuk menampilkan pesan semua soal telah terjawab
@@ -510,13 +518,15 @@ function submitAnswer() {
         }
 
         // Submit answer
-        fetch('{{ route('mahasiswa.materials.questions.check', ['material' => $material->id, 'question' => $currentQuestion->id]) }}', {
+        fetch('{{ route('questions.check-answer') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
+                question_id: '{{ $currentQuestion->id }}',
+                material_id: '{{ $material->id }}',
                 answer: selectedOption.value,
                 attempts: attemptCount + 1,
                 potential_score: potentialScore,
@@ -527,7 +537,7 @@ function submitAnswer() {
         .then(result => {
             showFeedback(result, potentialScore, attemptCount + 1);
             
-            if (submitButton && !result.status === 'success') {
+            if (submitButton && result.status !== 'success') {
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fas fa-check-circle me-2"></i>Periksa Jawaban';
             }
@@ -558,6 +568,7 @@ function showFeedback(data) {
     const feedbackIcon = document.getElementById('feedbackIcon');
     const tryAgainBtn = document.getElementById('tryAgainBtn');
     const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+    const questionForm = document.getElementById('questionForm');
     
     // Set status dan icon
     feedbackStatus.innerHTML = `<h3 class="${data.status === 'success' ? 'text-success' : 'text-danger'}">${data.message}</h3>`;
@@ -588,11 +599,25 @@ function showFeedback(data) {
     } else {
         tryAgainBtn.style.display = 'inline-block';
         nextQuestionBtn.style.display = 'none';
+        
+        // Add click handler for Try Again button
+        tryAgainBtn.onclick = () => {
+            feedbackElement.style.display = 'none';
+            questionForm.style.display = 'block';
+            
+            // Re-enable the check answer button
+            const checkAnswerBtn = document.getElementById('checkAnswerBtn');
+            if (checkAnswerBtn) {
+                checkAnswerBtn.disabled = false;
+                checkAnswerBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Periksa Jawaban';
+            }
+        };
     }
 
     feedbackElement.style.display = 'block';
     questionForm.style.display = 'none';
 }
+
 
 $(document).ready(function() {
     $('#questionForm').on('submit', function(e) {
