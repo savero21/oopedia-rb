@@ -16,16 +16,18 @@
             <!-- Navigation links -->
             <div class="nav-links">
                 <ul class="nav-menu">
+                    @auth
                     <li>
                         <a href="{{ route('mahasiswa.dashboard') }}" 
                            class="nav-link {{ request()->routeIs('mahasiswa.dashboard*') ? 'active' : '' }}"
                            data-bs-toggle="tooltip" 
                            data-bs-placement="bottom" 
-                           title="@auth Dashboard pengguna @else Dapat diakses setelah login @endauth">
+                           title="Dashboard pengguna">
                             <i class="fas fa-home me-2"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
+                    @endauth
                     <li>
                         <a href="{{ route('mahasiswa.materials.index') }}" 
                            class="nav-link {{ request()->routeIs('mahasiswa.materials*') && !request()->routeIs('mahasiswa.materials.questions*') ? 'active' : '' }}"
@@ -123,25 +125,6 @@
         </div>
     @endguest
 
-    <!-- @auth
-        <div class="welcome-message">
-            <h4>Selamat datang, {{ auth()->user()->name }}!</h4>
-            <p class="text-muted">Anda dapat mengakses semua materi dan latihan soal</p>
-        </div>
-    @endauth
-</div>
-@endif -->
-
-
-@if(request()->routeIs('mahasiswa.dashboard*'))
-<!-- <div class="container-fluid px-4 pt-3">
-    @guest
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            Silakan login untuk mengakses semua fitur pembelajaran
-        </div>
-    @endguest -->
-
     @auth
         <div class="welcome-message">
             <h4>Selamat datang, {{ auth()->user()->name }}!</h4>
@@ -171,13 +154,13 @@
             return new bootstrap.Tooltip(el);
         });
 
-        // Only show main tutorial on dashboard page and only once
+        // Only show tutorial for authenticated users on dashboard page and only once
         const isMainTutorialCompleted = sessionStorage.getItem('main_tutorial_complete');
         const isDashboardPage = {{ request()->routeIs('mahasiswa.dashboard*') ? 'true' : 'false' }};
         const isQuestionsPage = {{ request()->routeIs('mahasiswa.materials.questions*') ? 'true' : 'false' }};
         
-        // Skip the main tutorial on question pages to prevent conflicts
-        if (!isMainTutorialCompleted && isDashboardPage && !sidebarClicked && !sessionStorage.getItem('skip_tour')) {
+        // Skip tutorial for guests and on question pages
+        if (isLoggedIn && !isMainTutorialCompleted && isDashboardPage && !sidebarClicked && !sessionStorage.getItem('skip_tour')) {
             startTutorial();
         }
     });
