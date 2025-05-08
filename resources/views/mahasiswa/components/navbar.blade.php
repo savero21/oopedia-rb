@@ -186,11 +186,16 @@
             );
         }
 
-        steps.push(
-            {
+        // Add dashboard tutorial step only for logged in users
+        if (isLoggedIn) {
+            steps.push({
                 element: document.querySelector('.nav-link[href="' + routeDashboard + '"]'),
                 intro: "Ini adalah dashboard. Kamu bisa melihat ringkasan aktivitas di sini."
-            },
+            });
+        }
+        
+        // These steps are always shown
+        steps.push(
             {
                 element: document.querySelector('.nav-link[href="' + routeMateri + '"]'),
                 intro: "Di sini kamu bisa belajar berbagai materi pembelajaran."
