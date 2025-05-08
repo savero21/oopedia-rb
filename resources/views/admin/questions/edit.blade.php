@@ -1,4 +1,8 @@
 <x-layout bodyClass="g-sidenav-show bg-gray-200">
+    @push('head')
+        <x-head.tinymce-config />
+    @endpush
+
     <x-navbars.sidebar activePage="questions" :userName="auth()->user()->name" :userRole="auth()->user()->role->role_name" />
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
         <x-navbars.navs.auth titlePage="Edit Soal" />
@@ -16,7 +20,7 @@
                         <div class="card-body px-0 pb-2">
                             <form method="POST" action="{{ $material 
                                 ? route('admin.materials.questions.update', ['material' => $material, 'question' => $question]) 
-                                : route('admin.questions.update', $question) }}" class="p-4">
+                                : route('admin.questions.update', $question) }}" class="p-4" id="questionForm">
                                 @csrf
                                 @method('PUT')
                                 <div class="row">
@@ -43,8 +47,8 @@
                                     <div class="col-md-12">
                                         <div class="mb-3">
                                             <label class="form-label">Pertanyaan</label>
-                                            <div class="input-group input-group-outline">
-                                                <textarea name="question_text" class="form-control" rows="3" required>{{ $question->question_text }}</textarea>
+                                            <div class="my-3">
+                                                <textarea id="content-editor" name="question_text">{{ $question->question_text }}</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -83,9 +87,6 @@
                                                     <div class="input-group input-group-outline">
                                                         <input type="text" name="answers[{{ $index }}][answer_text]" class="form-control" placeholder="Jawaban" required value="{{ $answer->answer_text }}">
                                                     </div>
-                                                    <div class="input-group input-group-outline mt-2">
-                                                        <textarea name="answers[{{ $index }}][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2">{{ $answer->explanation }}</textarea>
-                                                    </div>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <div class="form-check">
@@ -110,7 +111,7 @@
 
                                 <div class="row">
                                     <div class="col-12">
-                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">Simpan Perubahan</button>
                                         @if($material)
                                             <a href="{{ route('admin.materials.questions.index', $material) }}" class="btn btn-outline-secondary">Batal</a>
                                         @else
@@ -169,9 +170,6 @@
                         <div class="input-group input-group-outline">
                             <input type="text" name="answers[${currentIndex}][answer_text]" class="form-control" placeholder="Jawaban" required>
                         </div>
-                        <div class="input-group input-group-outline mt-2">
-                            <textarea name="answers[${currentIndex}][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2"></textarea>
-                        </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-check">
@@ -192,7 +190,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const questionTypeSelect = document.querySelector('[name="question_type"]');
-            const form = document.querySelector('form');
+            const form = document.getElementById('questionForm');
             
             questionTypeSelect.addEventListener('change', handleQuestionTypeChange);
             
@@ -209,14 +207,35 @@
             });
 
             form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Ambil nilai dari TinyMCE
+                const questionText = tinymce.get('content-editor').getContent();
+                
+                if (!questionText) {
+                    alert('Pertanyaan tidak boleh kosong!');
+                    return;
+                }
+                
                 const questionType = questionTypeSelect.value;
                 if (questionType === 'radio_button') {
                     const selectedRadio = document.querySelector('input[name="correct_answer"]:checked');
                     if (!selectedRadio) {
-                        e.preventDefault();
                         alert('Pilih satu jawaban yang benar untuk tipe soal Radio Button');
+                        return;
                     }
                 }
+                
+                // Jika semua validasi passed, submit form
+                this.submit();
+            });
+
+            // Disable tombol submit setelah diklik untuk mencegah double submit
+            document.getElementById('submitBtn').addEventListener('click', function() {
+                setTimeout(() => {
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
+                }, 0);
             });
         });
     </script>

@@ -1,4 +1,8 @@
 <x-layout bodyClass="g-sidenav-show bg-gray-200">
+    @push('head')
+        <x-head.tinymce-config />
+    @endpush
+
     <x-navbars.sidebar activePage="questions" :userName="auth()->user()->name" :userRole="auth()->user()->role->role_name" />
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
         <x-navbars.navs.auth titlePage="Tambah Soal" />
@@ -15,9 +19,9 @@
                         </div>
                         <div class="card-body px-0 pb-2">
                             @if(isset($material))
-                                <form method="POST" action="{{ route('admin.materials.questions.store', $material) }}" class="p-4">
+                                <form method="POST" action="{{ route('admin.materials.questions.store', $material) }}" class="p-4" id="questionForm">
                             @else
-                                <form method="POST" action="{{ route('admin.questions.store') }}" class="p-4">
+                                <form method="POST" action="{{ route('admin.questions.store') }}" class="p-4" id="questionForm">
                             @endif
                                 @csrf
                                 
@@ -59,8 +63,8 @@
                                     <div class="col-md-12">
                                         <div class="mb-3">
                                             <label class="form-label">Pertanyaan</label>
-                                            <div class="input-group input-group-outline">
-                                                <textarea name="question_text" class="form-control" rows="3" required></textarea>
+                                            <div class="my-3">
+                                                <textarea id="content-editor" name="question_text">{{ old('question_text') }}</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -98,9 +102,6 @@
                                                 <div class="input-group input-group-outline">
                                                     <input type="text" name="answers[0][answer_text]" class="form-control" placeholder="Jawaban" required>
                                                 </div>
-                                                <div class="input-group input-group-outline mt-2">
-                                                    <textarea name="answers[0][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2"></textarea>
-                                                </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-check">
@@ -119,7 +120,7 @@
 
                                 <div class="row">
                                     <div class="col-12">
-                                        <button type="submit" class="btn btn-primary">Simpan Soal</button>
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">Simpan Soal</button>
                                         @if(isset($material))
                                             <a href="{{ route('admin.materials.questions.index', $material) }}" class="btn btn-outline-secondary">Batal</a>
                                         @else
@@ -181,9 +182,6 @@
                         <div class="input-group input-group-outline">
                             <input type="text" name="answers[${answerCount}][answer_text]" class="form-control" placeholder="Jawaban" required>
                         </div>
-                        <div class="input-group input-group-outline mt-2">
-                            <textarea name="answers[${answerCount}][explanation]" class="form-control" placeholder="Penjelasan Jawaban" rows="2"></textarea>
-                        </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-check">
@@ -215,7 +213,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const questionTypeSelect = document.querySelector('[name="question_type"]');
-            const form = document.querySelector('form');
+            const form = document.getElementById('questionForm');
             
             // Event listener untuk perubahan tipe soal
             questionTypeSelect.addEventListener('change', handleQuestionTypeChange);
@@ -237,21 +235,41 @@
 
             // Validasi form sebelum submit
             form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Ambil nilai dari TinyMCE
+                const questionText = tinymce.get('content-editor').getContent();
+                
+                if (!questionText) {
+                    alert('Pertanyaan tidak boleh kosong!');
+                    return;
+                }
+                
                 const questionType = questionTypeSelect.value;
                 if (questionType === 'radio_button') {
                     const selectedRadio = document.querySelector('input[name="correct_answer"]:checked');
                     if (!selectedRadio) {
-                        e.preventDefault();
                         alert('Pilih satu jawaban yang benar untuk tipe soal Radio Button');
                         return;
                     }
 
                     const correctAnswers = document.querySelectorAll('input[name$="[is_correct]"][value="1"]');
                     if (correctAnswers.length !== 1) {
-                        e.preventDefault();
                         alert('Harus ada tepat satu jawaban yang benar untuk tipe soal Radio Button');
+                        return;
                     }
                 }
+                
+                // Jika semua validasi passed, submit form
+                this.submit();
+            });
+
+            // Disable tombol submit setelah diklik untuk mencegah double submit
+            document.getElementById('submitBtn').addEventListener('click', function() {
+                setTimeout(() => {
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
+                }, 0);
             });
 
             // Inisialisasi awal

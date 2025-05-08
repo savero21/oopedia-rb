@@ -171,8 +171,13 @@
             return new bootstrap.Tooltip(el);
         });
 
-        // Jika bukan dari klik sidebar, jalankan tour
-        if (!sidebarClicked && !sessionStorage.getItem('skip_tour')) {
+        // Only show main tutorial on dashboard page and only once
+        const isMainTutorialCompleted = sessionStorage.getItem('main_tutorial_complete');
+        const isDashboardPage = {{ request()->routeIs('mahasiswa.dashboard*') ? 'true' : 'false' }};
+        const isQuestionsPage = {{ request()->routeIs('mahasiswa.materials.questions*') ? 'true' : 'false' }};
+        
+        // Skip the main tutorial on question pages to prevent conflicts
+        if (!isMainTutorialCompleted && isDashboardPage && !sidebarClicked && !sessionStorage.getItem('skip_tour')) {
             startTutorial();
         }
     });
@@ -225,6 +230,9 @@
             nextLabel: 'Berikutnya',
             prevLabel: 'Sebelumnya',
             doneLabel: 'Selesai'
+        }).oncomplete(function() {
+            // Mark main tutorial as completed
+            sessionStorage.setItem('main_tutorial_complete', 'true');
         }).start();
     }
 

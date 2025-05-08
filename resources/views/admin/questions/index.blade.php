@@ -1,7 +1,7 @@
 <x-layout bodyClass="g-sidenav-show bg-gray-200">
     <x-navbars.sidebar activePage="questions" :userName="auth()->user()->name" :userRole="auth()->user()->role->role_name" />
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
-        <x-navbars.navs.auth titlePage="Soal dan Jawaban" />
+        <x-navbars.navs.auth titlePage="{{ $material ? 'Soal untuk '.$material->title : 'Semua Soal' }}" />
         <div class="container-fluid py-4">
             <!-- Search Form -->
             <form method="GET" action="{{ $material ? route('admin.materials.questions.index', $material) : route('admin.questions.index') }}" class="mb-3">
@@ -70,8 +70,13 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ $question->question_text }}</p>
+                                            <td class="align-middle">
+                                                <p class="text-sm mb-0">
+                                                    {!! Str::limit(strip_tags($question->question_text), 100) !!}
+                                                    @if(strlen(strip_tags($question->question_text)) > 100)
+                                                        <a href="#" onclick="viewFullQuestion({{ $question->id }})" class="text-info">Lihat selengkapnya</a>
+                                                    @endif
+                                                </p>
                                             </td>
                                             <td>
                                                 <p class="text-xs font-weight-bold mb-0">{{ $question->formatted_type }}</p>
@@ -114,10 +119,6 @@
                                                             @if($answer->is_correct)
                                                                 <span class="badge bg-success">Benar</span>
                                                             @endif
-                                                            @if($answer->explanation)
-                                                                <br>
-                                                                <small class="text-muted">Penjelasan: {{ $answer->explanation }}</small>
-                                                            @endif
                                                         </li>
                                                         @endforeach
                                                     </ul>
@@ -133,5 +134,51 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal for displaying full question -->
+        <div class="modal fade" id="fullQuestionModal" tabindex="-1" aria-labelledby="fullQuestionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="fullQuestionModalLabel">Detail Pertanyaan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="fullQuestionContent">
+                        <!-- Question content will be loaded here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
+
+    @push('js')
+    <script>
+        // Store questions data for use in JavaScript
+        const questionsData = [
+            @foreach($questions as $q)
+                {
+                    id: {{ $q->id }},
+                    text: {!! json_encode($q->question_text) !!}
+                },
+            @endforeach
+        ];
+        
+        function viewFullQuestion(questionId) {
+            // Find the question by ID
+            const question = questionsData.find(q => q.id === questionId);
+            
+            if (question) {
+                // Set the modal content
+                document.getElementById('fullQuestionContent').innerHTML = question.text;
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('fullQuestionModal'));
+                modal.show();
+            }
+        }
+    </script>
+    @endpush
 </x-layout>

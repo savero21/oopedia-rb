@@ -65,6 +65,42 @@
     @stack('css')
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Add this in the head section, before other scripts -->
+    <script src="{{ asset('assets/tinymce/tinymce.min.js') }}"></script>
+    <script>
+        // Only initialize TinyMCE when in read-only view
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply content styling to elements with HTML content
+            const contentElements = document.querySelectorAll('.question-text, .answer-text, .answer-explanation');
+            
+            contentElements.forEach(element => {
+                // Ensure code blocks are properly formatted
+                const codeBlocks = element.querySelectorAll('pre');
+                codeBlocks.forEach(block => {
+                    block.classList.add('language-java');
+                    
+                    // Add proper styling to code blocks
+                    if (!block.classList.contains('formatted')) {
+                        block.classList.add('formatted');
+                        block.style.backgroundColor = '#f1f3f5';
+                        block.style.padding = '1rem';
+                        block.style.borderRadius = '4px';
+                        block.style.fontFamily = 'monospace';
+                        block.style.overflow = 'auto';
+                    }
+                });
+                
+                // Format tables if any
+                const tables = element.querySelectorAll('table');
+                tables.forEach(table => {
+                    if (!table.classList.contains('formatted')) {
+                        table.classList.add('formatted', 'table', 'table-bordered');
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 <body>
     <!-- Include Navbar Component -->

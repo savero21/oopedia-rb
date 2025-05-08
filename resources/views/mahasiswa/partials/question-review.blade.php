@@ -33,7 +33,7 @@
             <div class="question-content">
                 <h5 class="mb-3"><i class="fas fa-question me-2"></i>Pertanyaan</h5>
                 <div class="question-text">
-                    {{ $question->question_text }}
+                    {!! $question->question_text !!}
                 </div>
 
                 <h5 class="mt-4 mb-3"><i class="fas fa-list-ul me-2"></i>Pilihan Jawaban</h5>
@@ -44,12 +44,12 @@
                                 @if($answer->is_correct)
                                     <i class="fas fa-check-circle text-success me-2"></i>
                                 @endif
-                                {{ $answer->answer_text }}
+                                {!! $answer->answer_text !!}
                             </div>
                             @if($answer->explanation)
                                 <div class="answer-explanation">
                                     <i class="fas fa-info-circle"></i>
-                                    {{ $answer->explanation }}
+                                    {!! $answer->explanation !!}
                                 </div>
                             @endif
                         </div>

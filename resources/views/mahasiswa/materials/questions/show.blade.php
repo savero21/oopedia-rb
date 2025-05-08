@@ -19,16 +19,19 @@
     
     .question-text {
         font-size: 16px;
-        line-height: 1.6;
+        line-height: 1.5;
         background-color: #f8f9fa;
-        padding: 15px;
+        padding: 12px;
         border-radius: 8px;
+        margin-bottom: 15px;
     }
     
     .answer-option {
         transition: all 0.2s ease;
         cursor: pointer;
         background-color: #f8f9fa;
+        padding: 10px !important;
+        margin-bottom: 8px !important;
     }
     
     .answer-option:hover {
@@ -217,6 +220,48 @@
         border-color: #ffc107;
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+    }
+    
+    /* Improved code block formatting with less spacing */
+    .question-text pre,
+    .question-text code {
+        background-color: #f1f3f5;
+        border-radius: 4px;
+        padding: 10px;
+        font-family: "Courier New", Courier, monospace;
+        overflow-x: auto;
+        margin: 8px 0;
+        white-space: pre-wrap;
+        font-size: 14px; /* Slightly smaller font for code */
+    }
+    
+    /* Make sure all images display properly */
+    .question-text img,
+    .answer-text img {
+        max-width: 100%;
+        height: auto;
+        margin: 0.5rem 0;
+    }
+    
+    /* Reduce spacing in paragraphs */
+    .question-text p,
+    .answer-text p {
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Fix whitespace in content with reduced spacing */
+    .whitespace-pre-wrap {
+        white-space: pre-wrap !important;
+    }
+    
+    /* Tighten headings */
+    h5.mb-3 {
+        margin-bottom: 10px !important;
+    }
+    
+    /* More compact question header */
+    .question-header {
+        margin-bottom: 15px !important;
     }
 </style>
 @endpush
@@ -654,28 +699,52 @@ $(document).ready(function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Add console logs for debugging
+    console.log("DOM loaded on question page");
+    console.log("Tutorial status:", sessionStorage.getItem('question_answer_tutorial_complete'));
+    
     // Check if this is first time visiting a question
     if (!sessionStorage.getItem('question_answer_tutorial_complete')) {
-        setTimeout(startQuestionAnswerTutorial, 700);
+        console.log("Starting question tutorial in 1 second");
+        setTimeout(startQuestionAnswerTutorial, 1000);
     }
 });
 
 function startQuestionAnswerTutorial() {
     // Define the tutorial steps
+    console.log("Tutorial function called");
+    
+    // Check if question elements exist
+    const questionText = document.querySelector('.question-text');
+    const optionsContainer = document.querySelector('.options-container');
+    const checkAnswerBtn = document.getElementById('checkAnswerBtn');
+    
+    console.log("Found elements:", {
+        questionText: !!questionText,
+        optionsContainer: !!optionsContainer,
+        checkAnswerBtn: !!checkAnswerBtn
+    });
+    
+    // Only proceed if elements exist
+    if (!questionText || !optionsContainer || !checkAnswerBtn) {
+        console.log("Missing required elements for tutorial");
+        return;
+    }
+    
     const steps = [
         {
             intro: "Sekarang Anda berada di halaman soal. Mari kita pelajari cara menjawab soal."
         },
         {
-            element: document.querySelector('.question-text'),
+            element: questionText,
             intro: "Ini adalah teks pertanyaan yang harus Anda jawab."
         },
         {
-            element: document.querySelector('.options-container'),
+            element: optionsContainer,
             intro: "Pilih salah satu jawaban yang menurut Anda benar."
         },
         {
-            element: document.getElementById('checkAnswerBtn'),
+            element: checkAnswerBtn,
             intro: "Setelah memilih jawaban, klik tombol ini untuk memeriksa jawaban Anda."
         },
         {
@@ -684,19 +753,59 @@ function startQuestionAnswerTutorial() {
     ];
 
     // Start the tutorial
-    introJs().setOptions({
-        steps: steps,
-        showProgress: true,
-        exitOnOverlayClick: true,
-        showBullets: false,
-        scrollToElement: true,
-        nextLabel: 'Berikutnya',
-        prevLabel: 'Sebelumnya',
-        doneLabel: 'Mulai Menjawab'
-    }).oncomplete(function() {
-        // Mark as completed in session storage
-        sessionStorage.setItem('question_answer_tutorial_complete', 'true');
-    }).start();
+    try {
+        const tour = introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Mulai Menjawab'
+        });
+        
+        tour.oncomplete(function() {
+            // Mark as completed in session storage
+            sessionStorage.setItem('question_answer_tutorial_complete', 'true');
+            console.log("Tutorial completed and marked in session storage");
+        });
+        
+        tour.start();
+        console.log("Tutorial started successfully");
+    } catch (error) {
+        console.error("Error starting tutorial:", error);
+    }
 }
+
+// Fix for TinyMCE content display
+document.addEventListener('DOMContentLoaded', function() {
+    // Process all question-text elements to render HTML properly
+    const questionTextElements = document.querySelectorAll('.question-text');
+    
+    questionTextElements.forEach(element => {
+        // Only apply if the content appears to be raw HTML
+        if (element.textContent.includes('&lt;') || 
+            element.textContent.includes('<p class="whitespace-pre-wrap') || 
+            element.textContent.includes('<div class="relative group/copy')) {
+            
+            // Extract the content and re-render it properly
+            let rawHtml = element.textContent;
+            element.innerHTML = rawHtml;
+        }
+        
+        // Ensure code blocks have proper styling
+        const codeBlocks = element.querySelectorAll('pre');
+        codeBlocks.forEach(block => {
+            block.classList.add('language-java', 'formatted');
+            block.style.backgroundColor = '#f1f3f5';
+            block.style.padding = '1rem';
+            block.style.borderRadius = '4px';
+            block.style.fontFamily = 'monospace';
+            block.style.overflow = 'auto';
+            block.style.whiteSpace = 'pre-wrap';
+        });
+    });
+});
 </script>
 @endpush 

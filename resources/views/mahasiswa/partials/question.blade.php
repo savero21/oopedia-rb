@@ -50,8 +50,9 @@
                 </div>
                 
                 <div class="question-content mb-4">
-                    <div class="question-text p-3 rounded">
-                        {{ $currentQuestion->question_text }}
+                    <h5 class="mb-3"><i class="fas fa-question me-2"></i>Pertanyaan</h5>
+                    <div class="question-text whitespace-pre-wrap">
+                        {!! $currentQuestion->question_text !!}
                     </div>
                 </div>
                 
