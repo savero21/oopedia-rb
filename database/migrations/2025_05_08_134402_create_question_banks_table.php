@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('question_banks', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });
     }

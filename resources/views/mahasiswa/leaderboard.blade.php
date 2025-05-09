@@ -32,7 +32,7 @@
                     <div class="podium-wrapper mb-5">
                         <div class="podium-display">
                             <div class="podium-item second-place">
-                                @if(isset($leaderboardData[1]))
+                                @if(isset($leaderboardData[1]) && $leaderboardData[1]->total_correct_questions > 0)
                                     <div class="player-avatar">
                                         <span class="medal-badge">🥈</span>
                                         <h5 class="player-name">{{ $leaderboardData[1]->name }}</h5>
@@ -45,7 +45,7 @@
                             </div>
 
                             <div class="podium-item first-place">
-                                @if(isset($leaderboardData[0]))
+                                @if(isset($leaderboardData[0]) && $leaderboardData[0]->total_correct_questions > 0)
                                     <i class="fas fa-crown crown-icon"></i>
                                     <div class="player-avatar">
                                         <span class="medal-badge">🥇</span>
@@ -59,7 +59,7 @@
                             </div>
 
                             <div class="podium-item third-place">
-                                @if(isset($leaderboardData[2]))
+                                @if(isset($leaderboardData[2]) && $leaderboardData[2]->total_correct_questions > 0)
                                     <div class="player-avatar">
                                         <span class="medal-badge">🥉</span>
                                         <h5 class="player-name">{{ $leaderboardData[2]->name }}</h5>
@@ -97,6 +97,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach($leaderboardData as $data)
+                                    @if($data->total_correct_questions > 0)
                                     <tr class="leaderboard-row @if($data->id === auth()->id()) highlight-row @endif">
                                         <td>
                                             <div class="d-flex px-3 py-2 justify-content-center">
@@ -140,6 +141,7 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -183,17 +185,6 @@
                 shapes: ['square', 'circle'],
                 zIndex: 1000
             });
-            
-            // Tampilkan pesan selamat
-            setTimeout(() => {
-                Swal.fire({
-                    title: 'Selamat!',
-                    text: 'Anda berada di peringkat {{ $currentUserRank->rank }} leaderboard!',
-                    icon: 'success',
-                    confirmButtonText: 'Terima Kasih',
-                    confirmButtonColor: '#004e98'
-                });
-            }, 1000);
         @endif
     });
 

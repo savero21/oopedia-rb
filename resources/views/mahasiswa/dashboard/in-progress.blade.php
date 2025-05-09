@@ -64,7 +64,7 @@
                                     </div>
                                     <div class="difficulty-percentage">{{ $stats['beginner']['percentage'] }}%</div>
                                     <div class="difficulty-details">
-                                        <small>{{ $stats['beginner']['correct'] }}/{{ $stats['beginner']['total'] }} soal</small>
+                                        <small>{{ $stats['beginner']['correct'] }}/{{ $stats['beginner']['configured_total'] }} soal</small>
                                     </div>
                                 </div>
                                 
@@ -79,7 +79,7 @@
                                     </div>
                                     <div class="difficulty-percentage">{{ $stats['medium']['percentage'] }}%</div>
                                     <div class="difficulty-details">
-                                        <small>{{ $stats['medium']['correct'] }}/{{ $stats['medium']['total'] }} soal</small>
+                                        <small>{{ $stats['medium']['correct'] }}/{{ $stats['medium']['configured_total'] }} soal</small>
                                     </div>
                                 </div>
                                 
@@ -94,7 +94,7 @@
                                     </div>
                                     <div class="difficulty-percentage">{{ $stats['hard']['percentage'] }}%</div>
                                     <div class="difficulty-details">
-                                        <small>{{ $stats['hard']['correct'] }}/{{ $stats['hard']['total'] }} soal</small>
+                                        <small>{{ $stats['hard']['correct'] }}/{{ $stats['hard']['configured_total'] }} soal</small>
                                     </div>
                                 </div>
                             </div>

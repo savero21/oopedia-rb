@@ -42,4 +42,9 @@ class Material extends Model
         $materials = Material::all();
         return view('mahasiswa.dashboard.completed', compact('materials'));
     }
+    
+    public function questionBankConfigs()
+    {
+        return $this->hasMany(QuestionBankConfig::class);
+    }
 }

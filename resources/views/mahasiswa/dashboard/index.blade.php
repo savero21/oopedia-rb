@@ -114,7 +114,7 @@ use Illuminate\Support\Str;
                                         @endif
                                     </div>
                                     <div class="activity-details">
-    @if($activity->type === 'achievement')
+        @if($activity->type === 'achievement')
         Menyelesaikan {{ $activity->total_correct }} soal di materi 
         <span class="fw-bold">{{ $activity->material_title }}</span>
     @elseif($activity->type === 'milestone')

@@ -43,4 +43,10 @@ class Question extends Model
     {
         return $this->hasMany(Progress::class);
     }
+
+    public function questionBanks()
+    {
+        return $this->belongsToMany(QuestionBank::class, 'question_bank_items')
+            ->withTimestamps();
+    }
 }

@@ -43,32 +43,26 @@
                     <div class="material-icon">
                         <i class="fas fa-clipboard-check"></i>
                     </div>
-                    <h4 class="material-title">{{ $material->title }}</h4>
+                    <h4 class="material-title">{{ $material['material']->title }}</h4>
                 </div>
                 <div class="material-card-body">
-                    <div class="material-description">
-                        Latihan soal untuk materi {{ $material->title }}
-                    </div>
                     
                     <div class="progress-container mt-3">
                         <div class="progress-info d-flex justify-content-between">
                             <span class="progress-text">Progress</span>
                             <span class="progress-percentage">
                                 @php
-                                    $totalQuestions = $material->total_questions;
+                                    $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
                                     
-                                    // Check if user is logged in first before checking role_id
-                                    if(auth()->check() && auth()->user()->role_id === 4) {
-                                        // 3 soal per tingkat kesulitan (beginner, medium, hard)
-                                        $totalQuestions = min(9, $totalQuestions);
-                                    }
-                                    // If not logged in, treat as guest with limited access
-                                    elseif(!auth()->check()) {
-                                        // 3 soal per tingkat kesulitan (beginner, medium, hard)
-                                        $totalQuestions = min(9, $totalQuestions);
+                                    if ($isGuest) {
+                                        // Untuk guest, tetap gunakan batasan 9 soal (3 per tingkat kesulitan)
+                                        $totalQuestions = min(9, $material['material']->questions->count());
+                                    } else {
+                                        // Untuk pengguna terdaftar, ambil dari config yang sudah dihitung di controller
+                                        $totalQuestions = $material['config']['beginner'] + $material['config']['medium'] + $material['config']['hard'];
                                     }
                                     
-                                    $correctAnswers = $material->completed_questions ?? 0;
+                                    $correctAnswers = $material['material']->completed_questions ?? 0;
                                     $percentage = $totalQuestions > 0 ? min(100, round(($correctAnswers / $totalQuestions) * 100)) : 0;
                                 @endphp
                                 {{ $percentage }}%
@@ -96,7 +90,7 @@
                                 @if(auth()->check() && auth()->user()->role_id === 4 || !auth()->check())
                                     9 Soal
                                 @else
-                                    {{ $material->total_questions }} Soal
+                                    {{ $material['material']->total_questions }} Soal
                                 @endif
                             </span>
                         </div>
@@ -117,8 +111,8 @@
                     @endif
 
                     <div class="material-actions">
-                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => 'beginner']) }}" 
-                           class="btn-read-material">
+                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $material['material']->id, 'difficulty' => 'beginner']) }}" 
+                            class="btn-read-material">
                             <span>Mulai Latihan</span>
                             <i class="fas fa-arrow-right"></i>
                         </a>

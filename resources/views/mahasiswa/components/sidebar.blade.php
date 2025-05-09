@@ -112,14 +112,14 @@
         <ul class="nav-menu">
             @if(isset($materials))
                 @foreach($materials as $m)
-                    <li class="materi-item {{ request()->segment(3) == $m->id ? 'active' : '' }}">
-                        <a href="{{ route('mahasiswa.materials.show', $m->id) }}" 
-                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}"
-                           data-bs-toggle="tooltip" 
-                           data-bs-placement="right" 
-                           title="Pelajari materi {{ $m->title }}">
+                    <li class="materi-item {{ request()->segment(3) == (is_array($m) ? $m['material']->id : $m->id) ? 'active' : '' }}">
+                        <a href="{{ route('mahasiswa.materials.show', is_array($m) ? $m['material']->id : $m->id) }}"
+                           class="menu-item {{ request()->segment(3) == (is_array($m) ? $m['material']->id : $m->id) ? 'active' : '' }}"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="right"
+                           title="Pelajari materi {{ is_array($m) ? $m['material']->title : $m->title }}">
                             <i class="fas fa-book"></i>
-                            <span>{{ $m->title }}</span>
+                            <span>{{ is_array($m) ? $m['material']->title : $m->title }}</span>
                         </a>
                     </li>
                 @endforeach
@@ -148,40 +148,44 @@
         <ul class="nav-menu">
             @if(isset($materials))
                 @foreach($materials as $m)
+                    @php
+                        // Helper to determine correct way to access the material
+                        $materialItem = is_array($m) && isset($m['material']) ? $m['material'] : $m;
+                    @endphp
                     <li>
-                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'beginner']) }}" 
-                           class="menu-item {{ request()->segment(3) == $m->id ? 'active' : '' }}"
-                           data-bs-toggle="tooltip" 
-                           data-bs-placement="right" 
-                           title="Latihan soal untuk materi {{ $m->title }}">
+                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $materialItem->id, 'difficulty' => 'beginner']) }}"
+                           class="menu-item {{ request()->segment(3) == $materialItem->id ? 'active' : '' }}"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="right"
+                           title="Latihan soal untuk materi {{ $materialItem->title }}">
                             <i class="fas fa-folder-open"></i>
-                            <span>{{ $m->title }}</span>
+                            <span>{{ $materialItem->title }}</span>
                         </a>
                         
-                        @if(request()->segment(3) == $m->id)
+                        @if(request()->segment(3) == $materialItem->id)
                             <div class="difficulty-menu">
-                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'beginner']) }}"
+                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $materialItem->id, 'difficulty' => 'beginner']) }}"
                                    class="menu-item sub-menu-item {{ request()->query('difficulty') == 'beginner' || request()->query('difficulty') == null ? 'active' : '' }}"
-                                   data-bs-toggle="tooltip" 
-                                   data-bs-placement="right" 
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="right"
                                    title="Soal tingkat pemula">
                                     <i class="fas fa-star beginner-star"></i>
                                     <span>Beginner</span>
                                 </a>
                                 
-                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'medium']) }}"
+                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $materialItem->id, 'difficulty' => 'medium']) }}"
                                    class="menu-item sub-menu-item {{ request()->query('difficulty') == 'medium' ? 'active' : '' }}"
-                                   data-bs-toggle="tooltip" 
-                                   data-bs-placement="right" 
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="right"
                                    title="Soal tingkat menengah">
                                     <i class="fas fa-star medium-star"></i>
                                     <span>Medium</span>
                                 </a>
                                 
-                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $m->id, 'difficulty' => 'hard']) }}"
+                                <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $materialItem->id, 'difficulty' => 'hard']) }}"
                                    class="menu-item sub-menu-item {{ request()->query('difficulty') == 'hard' ? 'active' : '' }}"
-                                   data-bs-toggle="tooltip" 
-                                   data-bs-placement="right" 
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="right"
                                    title="Soal tingkat sulit">
                                     <i class="fas fa-star hard-star"></i>
                                     <span>Hard</span>

@@ -21,27 +21,68 @@
                             <i class="fas fa-question-circle me-2"></i>
                             @php
                                 $difficulty = request()->query('difficulty', 'all');
-                                $difficultyQuestions = $material->questions;
+                                $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
                                 
+                                // Hitung jumlah soal berdasarkan konfigurasi
                                 if ($difficulty !== 'all') {
-                                    $difficultyQuestions = $difficultyQuestions->where('difficulty', $difficulty);
+                                    $difficultyQuestions = $material->questions->where('difficulty', $difficulty);
+                                    
+                                    // Ambil konfigurasi
+                                    if ($isGuest) {
+                                        // Untuk guest, maksimal 3 soal
+                                        $configuredTotal = min(3, $difficultyQuestions->count());
+                                    } else {
+                                        // Untuk pengguna terdaftar, gunakan konfigurasi dari admin
+                                        $config = App\Models\QuestionBankConfig::where('material_id', $material->id)
+                                            ->where('is_active', true)
+                                            ->first();
+                                        
+                                        if ($config) {
+                                            $countField = $difficulty . '_count';
+                                            $configuredTotal = $config->$countField;
+                                        } else {
+                                            $configuredTotal = $difficultyQuestions->count();
+                                        }
+                                    }
+                                } else {
+                                    // Jika all difficulty, hitung total dari semua tingkat kesulitan
+                                    if ($isGuest) {
+                                        // Untuk guest, maksimal 3 soal per tingkat
+                                        $beginnerCount = min(3, $material->questions->where('difficulty', 'beginner')->count());
+                                        $mediumCount = min(3, $material->questions->where('difficulty', 'medium')->count());
+                                        $hardCount = min(3, $material->questions->where('difficulty', 'hard')->count());
+                                        $configuredTotal = $beginnerCount + $mediumCount + $hardCount;
+                                    } else {
+                                        // Untuk pengguna terdaftar, gunakan konfigurasi dari admin
+                                        $config = App\Models\QuestionBankConfig::where('material_id', $material->id)
+                                            ->where('is_active', true)
+                                            ->first();
+                                        
+                                        if ($config) {
+                                            $configuredTotal = $config->beginner_count + $config->medium_count + $config->hard_count;
+                                        } else {
+                                            $configuredTotal = $material->questions->count();
+                                        }
+                                    }
                                 }
                                 
-                                $totalQuestions = $difficultyQuestions->count();
-                                
-                                // Calculate the current question number within this difficulty
-                                $answeredInDifficulty = Progress::where('user_id', auth()->id())
+                                // Calculate the current question number 
+                                $answeredInDifficulty = App\Models\Progress::where('user_id', auth()->id() ?? session()->getId())
                                     ->where('material_id', $material->id)
-                                    ->where('is_correct', true)
-                                    ->whereIn('question_id', $difficultyQuestions->pluck('id'))
-                                    ->count();
+                                    ->where('is_correct', true);
+                                    
+                                if ($difficulty !== 'all') {
+                                    $answeredInDifficulty = $answeredInDifficulty->whereIn('question_id', $difficultyQuestions->pluck('id'));
+                                }
                                 
-                                $currentNumberInDifficulty = $answeredInDifficulty + 1;
-                                if ($currentNumberInDifficulty > $totalQuestions) {
-                                    $currentNumberInDifficulty = $totalQuestions;
+                                $answeredCount = $answeredInDifficulty->count();
+                                $currentNumberInDifficulty = $answeredCount + 1;
+                                
+                                if ($currentNumberInDifficulty > $configuredTotal) {
+                                    $currentNumberInDifficulty = $configuredTotal;
                                 }
                             @endphp
-                            Soal {{ $currentNumberInDifficulty }} dari {{ $totalQuestions }}
+                            Soal {{ $currentNumberInDifficulty }} dari {{ $configuredTotal }}
                         </span>
                         <span class="badge bg-{{ $currentQuestion->difficulty == 'beginner' ? 'success' : ($currentQuestion->difficulty == 'medium' ? 'warning' : 'danger') }} p-2 px-3">
                             {{ ucfirst($currentQuestion->difficulty) }}

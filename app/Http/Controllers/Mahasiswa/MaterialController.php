@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Mahasiswa;
 use App\Http\Controllers\Controller;
 use App\Models\Material;
 use App\Models\Progress;
+use App\Models\QuestionBankConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -63,6 +64,9 @@ class MaterialController extends Controller
     {
         $userId = auth()->id();
         
+        // Define isGuest variable here
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
         // Get progress statistics
         $progressStats = DB::table('progress')
             ->select(
@@ -78,23 +82,43 @@ class MaterialController extends Controller
         $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
         
         // If user is guest, only show half of the materials
-        if (!auth()->check() || (auth()->check() && auth()->user()->role_id === 4)) {
+        if ($isGuest) {
             $totalMaterials = $allMaterials->count();
             $materialsToShow = ceil($totalMaterials / 2);
             $allMaterials = $allMaterials->take($materialsToShow);
         }
 
-        $materials = $allMaterials->map(function($material) use ($progressStats) {
-            $totalQuestions = $material->questions->count();
-            $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+        $materials = $allMaterials->map(function($material) use ($progressStats, $isGuest) {
+            // Hitung jumlah soal berdasarkan konfigurasi
+            if ($isGuest) {
+                // Untuk guest, maksimal 3 soal per tingkat kesulitan
+                $beginnerCount = min(3, $material->questions->where('difficulty', 'beginner')->count());
+                $mediumCount = min(3, $material->questions->where('difficulty', 'medium')->count());
+                $hardCount = min(3, $material->questions->where('difficulty', 'hard')->count());
+                $configuredTotalQuestions = $beginnerCount + $mediumCount + $hardCount;
+            } else {
+                // Untuk pengguna terdaftar, gunakan konfigurasi dari admin
+                $config = QuestionBankConfig::where('material_id', $material->id)
+                    ->where('is_active', true)
+                    ->first();
+                
+                if ($config) {
+                    $configuredTotalQuestions = $config->beginner_count + $config->medium_count + $config->hard_count;
+                } else {
+                    $configuredTotalQuestions = $material->questions->count();
+                }
+            }
             
+            $materialProgress = $progressStats->firstWhere('material_id', $material->id);
             $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
-            $progressPercentage = $totalQuestions > 0 
-                ? min(100, round(($correctAnswers / $totalQuestions) * 100))
+            
+            // Gunakan total soal terkonfigurasi untuk menghitung persentase
+            $progressPercentage = $configuredTotalQuestions > 0 
+                ? min(100, round(($correctAnswers / $configuredTotalQuestions) * 100))
                 : 0;
 
             $material->progress_percentage = $progressPercentage;
-            $material->total_questions = $totalQuestions;
+            $material->total_questions = $configuredTotalQuestions;
             $material->completed_questions = $correctAnswers;
             
             return $material;

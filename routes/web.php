@@ -15,7 +15,8 @@ use App\Http\Controllers\Admin\{
     AdminUserController,
     PendingApprovalController,
     LogoutController as AdminLogoutController,
-    UeqSurveyController
+    UeqSurveyController,
+    QuestionBankController
 };
 use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
@@ -122,6 +123,21 @@ Route::middleware('auth')->group(function () {
             // User management
             Route::resource('users', AdminUserController::class)->except(['show']);
         });
+
+        // Question Banks routes
+        Route::resource('question-banks', QuestionBankController::class);
+        Route::get('question-banks/{questionBank}/manage-questions', [QuestionBankController::class, 'manageQuestions'])
+            ->name('question-banks.manage-questions');
+        Route::post('question-banks/{questionBank}/add-question/{question}', [QuestionBankController::class, 'addQuestion'])
+            ->name('question-banks.add-question');
+        Route::delete('question-banks/{questionBank}/remove-question/{question}', [QuestionBankController::class, 'removeQuestion'])
+            ->name('question-banks.remove-question');
+        Route::get('question-banks/{questionBank}/configure', [QuestionBankController::class, 'configureBank'])
+            ->name('question-banks.configure');
+        Route::post('question-banks/{questionBank}/configure', [QuestionBankController::class, 'storeConfig'])
+            ->name('question-banks.store-config');
+        Route::delete('question-bank-configs/{config}', [QuestionBankController::class, 'deleteConfig'])
+            ->name('question-bank-configs.delete');
     });
 
     // Mahasiswa & Guest Routes (role 3 = mahasiswa, role 4 = guest)
