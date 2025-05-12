@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -14,22 +15,36 @@ class StudentController extends Controller
 {
     public function index()
     {
+        // Get all materials with their question bank configurations
+        $materials = Material::with(['questionBankConfigs' => function($query) {
+            $query->where('is_active', true);
+        }])->get();
+        
+        // Calculate total configured questions
+        $totalConfiguredQuestions = 0;
+        foreach ($materials as $material) {
+            $config = $material->questionBankConfigs->first();
+            if ($config) {
+                $totalConfiguredQuestions += $config->beginner_count + $config->medium_count + $config->hard_count;
+            } else {
+                // If no config, use all questions
+                $totalConfiguredQuestions += $material->questions()->count();
+            }
+        }
+        
         // Get all users with role_id 3 (students) with pagination
         $students = User::where('role_id', 3)
             ->paginate(10) // Add pagination with 10 items per page
-            ->through(function($student) {
-                // Get total questions count
-                $totalQuestions = DB::table('questions')->count();
-                
+            ->through(function($student) use ($totalConfiguredQuestions) {
                 // Get correct answers count
                 $correctAnswers = DB::table('progress')
                     ->where('user_id', $student->id)
                     ->where('is_correct', true)
                     ->count();
                 
-                // Calculate overall percentage
-                $student->overall_progress = $totalQuestions > 0 
-                    ? min(100, round(($correctAnswers / $totalQuestions) * 100))
+                // Calculate overall percentage based on configured questions
+                $student->overall_progress = $totalConfiguredQuestions > 0 
+                    ? min(100, round(($correctAnswers / $totalConfiguredQuestions) * 100))
                     : 0;
                 
                 // Set total answered questions

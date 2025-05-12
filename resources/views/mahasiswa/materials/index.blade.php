@@ -297,5 +297,58 @@
     }
 }
 </style>
+
+<link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if tour has been shown for this page
+        if (!sessionStorage.getItem('material_index_tour_complete')) {
+            setTimeout(startMaterialsIndexTour, 500);
+        }
+    });
+
+    function startMaterialsIndexTour() {
+        const steps = [
+            {
+                intro: "Selamat datang di halaman Materi OOPEDIA!"
+            },
+            {
+                element: document.querySelector('.material-card:first-child'),
+                intro: "Ini adalah kartu materi pembelajaran. Pilih salah satu materi untuk mulai belajar."
+            },
+            {
+                element: document.querySelector('.progress-container'),
+                intro: "Di sini Anda dapat melihat progres pembelajaran untuk setiap materi."
+            },
+            {
+                element: document.querySelector('.material-actions .btn-read-material'),
+                intro: "Klik tombol ini untuk mulai mempelajari materi yang dipilih."
+            },
+            {
+                intro: "Selamat belajar PBO di OOPEDIA!"
+            }
+        ];
+
+        // Start the tutorial
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Mulai'
+        }).oncomplete(function() {
+            // Mark as completed in session storage
+            sessionStorage.setItem('material_index_tour_complete', 'true');
+        }).start();
+    }
+</script>
 @endpush
 @endsection 

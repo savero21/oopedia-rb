@@ -136,7 +136,7 @@
         </div>
     </main>
 
-    @push('js')
+    @push('scripts')
     <script>
         let answerCount = 1;
 
@@ -274,7 +274,53 @@
 
             // Inisialisasi awal
             handleQuestionTypeChange();
+
+            if (!localStorage.getItem('admin_question_create_tutorial_complete')) {
+                setTimeout(startQuestionCreateTutorial, 500);
+            }
         });
+
+        function startQuestionCreateTutorial() {
+            const steps = [
+                {
+                    intro: "Selamat datang di halaman pembuatan soal!"
+                },
+                {
+                    element: document.querySelector('select[name="question_bank_id"]'),
+                    intro: "Pilih bank soal untuk menyimpan soal ini."
+                },
+                {
+                    element: document.querySelector('.tox-tinymce'),
+                    intro: "Tulis pertanyaan di sini. Anda dapat menambahkan teks, gambar, atau kode program."
+                },
+                {
+                    element: document.querySelector('.options-container'),
+                    intro: "Tambahkan pilihan jawaban di bagian ini. Pastikan menandai jawaban yang benar."
+                },
+                {
+                    element: document.querySelector('textarea[name="explanation"]'),
+                    intro: "Berikan penjelasan untuk jawaban yang benar."
+                },
+                {
+                    element: document.querySelector('button[type="submit"]'),
+                    intro: "Klik tombol ini untuk menyimpan soal."
+                }
+            ];
+
+            introJs().setOptions({
+                steps: steps,
+                showProgress: true,
+                exitOnOverlayClick: true,
+                showBullets: false,
+                scrollToElement: true,
+                nextLabel: 'Berikutnya',
+                prevLabel: 'Sebelumnya',
+                doneLabel: 'Selesai',
+                tooltipClass: 'customTooltip'
+            }).oncomplete(function() {
+                localStorage.setItem('admin_question_create_tutorial_complete', 'true');
+            }).start();
+        }
     </script>
     @endpush
 </x-layout>

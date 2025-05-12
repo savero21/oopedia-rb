@@ -9,6 +9,28 @@ class GuestAccess
 {
     public function handle(Request $request, Closure $next)
     {
+        // TAMBAHAN: Biarkan semua request lewat untuk route latihan soal
+        $allowedPaths = [
+            'mahasiswa/materials/questions',
+            'mahasiswa/materials/*/questions',
+            'mahasiswa/materials/*/questions/levels',
+            'mahasiswa/materials/*/questions/review',
+            'questions/check-answer'
+        ];
+        
+        $currentPath = $request->path();
+        
+        foreach ($allowedPaths as $path) {
+            if (fnmatch($path, $currentPath)) {
+                return $next($request);
+            }
+        }
+        
+        // Biarkan semua pengguna yang tidak login untuk mengakses semua route
+        if (!auth()->check()) {
+            return $next($request);
+        }
+        
         if (auth()->check()) {
             $user = auth()->user();
             
@@ -27,13 +49,24 @@ class GuestAccess
                     'mahasiswa.materials.questions.review',
                     'mahasiswa.materials.questions.levels',
                     'mahasiswa.questions.check-answer',
+                    'questions.check-answer',
                     'mahasiswa.questions.show',
                     'mahasiswa.materials.reset',
                     'logout',
                     'login',
                     'register'
                 ];
-
+                
+                // TAMBAHAN: Cetak route name untuk debugging
+                \Log::info('Current route: ' . $request->route()->getName());
+                \Log::info('Current path: ' . $request->path());
+                
+                // TAMBAHKAN KONDISI UNTUK PATH QUESTIONS
+                if (strpos($request->path(), 'materials/questions') !== false || 
+                    strpos($request->path(), 'questions/check-answer') !== false) {
+                    return $next($request);
+                }
+                
                 if (!in_array($request->route()->getName(), $allowedRoutes)) {
                     return redirect()->route('mahasiswa.materials.index')
                         ->with('info', 'Fitur ini hanya tersedia untuk mahasiswa terdaftar.');

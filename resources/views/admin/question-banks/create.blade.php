@@ -65,4 +65,52 @@
             </div>
         </div>
     </main>
-</x-layout> 
+</x-layout>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!localStorage.getItem('admin_question_bank_create_tutorial_complete')) {
+            setTimeout(startQuestionBankCreateTutorial, 500);
+        }
+    });
+
+    function startQuestionBankCreateTutorial() {
+        const steps = [
+            {
+                intro: "Selamat datang di halaman pembuatan bank soal!"
+            },
+            {
+                element: document.querySelector('input[name="name"]'),
+                intro: "Masukkan nama bank soal di sini."
+            },
+            {
+                element: document.querySelector('select[name="material_id"]'),
+                intro: "Pilih materi yang terkait dengan bank soal ini."
+            },
+            {
+                element: document.querySelector('select[name="difficulty"]'),
+                intro: "Tentukan tingkat kesulitan untuk bank soal ini."
+            },
+            {
+                element: document.querySelector('button[type="submit"]'),
+                intro: "Klik tombol ini untuk membuat bank soal baru."
+            }
+        ];
+
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Selesai',
+            tooltipClass: 'customTooltip'
+        }).oncomplete(function() {
+            localStorage.setItem('admin_question_bank_create_tutorial_complete', 'true');
+        }).start();
+    }
+</script>
+@endpush 

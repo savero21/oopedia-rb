@@ -3,14 +3,16 @@
 <aside
     class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 bg-gradient-dark"
     id="sidenav-main">
-    <div class="sidenav-header d-flex flex-column align-items-center">
+    <br>
+    <div class="sidenav-header d-flex flex-column align-items-center justify-content-center py-3">
         @php
             $dashboardRoute = auth()->user()->role_id === 3 ? 'mahasiswa.dashboard' : 'admin.dashboard';
         @endphp
-        <a class="navbar-brand m-0 d-flex text-wrap align-items-center" href="{{ route($dashboardRoute) }}">
-            <span class="font-weight-bold text-white">OOPEDIA</span>
+        <a class="navbar-brand w-100 text-center" href="{{ route($dashboardRoute) }}">
+            <img src="{{ asset('images/logo.png') }}" alt="OOPEDIA" class="img-fluid" style="max-height: 130px; width: auto;">
         </a>
     </div>
+    <br>
     <hr class="horizontal light mt-0 mb-2">
     <div class="d-flex align-items-center mx-3">
         <i class="material-icons opacity-10 me-2">person</i>
@@ -86,6 +88,18 @@
                 </div>
             </li>
 
+            {{-- Menu Bank Soal hanya untuk Admin dan Superadmin --}}
+            @if(auth()->user()->role_id <= 2)
+            <li class="nav-item">
+                <a class="nav-link text-white {{ $activePage == 'question-banks' ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.question-banks.index') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="material-icons opacity-10">quiz</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Bank Soal</span>
+                </a>
+            </li>
+            @endif
+
             {{-- Menu Progress Mahasiswa --}}
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Data Mahasiswa</h6>
@@ -146,18 +160,6 @@
                         <i class="material-icons opacity-10">poll</i>
                     </div>
                     <span class="nav-link-text ms-1">UEQ Survey Results</span>
-                </a>
-            </li>
-            @endif
-
-            {{-- Menu Bank Soal hanya untuk Admin dan Superadmin --}}
-            @if(auth()->user()->role_id <= 2)
-            <li class="nav-item">
-                <a class="nav-link text-white {{ $activePage == 'question-banks' ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.question-banks.index') }}">
-                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="material-icons opacity-10">quiz</i>
-                    </div>
-                    <span class="nav-link-text ms-1">Bank Soal</span>
                 </a>
             </li>
             @endif
@@ -298,3 +300,116 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+{{-- Tambahkan script tutorial di bagian bawah file --}}
+@push('js')
+<script>
+    // Simpan URL route untuk admin
+    const routeDashboard = "{{ route('admin.dashboard') }}";
+    const routeMaterials = "{{ route('admin.materials.index') }}";
+    const routeQuestions = "{{ str_contains($activePage, 'questions') ? 'active' : '' }}";
+    const routeQuestionBanks = "{{ route('admin.question-banks.index') }}";
+    const routeStudents = "{{ route('admin.students.index') }}";
+    const isAdmin = {{ auth()->check() && auth()->user()->role_id <= 3 ? 'true' : 'false' }};
+    const isSuperAdmin = {{ auth()->check() && auth()->user()->role_id == 1 ? 'true' : 'false' }};
+    
+    // Variabel untuk menandai klik sidebar
+    let sidebarClicked = false;
+    
+    // Tangkap klik pada sidebar untuk menonaktifkan tutorial
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+        link.addEventListener('click', function() {
+            sidebarClicked = true;
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Cek apakah tutorial sudah pernah ditampilkan
+        const isAdminTutorialCompleted = localStorage.getItem('admin_tutorial_complete');
+        const isDashboardPage = {{ request()->routeIs('admin.dashboard') ? 'true' : 'false' }};
+        
+        // Tampilkan tutorial hanya jika belum pernah ditampilkan, di halaman dashboard, dan belum ada klik sidebar
+        if (isAdmin && !isAdminTutorialCompleted && isDashboardPage && !sidebarClicked && !localStorage.getItem('skip_admin_tour')) {
+            startAdminTutorial();
+        }
+    });
+
+    // Fungsi untuk memulai tutorial admin
+    function startAdminTutorial() {
+        let steps = [
+            {
+                intro: "Selamat datang di Dashboard Admin! Mari kita kenali fitur-fitur yang tersedia."
+            },
+            {
+                element: document.querySelector('.nav-link[href="' + routeDashboard + '"]'),
+                intro: "Ini adalah Dashboard Admin. Di sini Anda dapat melihat ringkasan data dan statistik penting."
+            },
+            {
+                element: document.querySelector('.nav-link[href="' + routeMaterials + '"]'),
+                intro: "Di menu Materi, Anda dapat mengelola semua materi pembelajaran yang tersedia untuk mahasiswa."
+            }
+        ];
+
+        // Tambahkan langkah untuk menu Kelola Soal
+        if (document.querySelector('a[data-bs-toggle="collapse"][href="#questionsMenu"]')) {
+            steps.push({
+                element: document.querySelector('a[data-bs-toggle="collapse"][href="#questionsMenu"]'),
+                intro: "Menu Kelola Soal memungkinkan Anda untuk membuat dan mengelola soal-soal berdasarkan materi."
+            });
+        }
+
+        // Tambahkan langkah untuk Bank Soal jika user adalah Admin atau Superadmin
+        if (document.querySelector('.nav-link[href="' + routeQuestionBanks + '"]')) {
+            steps.push({
+                element: document.querySelector('.nav-link[href="' + routeQuestionBanks + '"]'),
+                intro: "Bank Soal memungkinkan Anda untuk mengorganisir soal-soal ke dalam kumpulan yang dapat digunakan kembali."
+            });
+        }
+
+        // Tambahkan langkah untuk Data Mahasiswa
+        steps.push({
+            element: document.querySelector('.nav-link[href="' + routeStudents + '"]'),
+            intro: "Di menu Data Mahasiswa, Anda dapat melihat dan mengelola data mahasiswa serta memantau progres belajar mereka."
+        });
+
+        // Tambahkan langkah untuk Data Dosen jika user adalah Superadmin
+        if (isSuperAdmin && document.querySelector('.nav-item:has(.nav-link[href="{{ route("admin.users.index") }}"])')) {
+            steps.push({
+                element: document.querySelector('.nav-item:has(.nav-link[href="{{ route("admin.users.index") }}"])'),
+                intro: "Sebagai Superadmin, Anda dapat mengelola data dosen dan admin lainnya di menu ini."
+            });
+        }
+
+        // Tambahkan langkah penutup
+        steps.push({
+            intro: "Sekarang Anda siap menggunakan Dashboard Admin! Klik di mana saja untuk menyelesaikan tutorial ini."
+        });
+
+        // Konfigurasi dan jalankan IntroJS
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Selesai',
+            tooltipClass: 'customTooltip'
+        }).oncomplete(function() {
+            // Simpan status tutorial selesai di localStorage
+            localStorage.setItem('admin_tutorial_complete', 'true');
+        }).onexit(function() {
+            // Simpan status tutorial selesai di localStorage
+            localStorage.setItem('admin_tutorial_complete', 'true');
+        }).start();
+    }
+
+    // Tambahkan tombol untuk mereset tutorial
+    function resetAdminTutorial() {
+        localStorage.removeItem('admin_tutorial_complete');
+        localStorage.removeItem('skip_admin_tour');
+        startAdminTutorial();
+    }
+</script>
+@endpush

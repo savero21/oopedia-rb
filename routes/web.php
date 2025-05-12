@@ -163,7 +163,8 @@ Route::middleware('auth')->group(function () {
 
         // Questions index route (must come before the materials/{material} route)
         Route::get('materials/questions', [MaterialQuestionController::class, 'index'])
-            ->name('materials.questions.index');
+            ->name('materials.questions.index')
+            ->withoutMiddleware('auth');
 
         // Material show route
         // Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
@@ -215,14 +216,26 @@ Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
     Route::get('materials/{material}', [MahasiswaMaterialController::class, 'show'])->name('materials.show');
     
     // Tambahan untuk latihan soal yang bisa diakses tamu
-    Route::get('materials/questions', [MaterialQuestionController::class, 'index'])->name('materials.questions.index');
-    Route::get('materials/{material}/questions', [MaterialQuestionController::class, 'show'])->name('materials.questions.show');
-    Route::get('materials/{material}/questions/levels', [MaterialQuestionController::class, 'showLevels'])->name('materials.questions.levels');
-    Route::get('materials/{material}/questions/review', [MaterialQuestionController::class, 'review'])->name('materials.questions.review');
+    Route::get('materials/questions', [MaterialQuestionController::class, 'index'])->name('materials.questions.index')
+        ->withoutMiddleware('auth');
+    
+    // PERBAIKAN: Tambahkan withoutMiddleware('auth') pada semua route soal
+    Route::get('materials/{material}/questions', [MaterialQuestionController::class, 'show'])
+        ->name('materials.questions.show')
+        ->withoutMiddleware('auth');
+    
+    Route::get('materials/{material}/questions/levels', [MaterialQuestionController::class, 'showLevels'])
+        ->name('materials.questions.levels')
+        ->withoutMiddleware('auth');
+    
+    Route::get('materials/{material}/questions/review', [MaterialQuestionController::class, 'review'])
+        ->name('materials.questions.review')
+        ->withoutMiddleware('auth');
 });
 // Tambahkan route baru yang dapat diakses tanpa middleware
 Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'checkAnswer'])
-    ->name('questions.check-answer');
+    ->name('questions.check-answer')
+    ->withoutMiddleware('auth');
 
 // Fallback route for 404 errors
 Route::fallback(function () {

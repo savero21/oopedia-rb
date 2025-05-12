@@ -575,7 +575,7 @@ function submitAnswer() {
                 answer: selectedOption.value,
                 attempts: attemptCount + 1,
                 potential_score: potentialScore,
-                difficulty: '{{ request()->query('difficulty', 'all') }}'
+                difficulty: '{{ request()->query('difficulty') }}'
             })
         })
         .then(response => response.json())
@@ -620,37 +620,23 @@ function showFeedback(data) {
     feedbackIcon.className = `feedback-icon ${data.status === 'success' ? 'success' : 'error'}`;
     feedbackIcon.innerHTML = `<i class="fas ${data.status === 'success' ? 'fa-check-circle' : 'fa-times-circle'} fa-3x"></i>`;
 
-    // Tampilkan tombol yang sesuai
     if (data.status === 'success') {
         tryAgainBtn.style.display = 'none';
         nextQuestionBtn.style.display = 'inline-block';
-        
-        // Cek apakah ini soal terakhir
-        const currentNumber = {{ $currentQuestionNumber }};
-        const totalQuestions = {{ $totalFilteredQuestions }};
-        
-        if (currentNumber >= totalQuestions || !data.hasNextQuestion) {
-            // Jika soal terakhir, tampilkan tombol Selesai
-            nextQuestionBtn.innerHTML = '<i class="fas fa-check me-2"></i>Selesai';
-            nextQuestionBtn.onclick = () => window.location.href = "{{ route('mahasiswa.materials.questions.levels', [
-                'material' => $material->id,
-                'difficulty' => request()->query('difficulty', 'all')
-            ]) }}";
-        } else {
-            // Jika masih ada soal berikutnya
-            nextQuestionBtn.innerHTML = 'Lanjut ke Soal Berikutnya <i class="fas fa-arrow-right ms-2"></i>';
-            nextQuestionBtn.onclick = () => window.location.href = data.nextUrl;
-        }
+        nextQuestionBtn.innerHTML = '<i class="fas fa-list-ol me-2"></i>Kembali ke Level';
+        nextQuestionBtn.onclick = () => {
+            const currentDifficulty = '{{ request()->query('difficulty') }}';
+            const levelUrl = data.levelUrl || '{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => request()->query('difficulty')]) }}';
+            redirectToLevelWithScroll(levelUrl);
+        };
     } else {
         tryAgainBtn.style.display = 'inline-block';
         nextQuestionBtn.style.display = 'none';
         
-        // Add click handler for Try Again button
         tryAgainBtn.onclick = () => {
             feedbackElement.style.display = 'none';
             questionForm.style.display = 'block';
             
-            // Re-enable the check answer button
             const checkAnswerBtn = document.getElementById('checkAnswerBtn');
             if (checkAnswerBtn) {
                 checkAnswerBtn.disabled = false;
@@ -663,30 +649,33 @@ function showFeedback(data) {
     questionForm.style.display = 'none';
 }
 
-
+// Event handler submit
 $(document).ready(function() {
     $('#questionForm').on('submit', function(e) {
         e.preventDefault();
         
+        const formData = new FormData(this);
+        const currentDifficulty = '{{ request()->query('difficulty') }}';
+        formData.append('difficulty', currentDifficulty);
+        
         $.ajax({
             url: $(this).attr('action'),
             method: 'POST',
-            data: $(this).serialize(),
+            data: $(this).serialize() + '&difficulty=' + currentDifficulty,
             success: function(response) {
                 if (response.status === 'success') {
-                    // Show success message
                     Swal.fire({
                         icon: 'success',
-                        title: 'Benar!',
+                        title: 'Jawaban Benar!',
                         text: response.message,
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(() => {
-                        // Redirect to levels page
-                        window.location.href = response.nextUrl;
+                        confirmButtonText: 'Lanjut',
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            redirectToLevelPage();
+                        }
                     });
                 } else {
-                    // Show error message
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
@@ -807,5 +796,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Simpan level yang sedang dikerjakan ke localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const currentLevel = '{{ $currentQuestion->id }}';
+    localStorage.setItem('currentQuestionLevel', currentLevel);
+});
+
+// Ketika jawaban benar dan kembali ke halaman level
+function redirectToLevelWithScroll(levelUrl) {
+    // Simpan status bahwa soal telah dijawab benar
+    localStorage.setItem('questionCompleted', 'true');
+    window.location.href = levelUrl;
+}
+
+function redirectToLevelPage() {
+    const levelUrl = "{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => request()->query('difficulty')]) }}";
+    // Tambahkan parameter untuk menandai scroll
+    window.location.href = `${levelUrl}?scroll=true`;
+}
 </script>
 @endpush 

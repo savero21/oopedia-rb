@@ -81,5 +81,103 @@
                 </div>
             </div>
         </div>
+        @if(count($missingQuestionsByMaterial) > 0)
+        <div class="container-fluid py-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card my-4">
+                        <br><br>
+                        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                            <div class="bg-gradient-warning shadow-warning border-radius-lg pt-4 pb-3">
+                                <h6 class="text-white text-capitalize ps-3">Soal yang Belum Dijawab</h6>
+                            </div>
+                        </div>
+                        <div class="card-body px-0 pb-2">
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Materi</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Jumlah Soal Belum Dijawab Benar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($missingQuestionsByMaterial as $item)
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex px-2 py-1">
+                                                    <div class="d-flex flex-column justify-content-center">
+                                                        <h6 class="mb-0 text-sm">{{ $item['material_title'] }}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-gradient-danger">{{ $item['missing_count'] }} soal</span>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
     </main>
 </x-layout>
+
+@push('js')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cek apakah tutorial halaman detail mahasiswa sudah pernah ditampilkan
+        const isStudentDetailTutorialCompleted = localStorage.getItem('admin_student_detail_tutorial_complete');
+        
+        // Tampilkan tutorial jika belum pernah ditampilkan
+        if (!isStudentDetailTutorialCompleted && !localStorage.getItem('skip_admin_tour')) {
+            setTimeout(startStudentDetailTutorial, 500);
+        }
+    });
+    
+    function startStudentDetailTutorial() {
+        const steps = [
+            {
+                intro: "Selamat datang di halaman Detail Mahasiswa!"
+            },
+            {
+                element: document.querySelector('.card-profile'),
+                intro: "Bagian ini menampilkan informasi profil mahasiswa seperti nama, NIM, dan email."
+            },
+            {
+                element: document.querySelector('.card-body:has(canvas)'),
+                intro: "Grafik ini menunjukkan progres belajar mahasiswa untuk setiap materi."
+            },
+            {
+                element: document.querySelector('.table-responsive'),
+                intro: "Tabel ini menampilkan riwayat aktivitas mahasiswa dalam mengerjakan soal-soal latihan."
+            },
+            {
+                element: document.querySelector('a.btn-primary'),
+                intro: "Klik tombol ini untuk kembali ke daftar mahasiswa."
+            }
+        ];
+        
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: false,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            doneLabel: 'Selesai',
+            tooltipClass: 'customTooltip'
+        }).oncomplete(function() {
+            localStorage.setItem('admin_student_detail_tutorial_complete', 'true');
+        }).onexit(function() {
+            localStorage.setItem('admin_student_detail_tutorial_complete', 'true');
+        }).start();
+    }
+</script>
+@endpush

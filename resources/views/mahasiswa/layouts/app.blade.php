@@ -156,5 +156,24 @@
     </script>
 
     @stack('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tangkap semua popup login
+            if (document.querySelector('.login-required-modal')) {
+                document.querySelector('.login-required-modal').remove();
+            }
+            
+            // Override behavior pesan login
+            window.preventLoginRedirect = function() {
+                return false;
+            };
+            
+            // Override fungsi redirect ke login
+            window.redirectToLogin = function() {
+                return false;
+            };
+        });
+    </script>
 </body>
 </html>

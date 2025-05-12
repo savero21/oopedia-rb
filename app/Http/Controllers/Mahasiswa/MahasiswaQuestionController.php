@@ -9,71 +9,40 @@ use App\Models\Material;
 use App\Models\Answer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MahasiswaQuestionController extends Controller
 {
     public function checkAnswer(Request $request)
     {
-        // Debugging - tampilkan semua data request
-        \Log::info('Request data for checkAnswer:', $request->all());
+        // Log semua data request untuk debugging
+        Log::info('Request data for checkAnswer:', $request->all());
         
         try {
+            // Validasi dasar
             $request->validate([
                 'question_id' => 'required|exists:questions,id',
                 'material_id' => 'required|exists:materials,id'
             ]);
-
+            
             $question = Question::findOrFail($request->question_id);
             $isCorrect = false;
             $correctAnswerText = null;
             $selectedAnswerText = null;
             $explanation = null;
-
+            
+            // Cek jawaban berdasarkan tipe soal
             if ($question->question_type === 'fill_in_the_blank') {
-                // Validasi untuk soal fill in the blank
-                if (!$request->has('fill_in_the_blank_answer')) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'The answer field is required.'
-                    ], 422);
-                }
-                
-                $userAnswer = $request->fill_in_the_blank_answer;
-                if (empty(trim($userAnswer))) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'The answer field is required.'
-                    ], 422);
-                }
-                
-                $correctAnswer = Answer::where('question_id', $question->id)
-                                    ->where('is_correct', true)
-                                    ->first();
-                
-                if ($correctAnswer) {
-                    // Normalisasi jawaban untuk perbandingan yang lebih fleksibel
-                    $normalizedUserAnswer = strtolower(trim($userAnswer));
-                    $normalizedCorrectAnswer = strtolower(trim($correctAnswer->answer_text));
-                    
-                    // Cek apakah ada beberapa jawaban yang benar (dipisahkan dengan pipe |)
-                    $acceptableAnswers = explode('|', $normalizedCorrectAnswer);
-                    $isCorrect = false;
-                    
-                    foreach ($acceptableAnswers as $answer) {
-                        if (trim($normalizedUserAnswer) === trim($answer)) {
-                            $isCorrect = true;
-                            break;
-                        }
-                    }
-                    
-                    $selectedAnswerText = $userAnswer;
-                    
-                    if (!$isCorrect) {
-                        $correctAnswerText = $correctAnswer->answer_text;
-                    }
-                    
-                    $explanation = $correctAnswer->explanation;
-                }
+                $userAnswer = trim(strtolower($request->fill_in_the_blank_answer));
+                $correctAnswer = trim(strtolower($question->correct_answer));
+                $isCorrect = $userAnswer === $correctAnswer;
+                $selectedAnswerText = $request->fill_in_the_blank_answer;
+                $correctAnswerText = $question->correct_answer;
+            } elseif ($question->question_type === 'true_false') {
+                $userAnswer = $request->answer === 'true';
+                $isCorrect = $userAnswer === $question->is_true;
+                $selectedAnswerText = $userAnswer ? 'Benar' : 'Salah';
+                $correctAnswerText = $question->is_true ? 'Benar' : 'Salah';
             } else {
                 // Validasi untuk soal pilihan ganda
                 if (!$request->has('answer')) {
@@ -132,37 +101,37 @@ class MahasiswaQuestionController extends Controller
                         $materialProgress[] = $question->id;
                         session(['guest_progress.' . $request->material_id => $materialProgress]);
                     }
-                    
-                    // Log debug untuk memeriksa data
-                    \Log::debug('Guest progress updated', [
-                        'material_id' => $request->material_id,
-                        'question_id' => $question->id,
-                        'session_data' => $materialProgress
-                    ]);
                 }
             }
             
-            // Cek apakah ada soal berikutnya
-            $nextQuestion = Question::where('material_id', $request->material_id)
-                                ->where('id', '>', $question->id)
-                                ->orderBy('id')
-                                ->first();
-            
-            return response()->json([
-                'status' => $isCorrect ? 'success' : 'error',
-                'message' => $isCorrect ? 'Jawaban Benar!' : 'Jawaban Salah',
-                'selectedAnswerText' => $selectedAnswerText,
-                'correctAnswerText' => $correctAnswerText,
-                'explanation' => $explanation,
-                'hasNextQuestion' => !is_null($nextQuestion),
-                'nextUrl' => $nextQuestion ? route('mahasiswa.materials.questions.show', [
-                    'material' => $request->material_id,
-                    'question' => $nextQuestion->id,
-                    'difficulty' => $request->difficulty ?? 'all'
-                ]) : null
-            ]);
+            // PERUBAHAN: Jika jawaban benar, arahkan kembali ke halaman levels
+            if ($isCorrect) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Jawaban Benar!',
+                    'selectedAnswerText' => $selectedAnswerText,
+                    'correctAnswerText' => $correctAnswerText,
+                    'explanation' => $explanation,
+                    'hasNextQuestion' => false,
+                    'levelUrl' => route('mahasiswa.materials.questions.levels', [
+                        'material' => $request->material_id,
+                        'difficulty' => $request->difficulty
+                    ])
+                ]);
+            } else {
+                // Jika jawaban salah, tetap di halaman yang sama
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Jawaban Salah',
+                    'selectedAnswerText' => $selectedAnswerText,
+                    'correctAnswerText' => $correctAnswerText,
+                    'explanation' => $explanation,
+                    'hasNextQuestion' => true,
+                    'nextUrl' => null
+                ]);
+            }
         } catch (\Exception $e) {
-            \Log::error('Error in checkAnswer: ' . $e->getMessage());
+            Log::error('Error in checkAnswer: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

@@ -66,12 +66,14 @@ class MaterialQuestionController extends Controller
         return view('mahasiswa.materials.questions.index', compact('materials', 'isGuest'));
     }
 
-    public function show(Material $material, $difficulty = 'all')
+    public function show(Material $material, Request $request)
     {
-        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
         $materials = Material::orderBy('created_at', 'asc')->get();
+        $difficulty = $request->query('difficulty', 'beginner');
+        $questionId = $request->query('question');
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
         
-        // Filter soal berdasarkan difficulty jika parameter difficulty diberikan
+        // Filter soal berdasarkan difficulty
         $questionsQuery = $material->questions();
         if ($difficulty !== 'all') {
             $questionsQuery->where('difficulty', $difficulty);
@@ -80,8 +82,9 @@ class MaterialQuestionController extends Controller
         // Ambil semua soal yang tersedia
         $availableQuestions = $questionsQuery->get();
         
-        // Jika user adalah guest, batasi hanya 3 soal per kesulitan
+        // Batasi jumlah soal berdasarkan konfigurasi
         if ($isGuest) {
+            // Untuk guest, batasi maksimal 3 soal per tingkat kesulitan
             if ($difficulty === 'all') {
                 $beginnerQuestions = $availableQuestions->where('difficulty', 'beginner')->take(3);
                 $mediumQuestions = $availableQuestions->where('difficulty', 'medium')->take(3);
@@ -91,6 +94,9 @@ class MaterialQuestionController extends Controller
             } else {
                 $questions = $availableQuestions->take(3);
             }
+            
+            // Total untuk guest selalu 3 soal per tingkat kesulitan yang dipilih
+            $totalFilteredQuestions = $difficulty === 'all' ? 9 : 3;
         } else {
             // Untuk user terdaftar, gunakan konfigurasi dari admin
             $config = QuestionBankConfig::where('material_id', $material->id)
@@ -104,19 +110,98 @@ class MaterialQuestionController extends Controller
                     $hardQuestions = $availableQuestions->where('difficulty', 'hard')->take($config->hard_count);
                     
                     $questions = $beginnerQuestions->concat($mediumQuestions)->concat($hardQuestions);
+                    $totalFilteredQuestions = $config->beginner_count + $config->medium_count + $config->hard_count;
                 } else {
                     // Tentukan jumlah soal berdasarkan tingkat kesulitan
                     $countField = $difficulty . '_count';
                     $limit = $config->$countField;
                     $questions = $availableQuestions->take($limit);
+                    $totalFilteredQuestions = $limit;
                 }
             } else {
-                // Jika tidak ada konfigurasi, tampilkan semua soal
                 $questions = $availableQuestions;
+                $totalFilteredQuestions = $questions->count();
             }
         }
         
-        return view('mahasiswa.materials.questions.show', compact('material', 'materials', 'questions', 'difficulty', 'isGuest'));
+        // Acak urutan soal sambil mempertahankan tingkat kesulitan
+        if ($difficulty === 'all') {
+            // Jika semua tingkat kesulitan, acak dalam masing-masing tingkat
+            $beginnerQuestionsShuffled = $questions->where('difficulty', 'beginner')->shuffle();
+            $mediumQuestionsShuffled = $questions->where('difficulty', 'medium')->shuffle();
+            $hardQuestionsShuffled = $questions->where('difficulty', 'hard')->shuffle();
+            
+            // Gabungkan kembali dengan urutan beginner, medium, hard
+            $questions = $beginnerQuestionsShuffled->concat($mediumQuestionsShuffled)->concat($hardQuestionsShuffled);
+        } else {
+            // Jika hanya satu tingkat kesulitan, cukup acak semuanya
+            $questions = $questions->shuffle();
+        }
+        
+        // Get answered questions for progress tracking
+        $answeredQuestionIds = Progress::where('user_id', auth()->id() ?? session()->getId())
+            ->where('material_id', $material->id)
+            ->where('is_correct', true)
+            ->pluck('question_id');
+        
+        // Inisialisasi currentQuestion
+        $currentQuestion = null;
+        
+        // Jika ada parameter question di URL, cari soal tersebut di koleksi yang sudah difilter
+        if ($questionId) {
+            $currentQuestion = $questions->firstWhere('id', $questionId);
+        }
+        
+        // Jika tidak ada parameter question atau soal tidak ditemukan, cari soal pertama yang belum dijawab
+        if (!$currentQuestion) {
+            $currentQuestion = $questions->reject(function($question) use ($answeredQuestionIds) {
+                return $answeredQuestionIds->contains($question->id);
+            })->first();
+        }
+        
+        // Acak urutan jawaban jika saat ini ada soal dan bukan tipe isian
+        if ($currentQuestion && $currentQuestion->question_type !== 'fill_in_the_blank') {
+            // Load relasi answers jika belum dimuat
+            if (!$currentQuestion->relationLoaded('answers')) {
+                $currentQuestion->load('answers');
+            }
+            
+            // Acak urutan jawaban
+            $currentQuestion->setRelation('answers', $currentQuestion->answers->shuffle());
+        }
+        
+        // Hitung nomor soal saat ini berdasarkan jumlah soal yang sudah dijawab
+        $answeredCount = 0;
+        if ($difficulty === 'all') {
+            $answeredCount = $answeredQuestionIds->count();
+        } else {
+            // Hitung hanya soal yang dijawab dengan difficulty yang sama
+            $questionIdsInDifficulty = $availableQuestions->pluck('id');
+            $answeredCount = Progress::where('user_id', auth()->id() ?? session()->getId())
+                ->where('material_id', $material->id)
+                ->where('is_correct', true)
+                ->whereIn('question_id', $questionIdsInDifficulty)
+                ->count();
+        }
+        
+        // Nomor soal saat ini adalah jumlah soal yang sudah dijawab + 1
+        $currentQuestionNumber = $answeredCount + 1;
+        
+        // Jika sudah menjawab semua soal, tampilkan "Review"
+        if ($answeredCount >= $totalFilteredQuestions) {
+            $currentQuestionNumber = $totalFilteredQuestions;
+        }
+        
+        return view('mahasiswa.materials.questions.show', [
+            'material' => $material,
+            'materials' => $materials,
+            'questions' => $questions,
+            'difficulty' => $difficulty,
+            'isGuest' => $isGuest,
+            'currentQuestion' => $currentQuestion,
+            'currentQuestionNumber' => $currentQuestionNumber,
+            'totalFilteredQuestions' => $totalFilteredQuestions
+        ]);
     }
 
     public function levels(Material $material, Request $request)
@@ -259,51 +344,108 @@ class MaterialQuestionController extends Controller
         return response()->json(['attempts' => $attempts]);
     }
 
-    public function checkAnswer($materialId, $questionId, Request $request)
+    public function checkAnswer(Material $material, Question $question, Request $request)
     {
-        $material = Material::findOrFail($materialId);
-        $question = Question::findOrFail($questionId);
-        $difficulty = $request->query('difficulty', 'all');
-        
-        $request->validate([
-            'answer' => 'required',
-            'attempts' => 'required|integer',
-            'potential_score' => 'required|integer'
-        ]);
-
-        $selectedAnswer = Answer::findOrFail($request->answer);
-        $isCorrect = $selectedAnswer->is_correct;
-
-        // Update progress
-        Progress::create([
-            'user_id' => auth()->id(),
-            'material_id' => $material->id,
-            'question_id' => $question->id,
-            'is_correct' => $isCorrect,
-            'score' => $isCorrect ? $request->potential_score : 0,
-            'attempt_number' => $request->attempts
-        ]);
-
-        if ($isCorrect) {
-            // Redirect back to levels page with the same difficulty
-            $nextUrl = route('mahasiswa.materials.questions.levels', [
-                'material' => $material->id,
-                'difficulty' => $difficulty
-            ]);
+        try {
+            $difficulty = $request->input('difficulty', 'beginner');
+            $userId = auth()->id() ?? session()->getId();
+            $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+            
+            // Default messages
+            $successMessage = 'Jawaban benar!';
+            
+            // Logic untuk mengecek jawaban
+            $isCorrect = false;
+            $questionType = $question->question_type;
+            
+            // Check jawaban berdasarkan tipe soal
+            if ($questionType === 'multiple_choice') {
+                $selectedAnswer = Answer::findOrFail($request->answer);
+                $isCorrect = $selectedAnswer->is_correct;
+            } elseif ($questionType === 'fill_in_the_blank') {
+                $answer = trim(strtolower($request->fill_in_the_blank_answer));
+                $correctAnswer = trim(strtolower($question->correct_answer));
+                $isCorrect = $answer === $correctAnswer;
+            } elseif ($questionType === 'true_false') {
+                $selectedAnswer = ($request->answer === 'true');
+                $isCorrect = $selectedAnswer === $question->is_true;
+            }
+            
+            // Jika user auth, simpan progress ke database
+            if (auth()->check() && auth()->user()->role_id !== 4) {
+                Progress::updateOrCreate(
+                    [
+                        'user_id' => $userId,
+                        'material_id' => $material->id,
+                        'question_id' => $question->id
+                    ],
+                    [
+                        'is_correct' => $isCorrect,
+                        'is_answered' => true,
+                        'attempt_number' => DB::raw('attempt_number + 1')
+                    ]
+                );
+            } else {
+                // Untuk guest, simpan progress di session
+                $sessionKey = 'guest_progress';
+                $guestProgress = session($sessionKey, []);
+                
+                $progressKey = $material->id . '_' . $question->id;
+                $guestProgress[$progressKey] = [
+                    'is_correct' => $isCorrect,
+                    'attempt_number' => isset($guestProgress[$progressKey]) ? 
+                        $guestProgress[$progressKey]['attempt_number'] + 1 : 1
+                ];
+                
+                session([$sessionKey => $guestProgress]);
+                
+                // PENTING: Tambahkan ini untuk memastikan level-tracking juga diperbarui
+                if ($isCorrect) {
+                    // Simpan juga di format array untuk level tracking
+                    $materialProgress = session('guest_progress.' . $material->id, []);
+                    if (!in_array($question->id, $materialProgress)) {
+                        $materialProgress[] = $question->id;
+                        session(['guest_progress.' . $material->id => $materialProgress]);
+                    }
+                }
+            }
+            
+            // Response sesuai hasil jawaban
+            if ($isCorrect) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $successMessage,
+                    'selectedAnswerText' => $selectedAnswerText,
+                    'correctAnswerText' => $correctAnswerText,
+                    'explanation' => $explanation,
+                    'hasNextQuestion' => false,
+                    'levelUrl' => route('mahasiswa.materials.questions.levels', [
+                        'material' => $material->id,
+                        'difficulty' => $request->input('difficulty')
+                    ])
+                ]);
+            } else {
+                // Jika jawaban salah, tetap di halaman soal yang sama
+                $nextUrl = route('mahasiswa.materials.questions.show', [
+                    'material' => $material->id,
+                    'difficulty' => $difficulty,
+                    'question' => $question->id
+                ]);
+                
+                $hasNextQuestion = true; // Tetap true untuk memastikan tombol "Coba Lagi" muncul
+            }
             
             return response()->json([
-                'status' => 'success',
-                'message' => 'Jawaban benar! Kembali ke halaman level.',
-                'hasNextQuestion' => false,
+                'status' => $isCorrect ? 'success' : 'error',
+                'message' => $isCorrect ? $successMessage : 'Jawaban salah, coba lagi.',
+                'hasNextQuestion' => $hasNextQuestion,
                 'nextUrl' => $nextUrl
             ]);
-        } else {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Jawaban salah, silakan coba lagi.',
-                'hasNextQuestion' => false,
-                'nextUrl' => null
-            ]);
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -380,57 +522,57 @@ class MaterialQuestionController extends Controller
     }
 
     public function dashboard()
-{
-    $userId = auth()->id();
-    $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
-    
-    // Get all materials
-    $allMaterials = Material::with(['questions'])->get();
-    $totalMaterials = $allMaterials->count();
-    
-    // Variables to store configured question counts
-    $configuredTotalQuestions = 0;
-    $configuredEasyQuestions = 0;
-    $configuredMediumQuestions = 0;
-    $configuredHardQuestions = 0;
-    
-    // Calculate configured question counts
-    foreach ($allMaterials as $material) {
-        if ($isGuest) {
-            // For guests, use fixed values (3 per difficulty)
-            $configuredEasyQuestions += min(3, $material->questions->where('difficulty', 'beginner')->count());
-            $configuredMediumQuestions += min(3, $material->questions->where('difficulty', 'medium')->count());
-            $configuredHardQuestions += min(3, $material->questions->where('difficulty', 'hard')->count());
-        } else {
-            // For registered users, use admin configuration
-            $config = QuestionBankConfig::where('material_id', $material->id)
-                ->where('is_active', true)
-                ->first();
-                
-            if ($config) {
-                $configuredEasyQuestions += $config->beginner_count;
-                $configuredMediumQuestions += $config->medium_count;
-                $configuredHardQuestions += $config->hard_count;
+    {
+        $userId = auth()->id();
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
+        // Get all materials
+        $allMaterials = Material::with(['questions'])->get();
+        $totalMaterials = $allMaterials->count();
+        
+        // Variables to store configured question counts
+        $configuredTotalQuestions = 0;
+        $configuredEasyQuestions = 0;
+        $configuredMediumQuestions = 0;
+        $configuredHardQuestions = 0;
+        
+        // Calculate configured question counts
+        foreach ($allMaterials as $material) {
+            if ($isGuest) {
+                // For guests, use fixed values (3 per difficulty)
+                $configuredEasyQuestions += min(3, $material->questions->where('difficulty', 'beginner')->count());
+                $configuredMediumQuestions += min(3, $material->questions->where('difficulty', 'medium')->count());
+                $configuredHardQuestions += min(3, $material->questions->where('difficulty', 'hard')->count());
             } else {
-                // Default if no configuration exists
-                $configuredEasyQuestions += $material->questions->where('difficulty', 'beginner')->count();
-                $configuredMediumQuestions += $material->questions->where('difficulty', 'medium')->count();
-                $configuredHardQuestions += $material->questions->where('difficulty', 'hard')->count();
+                // For registered users, use admin configuration
+                $config = QuestionBankConfig::where('material_id', $material->id)
+                    ->where('is_active', true)
+                    ->first();
+                    
+                if ($config) {
+                    $configuredEasyQuestions += $config->beginner_count;
+                    $configuredMediumQuestions += $config->medium_count;
+                    $configuredHardQuestions += $config->hard_count;
+                } else {
+                    // Default if no configuration exists
+                    $configuredEasyQuestions += $material->questions->where('difficulty', 'beginner')->count();
+                    $configuredMediumQuestions += $material->questions->where('difficulty', 'medium')->count();
+                    $configuredHardQuestions += $material->questions->where('difficulty', 'hard')->count();
+                }
             }
         }
+        
+        $configuredTotalQuestions = $configuredEasyQuestions + $configuredMediumQuestions + $configuredHardQuestions;
+        
+        // Get other data you need for the dashboard...
+        
+        return view('mahasiswa.dashboard.index', [
+            'totalMaterials' => $totalMaterials,
+            'configuredTotalQuestions' => $configuredTotalQuestions,
+            'configuredEasyQuestions' => $configuredEasyQuestions,
+            'configuredMediumQuestions' => $configuredMediumQuestions,
+            'configuredHardQuestions' => $configuredHardQuestions,
+            // other variables...
+        ]);
     }
-    
-    $configuredTotalQuestions = $configuredEasyQuestions + $configuredMediumQuestions + $configuredHardQuestions;
-    
-    // Get other data you need for the dashboard...
-    
-    return view('mahasiswa.dashboard.index', [
-        'totalMaterials' => $totalMaterials,
-        'configuredTotalQuestions' => $configuredTotalQuestions,
-        'configuredEasyQuestions' => $configuredEasyQuestions,
-        'configuredMediumQuestions' => $configuredMediumQuestions,
-        'configuredHardQuestions' => $configuredHardQuestions,
-        // other variables...
-    ]);
-}
 } 

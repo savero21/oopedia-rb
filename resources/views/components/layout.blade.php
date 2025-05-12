@@ -301,6 +301,11 @@
         }
     </style>
     @stack('head')
+
+    @push('head')
+        <!-- IntroJS CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.0.1/introjs.min.css">
+    @endpush
 </head>
 <body class="{{ $bodyClass }}">
 
@@ -412,5 +417,87 @@
 <script async defer src="https://buttons.github.io/buttons.js"></script>
 <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
 <script src="{{ asset('assets') }}/js/material-dashboard.min.js?v=3.0.0"></script>
+
+{{-- Tambahkan CSS untuk tooltip tutorial --}}
+@push('head')
+<style>
+    /* Custom styling untuk tooltip tutorial */
+    .customTooltip {
+        max-width: 350px;
+        background-color: #fff;
+        color: #333;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border-left: 5px solid #7b1fa2;
+    }
+    
+    .introjs-button {
+        background-color: #7b1fa2;
+        color: white;
+        border: none;
+        text-shadow: none;
+        border-radius: 4px;
+    }
+    
+    .introjs-button:hover, .introjs-button:focus {
+        background-color: #9c27b0;
+        color: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .introjs-skipbutton {
+        color: #7b1fa2;
+    }
+    
+    .introjs-progress {
+        background-color: #e0e0e0;
+    }
+    
+    .introjs-progressbar {
+        background-color: #7b1fa2;
+    }
+    
+    .introjs-helperLayer {
+        background-color: rgba(255, 255, 255, 0.7);
+        border: none;
+        box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Navbar & Dropdown Styling */
+    .navbar-nav .dropdown-menu {
+        position: absolute;
+        background: white;
+        border: 0;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        color: #344767;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #7b1fa2;
+    }
+
+    .dropdown-item i {
+        font-size: 1rem;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+</style>
+@endpush
+
+@push('js')
+    <!-- IntroJS JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.0.1/intro.min.js"></script>
+@endpush
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

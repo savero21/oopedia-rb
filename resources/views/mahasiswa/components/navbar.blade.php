@@ -8,11 +8,6 @@
     <div class="container-fluid">
         <!-- Left side group -->
         <div class="d-flex align-items-center h-100">
-            <!-- Logo -->
-            <a class="navbar-brand me-4" href="{{ route('mahasiswa.dashboard') }}">
-                <img src="{{ asset('images/logo.png') }}" alt="OOPEDIA" height="75">
-            </a>
-            
             <!-- Navigation links -->
             <div class="nav-links">
                 <ul class="nav-menu">
@@ -56,16 +51,16 @@
         </div>
 
         <!-- Right side - Profile/Logout/Login/Register -->
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center ms-auto">
             @guest
-                <div class="me-3">
-                    <a href="{{ route('login') }}" class="btn btn-primary me-2" 
+                <div class="auth-buttons me-3 d-none d-md-flex">
+                    <a href="{{ route('login') }}" class="btn btn-primary btn-sm me-2" 
                        data-bs-toggle="tooltip" 
                        data-bs-placement="bottom" 
                        title="Login untuk akses semua soal latihan tanpa batasan">
                         <i class="fas fa-sign-in-alt me-1"></i> Login
                     </a>
-                    <a href="{{ route('register') }}" class="btn btn-primary"
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-sm"
                        data-bs-toggle="tooltip" 
                        data-bs-placement="bottom" 
                        title="Buat akun baru untuk akses semua soal latihan tanpa batasan">
@@ -74,19 +69,15 @@
                 </div>
             @endguest
             
-            <div class="dropdown">
-                <a class="nav-link dropdown-toggle profile-dropdown" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{{ asset('images/profile.gif') }}" alt="Profile" class="profile-image me-2">
-                    <span class="me-2">
-                        @auth
-                            {{ auth()->user()->name }}
-                        @else
-                            Tamu
-                        @endauth
+            @auth
+            <div class="dropdown profile-dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ asset('images/profile.gif') }}" alt="Profile" class="profile-image me-2" width="30" height="30">
+                    <span class="profile-name d-none d-sm-inline">
+                        {{ auth()->user()->name }}
                     </span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    @auth
                     <li>
                         <a class="dropdown-item" href="{{ route('mahasiswa.profile') }}">
                             <span>Profil Saya</span>
@@ -100,18 +91,9 @@
                             </button>
                         </form>
                     </li>
-                    @else
-                    <li>
-                        <form method="POST" action="{{ route('guest.logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item">
-                                <span>Keluar Mode Tamu</span>
-                            </button>
-                        </form>
-                    </li>
-                    @endauth
                 </ul>
             </div>
+            @endauth
         </div>
     </div>
 </nav>
@@ -124,13 +106,6 @@
             Silakan login untuk mengakses semua fitur pembelajaran
         </div>
     @endguest
-
-    @auth
-        <div class="welcome-message">
-            <h4>Selamat datang, {{ auth()->user()->name }}!</h4>
-            <p class="text-muted">Anda dapat mengakses semua materi dan latihan soal</p>
-        </div>
-    @endauth
 </div>
 @endif
 @push('scripts')
@@ -230,17 +205,14 @@
             // Tandai bahwa ini klik dari sidebar
             sidebarClicked = true;
             
-            // Untuk latihan soal, tetap arahkan ke login jika tamu
-            if (this.href.includes('/questions') && !isLoggedIn) {
-                event.preventDefault();
-                alert('Silakan login untuk mengakses latihan soal');
-                window.location.href = "{{ route('login') }}";
-                return;
-            }
-            
             // Untuk materi, biarkan lanjut tanpa tour
             sessionStorage.setItem('skip_tour', 'true');
         });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tidak ada lagi pemeriksaan akses untuk halaman questions
+        console.log('Guest access enabled for questions');
     });
 </script>
 @endpush
