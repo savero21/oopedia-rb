@@ -21,6 +21,12 @@
                         </button>
                     </form>
                 </li>
+                <li class="nav-item px-3 d-flex align-items-center">
+                    <a href="javascript:;" class="nav-link text-body p-0" onclick="resetAllTutorials()">
+                        <i class="fa fa-redo me-sm-1"></i>
+                        <span class="d-sm-inline d-none">Reset Tutorial</span>
+                    </a>
+                </li>
                 <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
                     <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">
                         <div class="sidenav-toggler-inner">
@@ -34,3 +40,25 @@
         </div>
     </div>
 </nav>
+
+<script>
+function resetAllTutorials() {
+    // Hapus semua tutorial keys dari localStorage
+    for (let key in localStorage) {
+        if (key.includes('tutorial_complete') || key === 'skip_admin_tour') {
+            localStorage.removeItem(key);
+        }
+    }
+    
+    Swal.fire({
+        title: 'Tutorial Direset',
+        text: 'Tutorial akan dimulai ulang',
+        icon: 'success',
+        confirmButtonText: 'OK'
+    }).then(() => {
+        // Langsung jalankan tutorial setelah reset
+        const currentPage = '{{ request()->route()->getName() }}';
+        startAdminTutorial(); // Menggunakan fungsi yang sudah ada di tutorial.blade.php
+    });
+}
+</script>

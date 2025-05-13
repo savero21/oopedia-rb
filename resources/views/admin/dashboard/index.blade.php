@@ -220,6 +220,7 @@
         </div>
     </main>
     <x-plugins></x-plugins>
+    <x-admin.tutorial />
 </x-layout>
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -284,53 +285,5 @@
             }
         });
     });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek apakah tutorial dashboard sudah pernah ditampilkan
-        const isDashboardDetailTutorialCompleted = localStorage.getItem('admin_dashboard_detail_tutorial_complete');
-        
-        // Tampilkan tutorial jika belum pernah ditampilkan dan tutorial utama sudah selesai
-        if (!isDashboardDetailTutorialCompleted && localStorage.getItem('admin_tutorial_complete') && !localStorage.getItem('skip_admin_tour')) {
-            startDashboardDetailTutorial();
-        }
-    });
-    
-    function startDashboardDetailTutorial() {
-        const steps = [
-            {
-                intro: "Mari kita lihat detail dari Dashboard Admin!"
-            },
-            {
-                element: document.querySelector('.row:first-child'),
-                intro: "Bagian ini menampilkan statistik penting seperti jumlah mahasiswa, materi, dan soal."
-            },
-            {
-                element: document.querySelector('.card:has(canvas#progressChart)'),
-                intro: "Grafik ini menunjukkan progres rata-rata mahasiswa untuk setiap materi."
-            },
-            {
-                element: document.querySelector('.card:has(canvas#activityChart)'),
-                intro: "Grafik ini menampilkan aktivitas mahasiswa dalam mengerjakan soal selama periode tertentu."
-            }
-        ];
-        
-        introJs().setOptions({
-            steps: steps,
-            showProgress: true,
-            exitOnOverlayClick: true,
-            showBullets: false,
-            scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Selesai',
-            tooltipClass: 'customTooltip'
-        }).oncomplete(function() {
-            localStorage.setItem('admin_dashboard_detail_tutorial_complete', 'true');
-        }).onexit(function() {
-            localStorage.setItem('admin_dashboard_detail_tutorial_complete', 'true');
-        }).start();
-    }
 </script>
 @endpush

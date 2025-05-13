@@ -186,7 +186,10 @@
             </div>
         </div>
     </main>
+    <x-admin.tutorial />
+
 </x-layout> 
+
 @push('js')
 <script>
     document.addEventListener('DOMContentLoaded', function() {

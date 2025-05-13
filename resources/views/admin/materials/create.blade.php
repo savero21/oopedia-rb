@@ -63,50 +63,7 @@
     </main>
 
     @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!localStorage.getItem('admin_material_create_tutorial_complete')) {
-                setTimeout(startMaterialCreateTutorial, 500);
-            }
-        });
-
-        function startMaterialCreateTutorial() {
-            const steps = [
-                {
-                    intro: "Selamat datang di halaman pembuatan materi baru!"
-                },
-                {
-                    element: document.querySelector('input[name="title"]'),
-                    intro: "Masukkan judul materi pembelajaran di sini."
-                },
-                {
-                    element: document.querySelector('input[name="description"]'),
-                    intro: "Berikan deskripsi singkat tentang materi ini."
-                },
-                {
-                    element: document.querySelector('.tox-tinymce'),
-                    intro: "Gunakan editor ini untuk menulis konten materi. Anda dapat menambahkan teks, gambar, dan kode program."
-                },
-                {
-                    element: document.querySelector('button[type="submit"]'),
-                    intro: "Setelah selesai, klik tombol ini untuk menyimpan materi."
-                }
-            ];
-
-            introJs().setOptions({
-                steps: steps,
-                showProgress: true,
-                exitOnOverlayClick: true,
-                showBullets: false,
-                scrollToElement: true,
-                nextLabel: 'Berikutnya',
-                prevLabel: 'Sebelumnya',
-                doneLabel: 'Selesai',
-                tooltipClass: 'customTooltip'
-            }).oncomplete(function() {
-                localStorage.setItem('admin_material_create_tutorial_complete', 'true');
-            }).start();
-        }
-    </script>
     @endpush
+    <x-admin.tutorial />
+
 </x-layout>

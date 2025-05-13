@@ -131,54 +131,10 @@
             </div>
         </div>
     </main>
+    <x-admin.tutorial />
+
 </x-layout>
 
 @push('js')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek apakah tutorial halaman mahasiswa sudah pernah ditampilkan
-        const isStudentTutorialCompleted = localStorage.getItem('admin_student_tutorial_complete');
-        
-        // Tampilkan tutorial jika belum pernah ditampilkan
-        if (!isStudentTutorialCompleted && !localStorage.getItem('skip_admin_tour')) {
-            startStudentTutorial();
-        }
-    });
-    
-    function startStudentTutorial() {
-        const steps = [
-            {
-                intro: "Selamat datang di halaman Data Mahasiswa!"
-            },
-            {
-                element: document.querySelector('form.mb-3'),
-                intro: "Gunakan form pencarian ini untuk menemukan mahasiswa berdasarkan nama atau NIM."
-            },
-            {
-                element: document.querySelector('a[href="{{ route("admin.students.import") }}"]'),
-                intro: "Klik tombol ini untuk mengimpor data mahasiswa dari file Excel/CSV."
-            },
-            {
-                element: document.querySelector('table.table'),
-                intro: "Tabel ini menampilkan semua data mahasiswa. Anda dapat melihat detail progres belajar atau menghapus data mahasiswa dari sini."
-            }
-        ];
-        
-        introJs().setOptions({
-            steps: steps,
-            showProgress: true,
-            exitOnOverlayClick: true,
-            showBullets: false,
-            scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Selesai',
-            tooltipClass: 'customTooltip'
-        }).oncomplete(function() {
-            localStorage.setItem('admin_student_tutorial_complete', 'true');
-        }).onexit(function() {
-            localStorage.setItem('admin_student_tutorial_complete', 'true');
-        }).start();
-    }
-</script>
+
 @endpush

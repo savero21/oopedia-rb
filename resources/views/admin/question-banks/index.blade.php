@@ -122,54 +122,9 @@
             </div>
         </div>
     </main>
+    <x-admin.tutorial />
+
 </x-layout>
 
 @push('js')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek apakah tutorial halaman bank soal sudah pernah ditampilkan
-        const isQuestionBankTutorialCompleted = localStorage.getItem('admin_question_bank_tutorial_complete');
-        
-        // Tampilkan tutorial jika belum pernah ditampilkan
-        if (!isQuestionBankTutorialCompleted && !localStorage.getItem('skip_admin_tour')) {
-            startQuestionBankTutorial();
-        }
-    });
-    
-    function startQuestionBankTutorial() {
-        const steps = [
-            {
-                intro: "Selamat datang di halaman Bank Soal!"
-            },
-            {
-                element: document.querySelector('form.mb-3'),
-                intro: "Gunakan form pencarian ini untuk menemukan bank soal berdasarkan nama."
-            },
-            {
-                element: document.querySelector('a[href="{{ route("admin.question-banks.create") }}"]'),
-                intro: "Klik tombol ini untuk membuat bank soal baru."
-            },
-            {
-                element: document.querySelector('table.table'),
-                intro: "Tabel ini menampilkan semua bank soal yang tersedia. Anda dapat melihat detail, mengedit, atau menghapus bank soal dari sini."
-            }
-        ];
-        
-        introJs().setOptions({
-            steps: steps,
-            showProgress: true,
-            exitOnOverlayClick: true,
-            showBullets: false,
-            scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Selesai',
-            tooltipClass: 'customTooltip'
-        }).oncomplete(function() {
-            localStorage.setItem('admin_question_bank_tutorial_complete', 'true');
-        }).onexit(function() {
-            localStorage.setItem('admin_question_bank_tutorial_complete', 'true');
-        }).start();
-    }
-</script>
 @endpush 

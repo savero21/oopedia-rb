@@ -968,19 +968,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Perbaikan titik kontrol berdasarkan jenis belokan yang spesifik
         if (cornerType === 'top-right') {
-            // Dari horizontal ke vertikal (naik)
             cx = x2;
             cy = y1;
         } else if (cornerType === 'top-left') {
-            // Dari horizontal ke vertikal (naik)
             cx = x2;
             cy = y1;
         } else if (cornerType === 'bottom-right') {
-            // Dari vertikal ke horizontal (ke kanan)
             cx = x1;
             cy = y2;
         } else if (cornerType === 'bottom-left') {
-            // Dari vertikal ke horizontal (ke kiri)
             cx = x1;
             cy = y2;
         } else {
@@ -989,35 +985,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Buat titik-titik sepanjang kurva
-        const steps = 15; // Jumlah titik pada kurva untuk lengkungan halus
+        const steps = 15;
         for (let i = 0; i <= steps; i++) {
             const t = i / steps;
-            
-            // Rumus kurva Bezier kuadratik
             const x = Math.pow(1-t, 2) * x1 + 2 * (1-t) * t * cx + Math.pow(t, 2) * x2;
             const y = Math.pow(1-t, 2) * y1 + 2 * (1-t) * t * cy + Math.pow(t, 2) * y2;
             
-            // Buat titik
             const dot = document.createElementNS(svgNS, "circle");
             dot.setAttribute("cx", x);
             dot.setAttribute("cy", y);
             
-            // Tentukan warna dan ukuran berdasarkan status
             if (isCompleted) {
-                if (allCompleted) {
-                    // Titik emas untuk jalur ke trophy jika semua soal selesai
-                    dot.setAttribute("r", "4"); // Ukuran titik
-                    dot.setAttribute("fill", "#FFD700"); // Warna emas
+                if (allCompleted && endStatus === 'completed') {
+                    dot.setAttribute("r", "4");
+                    dot.setAttribute("fill", "#FFD700");
                     dot.setAttribute("class", "map-dot trophy-dot");
                 } else {
-                    // Titik hijau untuk soal yang sudah dikerjakan
-                    dot.setAttribute("r", "4"); // Ukuran titik
+                    dot.setAttribute("r", "4");
                     dot.setAttribute("fill", "#4CAF50");
                     dot.setAttribute("class", "map-dot completed-dot");
                 }
             } else {
-                // Titik abu-abu untuk soal yang belum dikerjakan
-                dot.setAttribute("r", "3"); // Ukuran titik
+                dot.setAttribute("r", "3");
                 dot.setAttribute("fill", "#adb5bd");
                 dot.setAttribute("class", "map-dot locked-dot");
             }
@@ -1048,20 +1037,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Tentukan warna dan ukuran berdasarkan status
             if (isCompleted) {
-                if (allCompleted) {
-                    // Titik emas untuk jalur ke trophy jika semua soal selesai
-                    dot.setAttribute("r", "4"); // Ukuran titik
-                    dot.setAttribute("fill", "#FFD700"); // Warna emas
+                // Gunakan warna emas hanya jika semua soal selesai
+                if (allCompleted && endStatus === 'completed') {
+                    dot.setAttribute("r", "4");
+                    dot.setAttribute("fill", "#FFD700");
                     dot.setAttribute("class", "map-dot trophy-dot");
                 } else {
-                    // Titik hijau untuk soal yang sudah dikerjakan
-                    dot.setAttribute("r", "4"); // Ukuran titik
+                    // Gunakan warna hijau untuk soal yang sudah dikerjakan
+                    dot.setAttribute("r", "4");
                     dot.setAttribute("fill", "#4CAF50");
                     dot.setAttribute("class", "map-dot completed-dot");
                 }
             } else {
                 // Titik abu-abu untuk soal yang belum dikerjakan
-                dot.setAttribute("r", "3"); // Ukuran titik
+                dot.setAttribute("r", "3");
                 dot.setAttribute("fill", "#adb5bd");
                 dot.setAttribute("class", "map-dot locked-dot");
             }

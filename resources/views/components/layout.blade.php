@@ -446,7 +446,23 @@
     }
     
     .introjs-skipbutton {
-        color: #7b1fa2;
+        color: #666;
+        font-size: 20px;
+        font-weight: bold;
+        line-height: 1;
+        text-decoration: none;
+        text-shadow: none;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        padding: 5px 10px;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+    
+    .introjs-skipbutton:hover {
+        background: rgba(0,0,0,0.1);
+        color: #333;
     }
     
     .introjs-progress {

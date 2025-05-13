@@ -240,4 +240,6 @@
         });
     </script>
     @endpush
+    <x-admin.tutorial />
+
 </x-layout>

@@ -117,4 +117,6 @@
             @endif
         });
     </script>
+    <x-admin.tutorial />
+
 </x-layout> 

@@ -175,52 +175,9 @@
             </div>
         </div>
     </main>
+    <x-admin.tutorial />
+
 </x-layout>
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (!localStorage.getItem('admin_users_tutorial_complete')) {
-            setTimeout(startUsersManagementTutorial, 500);
-        }
-    });
-
-    function startUsersManagementTutorial() {
-        const steps = [
-            {
-                intro: "Selamat datang di halaman manajemen pengguna!"
-            },
-            {
-                element: document.querySelector('.search-form'),
-                intro: "Cari pengguna berdasarkan nama atau email menggunakan form ini."
-            },
-            {
-                element: document.querySelector('.create-user-btn'),
-                intro: "Klik di sini untuk menambahkan admin atau dosen baru."
-            },
-            {
-                element: document.querySelector('.users-table'),
-                intro: "Tabel ini menampilkan daftar semua admin dan dosen."
-            },
-            {
-                element: document.querySelector('.role-filter'),
-                intro: "Gunakan filter ini untuk menampilkan pengguna berdasarkan peran mereka."
-            }
-        ];
-
-        introJs().setOptions({
-            steps: steps,
-            showProgress: true,
-            exitOnOverlayClick: true,
-            showBullets: false,
-            scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Selesai',
-            tooltipClass: 'customTooltip'
-        }).oncomplete(function() {
-            localStorage.setItem('admin_users_tutorial_complete', 'true');
-        }).start();
-    }
-</script>
 @endpush 

@@ -98,54 +98,9 @@
             </div>
         </div>
     </main>
+    <x-admin.tutorial />
+
 </x-layout>
 
 @push('js')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek apakah tutorial halaman materi sudah pernah ditampilkan
-        const isMaterialTutorialCompleted = localStorage.getItem('admin_material_tutorial_complete');
-        
-        // Tampilkan tutorial jika belum pernah ditampilkan
-        if (!isMaterialTutorialCompleted && !localStorage.getItem('skip_admin_tour')) {
-            startMaterialTutorial();
-        }
-    });
-    
-    function startMaterialTutorial() {
-        const steps = [
-            {
-                intro: "Selamat datang di halaman Manajemen Materi!"
-            },
-            {
-                element: document.querySelector('form.mb-3'),
-                intro: "Gunakan form pencarian ini untuk menemukan materi berdasarkan judul atau konten."
-            },
-            {
-                element: document.querySelector('a[href="{{ route("admin.materials.create") }}"]'),
-                intro: "Klik tombol ini untuk menambahkan materi baru."
-            },
-            {
-                element: document.querySelector('table.table'),
-                intro: "Tabel ini menampilkan semua materi yang tersedia. Anda dapat mengedit atau menghapus materi dari sini."
-            }
-        ];
-        
-        introJs().setOptions({
-            steps: steps,
-            showProgress: true,
-            exitOnOverlayClick: true,
-            showBullets: false,
-            scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Selesai',
-            tooltipClass: 'customTooltip'
-        }).oncomplete(function() {
-            localStorage.setItem('admin_material_tutorial_complete', 'true');
-        }).onexit(function() {
-            localStorage.setItem('admin_material_tutorial_complete', 'true');
-        }).start();
-    }
-</script>
 @endpush

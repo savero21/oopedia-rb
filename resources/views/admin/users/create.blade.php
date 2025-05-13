@@ -101,4 +101,6 @@
             </div>
         </div>
     </main>
+    <x-admin.tutorial />
+
 </x-layout> 

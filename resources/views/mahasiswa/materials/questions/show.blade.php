@@ -672,7 +672,7 @@ $(document).ready(function() {
                         allowOutsideClick: false
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            redirectToLevelPage();
+                            redirectToLevelWithScroll();
                         }
                     });
                 } else {
@@ -807,13 +807,15 @@ document.addEventListener('DOMContentLoaded', function() {
 function redirectToLevelWithScroll(levelUrl) {
     // Simpan status bahwa soal telah dijawab benar
     localStorage.setItem('questionCompleted', 'true');
-    window.location.href = levelUrl;
-}
-
-function redirectToLevelPage() {
-    const levelUrl = "{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => request()->query('difficulty')]) }}";
-    // Tambahkan parameter untuk menandai scroll
-    window.location.href = `${levelUrl}?scroll=true`;
+    
+    // Jika levelUrl tidak diberikan, gunakan default URL
+    if (!levelUrl) {
+        levelUrl = "{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => request()->query('difficulty')]) }}";
+    }
+    
+    // Tambahkan parameter scroll
+    const separator = levelUrl.includes('?') ? '&' : '?';
+    window.location.href = `${levelUrl}${separator}scroll=true`;
 }
 </script>
 @endpush 

@@ -113,61 +113,7 @@
             </div>
         </div>
     </main>
-</x-layout>
+    <x-admin.tutorial />
 
-@push('js')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek apakah tutorial halaman import mahasiswa sudah pernah ditampilkan
-        const isStudentImportTutorialCompleted = localStorage.getItem('admin_student_import_tutorial_complete');
-        
-        // Tampilkan tutorial jika belum pernah ditampilkan
-        if (!isStudentImportTutorialCompleted && !localStorage.getItem('skip_admin_tour')) {
-            setTimeout(startStudentImportTutorial, 500);
-        }
-    });
-    
-    function startStudentImportTutorial() {
-        const steps = [
-            {
-                intro: "Selamat datang di halaman Import Data Mahasiswa!"
-            },
-            {
-                element: document.querySelector('.card-body p'),
-                intro: "Bagian ini menjelaskan format file yang dibutuhkan untuk mengimpor data mahasiswa."
-            },
-            {
-                element: document.querySelector('a[href*="template"]'),
-                intro: "Klik tombol ini untuk mengunduh template file Excel yang dapat Anda isi dengan data mahasiswa."
-            },
-            {
-                element: document.querySelector('input[type="file"]'),
-                intro: "Klik di sini untuk memilih file Excel/CSV yang berisi data mahasiswa yang akan diimpor."
-            },
-            {
-                element: document.querySelector('button[type="submit"]'),
-                intro: "Setelah memilih file, klik tombol ini untuk mulai mengimpor data mahasiswa."
-            },
-            {
-                intro: "Pastikan format data dalam file sesuai dengan template untuk menghindari kesalahan saat impor."
-            }
-        ];
-        
-        introJs().setOptions({
-            steps: steps,
-            showProgress: true,
-            exitOnOverlayClick: true,
-            showBullets: false,
-            scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Selesai',
-            tooltipClass: 'customTooltip'
-        }).oncomplete(function() {
-            localStorage.setItem('admin_student_import_tutorial_complete', 'true');
-        }).onexit(function() {
-            localStorage.setItem('admin_student_import_tutorial_complete', 'true');
-        }).start();
-    }
-</script>
+</x-layout>
 @endpush 

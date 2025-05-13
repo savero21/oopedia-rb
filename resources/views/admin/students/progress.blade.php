@@ -126,58 +126,9 @@
         </div>
         @endif
     </main>
+    <x-admin.tutorial />
+
 </x-layout>
 
 @push('js')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cek apakah tutorial halaman detail mahasiswa sudah pernah ditampilkan
-        const isStudentDetailTutorialCompleted = localStorage.getItem('admin_student_detail_tutorial_complete');
-        
-        // Tampilkan tutorial jika belum pernah ditampilkan
-        if (!isStudentDetailTutorialCompleted && !localStorage.getItem('skip_admin_tour')) {
-            setTimeout(startStudentDetailTutorial, 500);
-        }
-    });
-    
-    function startStudentDetailTutorial() {
-        const steps = [
-            {
-                intro: "Selamat datang di halaman Detail Mahasiswa!"
-            },
-            {
-                element: document.querySelector('.card-profile'),
-                intro: "Bagian ini menampilkan informasi profil mahasiswa seperti nama, NIM, dan email."
-            },
-            {
-                element: document.querySelector('.card-body:has(canvas)'),
-                intro: "Grafik ini menunjukkan progres belajar mahasiswa untuk setiap materi."
-            },
-            {
-                element: document.querySelector('.table-responsive'),
-                intro: "Tabel ini menampilkan riwayat aktivitas mahasiswa dalam mengerjakan soal-soal latihan."
-            },
-            {
-                element: document.querySelector('a.btn-primary'),
-                intro: "Klik tombol ini untuk kembali ke daftar mahasiswa."
-            }
-        ];
-        
-        introJs().setOptions({
-            steps: steps,
-            showProgress: true,
-            exitOnOverlayClick: true,
-            showBullets: false,
-            scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Selesai',
-            tooltipClass: 'customTooltip'
-        }).oncomplete(function() {
-            localStorage.setItem('admin_student_detail_tutorial_complete', 'true');
-        }).onexit(function() {
-            localStorage.setItem('admin_student_detail_tutorial_complete', 'true');
-        }).start();
-    }
-</script>
 @endpush
