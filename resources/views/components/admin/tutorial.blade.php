@@ -203,10 +203,6 @@ function getTutorialSteps(page) {
                 intro: "Klik tombol ini untuk mengunduh hasil survey dalam format CSV."
             },
             {
-                element: '.progress-bar',
-                intro: "Progress bar menunjukkan skor dimensi dalam skala 1-7."
-            },
-            {
                 element: '.table-responsive',
                 intro: "Tabel ini menampilkan detail hasil survey dari setiap responden."
             }

@@ -124,7 +124,6 @@ class UeqSurveyController extends Controller
 
     public function export()
     {
-        // Kode export tetap sama
         $surveys = UeqSurvey::with('user')->get();
         
         $headers = [
@@ -140,23 +139,43 @@ class UeqSurveyController extends Controller
             
             // Add headers
             fputcsv($file, [
-                'User ID', 'Name', 'Email', 'Date',
-                'Annoying/Enjoyable', 'Not Understandable/Understandable', 'Creative/Dull',
-                'Easy/Difficult', 'Valuable/Inferior', 'Boring/Exciting',
-                'Not Interesting/Interesting', 'Unpredictable/Predictable', 'Fast/Slow',
-                'Inventive/Conventional', 'Obstructive/Supportive', 'Good/Bad',
-                'Complicated/Easy', 'Unlikable/Pleasing', 'Usual/Leading Edge',
-                'Unpleasant/Pleasant', 'Secure/Not Secure', 'Motivating/Demotivating',
-                'Meets Expectations/Does Not Meet', 'Inefficient/Efficient', 'Clear/Confusing',
-                'Impractical/Practical', 'Organized/Cluttered', 'Attractive/Unattractive',
-                'Friendly/Unfriendly', 'Conservative/Innovative'
+                'User ID',
+                'User Name',
+                'Timestamp',
+                'Annoying/Enjoyable',
+                'Not Understandable/Understandable',
+                'Creative/Dull',
+                'Easy/Difficult',
+                'Valuable/Inferior',
+                'Boring/Exciting',
+                'Not Interesting/Interesting',
+                'Unpredictable/Predictable',
+                'Fast/Slow',
+                'Inventive/Conventional',
+                'Obstructive/Supportive',
+                'Good/Bad',
+                'Complicated/Easy',
+                'Unlikable/Pleasing',
+                'Usual/Leading Edge',
+                'Unpleasant/Pleasant',
+                'Secure/Not Secure',
+                'Motivating/Demotivating',
+                'Meets Expectations/Does Not Meet',
+                'Inefficient/Efficient',
+                'Clear/Confusing',
+                'Impractical/Practical',
+                'Organized/Cluttered',
+                'Attractive/Unattractive',
+                'Friendly/Unfriendly',
+                'Conservative-Innovative',
+                'Comments',
+                'Suggestions'
             ]);
 
             foreach ($surveys as $survey) {
                 fputcsv($file, [
                     $survey->user_id,
                     $survey->user->name,
-                    $survey->user->email,
                     $survey->created_at,
                     $survey->annoying_enjoyable,
                     $survey->not_understandable_understandable,
@@ -183,7 +202,9 @@ class UeqSurveyController extends Controller
                     $survey->organized_cluttered,
                     $survey->attractive_unattractive,
                     $survey->friendly_unfriendly,
-                    $survey->conservative_innovative
+                    $survey->conservative_innovative,
+                    $survey->comments,
+                    $survey->suggestions
                 ]);
             }
 
@@ -191,5 +212,13 @@ class UeqSurveyController extends Controller
         };
 
         return Response::stream($callback, 200, $headers);
+    }
+
+    public function detail($userId)
+    {
+        $survey = UeqSurvey::where('user_id', $userId)->firstOrFail();
+        $user = $survey->user;
+
+        return view('admin.ueq.detail', compact('survey', 'user'));
     }
 } 

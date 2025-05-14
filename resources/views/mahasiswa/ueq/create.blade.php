@@ -11,315 +11,117 @@
                     <h4>User Experience Questionnaire (UEQ)</h4>
                 </div>
                 <div class="card-body">
+                    @if ($errors->any() || session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Perhatian!</h5>
+                                    <p class="mb-0">
+                                        Ada {{ count(session('missingFields', [])) ?: $errors->count() }} pertanyaan yang belum dijawab. Silakan isi semua pertanyaan.
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
                     <p class="mb-4">Silakan berikan penilaian Anda terhadap aplikasi pembelajaran OOPEDIA dengan memilih nilai pada skala berikut:</p>
                     
-                    <form method="POST" action="{{ route('mahasiswa.ueq.store') }}">
+                    <form id="ueqForm" method="POST" action="{{ route('mahasiswa.ueq.store') }}">
                         @csrf
-                        
                         <div class="table-responsive">
                             <table class="table table-bordered">
+                                <!-- Header table tidak berubah -->
                                 <thead>
                                     <tr>
                                         <th width="30%">Aspek</th>
-                                        <th colspan="7" class="text-center">Penilaian</th>
+                                        <th colspan="7" class="text-center">Penilaian <span class="text-danger fw-bold">*</span></th>
                                         <th width="30%">Aspek</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- UEQ Items -->
-                                    <tr>
-                                        <td>Menyebalkan</td>
+                                    <!-- Untuk masing-masing baris pertanyaan, tambahkan logika untuk memarkah pertanyaan yang belum dijawab -->
+                                    @foreach([
+                                        ['name' => 'annoying_enjoyable', 'left' => 'Menyebalkan', 'right' => 'Menyenangkan'],
+                                        ['name' => 'not_understandable_understandable', 'left' => 'Tidak dapat dipahami', 'right' => 'Dapat dipahami'],
+                                        ['name' => 'creative_dull', 'left' => 'Kreatif', 'right' => 'Monoton'],
+                                        ['name' => 'easy_difficult', 'left' => 'Mudah', 'right' => 'Sulit'],
+                                        ['name' => 'valuable_inferior', 'left' => 'Bermanfaat', 'right' => 'Kurang bermanfaat'],
+                                        ['name' => 'boring_exciting', 'left' => 'Membosankan', 'right' => 'Menarik'],
+                                        ['name' => 'not_interesting_interesting', 'left' => 'Tidak menarik', 'right' => 'Menarik'],
+                                        ['name' => 'unpredictable_predictable', 'left' => 'Tidak dapat diprediksi', 'right' => 'Dapat diprediksi'],
+                                        ['name' => 'fast_slow', 'left' => 'Cepat', 'right' => 'Lambat'],
+                                        ['name' => 'inventive_conventional', 'left' => 'Inovatif', 'right' => 'Konvensional'],
+                                        ['name' => 'obstructive_supportive', 'left' => 'Menghambat', 'right' => 'Mendukung'],
+                                        ['name' => 'good_bad', 'left' => 'Baik', 'right' => 'Buruk'],
+                                        ['name' => 'complicated_easy', 'left' => 'Rumit', 'right' => 'Sederhana'],
+                                        ['name' => 'unlikable_pleasing', 'left' => 'Tidak disukai', 'right' => 'Menyenangkan'],
+                                        ['name' => 'usual_leading_edge', 'left' => 'Biasa saja', 'right' => 'Terdepan'],
+                                        ['name' => 'unpleasant_pleasant', 'left' => 'Tidak menyenangkan', 'right' => 'Menyenangkan'],
+                                        ['name' => 'secure_not_secure', 'left' => 'Aman', 'right' => 'Tidak aman'],
+                                        ['name' => 'motivating_demotivating', 'left' => 'Memotivasi', 'right' => 'Tidak memotivasi'],
+                                        ['name' => 'meets_expectations_does_not_meet', 'left' => 'Memenuhi ekspektasi', 'right' => 'Tidak memenuhi ekspektasi'],
+                                        ['name' => 'inefficient_efficient', 'left' => 'Tidak efisien', 'right' => 'Efisien'],
+                                        ['name' => 'clear_confusing', 'left' => 'Jelas', 'right' => 'Membingungkan'],
+                                        ['name' => 'impractical_practical', 'left' => 'Tidak praktis', 'right' => 'Praktis'],
+                                        ['name' => 'organized_cluttered', 'left' => 'Terorganisir', 'right' => 'Berantakan'],
+                                        ['name' => 'attractive_unattractive', 'left' => 'Menarik', 'right' => 'Tidak menarik'],
+                                        ['name' => 'friendly_unfriendly', 'left' => 'Ramah', 'right' => 'Tidak ramah'],
+                                        ['name' => 'conservative_innovative', 'left' => 'Konservatif', 'right' => 'Inovatif'],
+                                    ] as $question)
+                                    <tr class="ueq-row {{ in_array($question['name'], session('missingFields', [])) || $errors->has($question['name']) ? 'unanswered' : '' }}">
+                                        <td class="aspect-left">{{ $question['left'] }}</td>
                                         @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="annoying_enjoyable" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
+                                            <td class="text-center radio-cell">
+                                                <div class="radio-wrapper">
+                                                    <input type="radio" 
+                                                        name="{{ $question['name'] }}" 
+                                                        value="{{ $i }}" 
+                                                        {{ old($question['name']) == $i ? 'checked' : '' }} 
+                                                        required>
+                                                    <label>{{ $i }}</label>
+                                                </div>
                                             </td>
                                         @endfor
-                                        <td>Menyenangkan</td>
+                                        <td class="aspect-right">{{ $question['right'] }}</td>
                                     </tr>
-                                    
-                                    <tr>
-                                        <td>Tidak dapat dipahami</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="not_understandable_understandable" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Dapat dipahami</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Kreatif</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="creative_dull" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Monoton</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Mudah</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="easy_difficult" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Sulit</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Bermanfaat</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="valuable_inferior" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Kurang bermanfaat</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Membosankan</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="boring_exciting" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Menarik</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Tidak menarik</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="not_interesting_interesting" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Menarik</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Tidak dapat diprediksi</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="unpredictable_predictable" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Dapat diprediksi</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Cepat</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="fast_slow" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Lambat</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Berdaya cipta</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="inventive_conventional" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Konvensional</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Menghalangi</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="obstructive_supportive" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Mendukung</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Baik</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="good_bad" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Buruk</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Rumit</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="complicated_easy" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Sederhana</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Tidak disukai</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="unlikable_pleasing" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Menyenangkan</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Biasa</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="usual_leading_edge" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Terdepan</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Tidak menyenangkan</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="unpleasant_pleasant" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Menyenangkan</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Aman</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="secure_not_secure" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Tidak aman</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Memotivasi</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="motivating_demotivating" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Tidak memotivasi</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Memenuhi ekspektasi</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="meets_expectations_does_not_meet" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Tidak memenuhi ekspektasi</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Tidak efisien</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="inefficient_efficient" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Efisien</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Jelas</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="clear_confusing" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Membingungkan</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Tidak praktis</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="impractical_practical" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Praktis</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Terorganisir</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="organized_cluttered" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Berantakan</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Menarik</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="attractive_unattractive" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Tidak menarik</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Ramah</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="friendly_unfriendly" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Tidak ramah</td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>Konservatif</td>
-                                        @for ($i = 1; $i <= 7; $i++)
-                                            <td class="text-center">
-                                                <input type="radio" name="conservative_innovative" value="{{ $i }}" required>
-                                                <label>{{ $i }}</label>
-                                            </td>
-                                        @endfor
-                                        <td>Inovatif</td>
-                                    </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Bagian komentar dan saran -->
+                        <div class="mb-3 mt-4">
+                            <label for="comments" class="form-label">Komentar <span class="text-danger">*</span></label>
+                            <textarea class="form-control @error('comments') is-invalid @enderror" 
+                                id="comments" 
+                                name="comments" 
+                                rows="3" 
+                                required
+                                placeholder="Tulis komentar Anda mengenai pengalaman menggunakan web ini...">{{ old('comments') }}</textarea>
+                            @error('comments')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                         
-                        <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-2"></i>Submit Survey
-                            </button>
+                        <div class="mb-3">
+                            <label for="suggestions" class="form-label">Saran <span class="text-danger">*</span></label>
+                            <textarea class="form-control @error('suggestions') is-invalid @enderror" 
+                                id="suggestions" 
+                                name="suggestions" 
+                                rows="3" 
+                                required
+                                placeholder="Tulis saran Anda untuk pengembangan atau perbaikan web ini...">{{ old('suggestions') }}</textarea>
+                            @error('suggestions')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary" id="submitButton">Kirim</button>
                         </div>
                     </form>
                 </div>
@@ -327,4 +129,274 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+@push('styles')
+<style>
+    /* Styling untuk alert kustom */
+    .alert-danger {
+        border-left: 4px solid #dc3545;
+        background-color: #fff5f5;
+    }
+    
+    /* Styling untuk pertanyaan yang belum dijawab */
+    .unanswered {
+        background-color: #fff3f3 !important;
+        border-left: 4px solid #dc3545;
+        animation: pulse-error 2s infinite;
+    }
+    
+    @keyframes pulse-error {
+        0% { background-color: #fff3f3; }
+        50% { background-color: #ffe0e0; }
+        100% { background-color: #fff3f3; }
+    }
+    
+    /* Styling untuk radio cell */
+    .radio-cell:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    /* Buat seluruh cell bisa diklik */
+    .radio-wrapper {
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 10px 0;
+    }
+    
+    /* Wajib diisi */
+    .form-label:after, th .text-danger {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    const form = document.getElementById('ueqForm');
+    const submitButton = document.querySelector('button[type="submit"]');
+    const rows = document.querySelectorAll('tr.ueq-row');
+    
+    // Save answers to localStorage
+    function saveAnswers() {
+        const answers = {};
+        rows.forEach(function(row) {
+            const radios = row.querySelectorAll('input[type="radio"]');
+            radios.forEach(function(radio) {
+                if (radio.checked) {
+                    answers[radio.name] = radio.value;
+                }
+            });
+        });
+        localStorage.setItem('ueq_survey_answers', JSON.stringify(answers));
+    }
+    
+    // Load answers from localStorage
+    function loadAnswers() {
+        const savedAnswers = localStorage.getItem('ueq_survey_answers');
+        if (savedAnswers) {
+            try {
+                const answers = JSON.parse(savedAnswers);
+                Object.keys(answers).forEach(function(name) {
+                    const value = answers[name];
+                    const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                });
+            } catch (e) {
+                console.error('Error loading saved answers:', e);
+            }
+        }
+    }
+    
+    // Check for unanswered questions
+    function checkUnansweredQuestions() {
+        const unanswered = [];
+        
+        rows.forEach(function(row, index) {
+            const name = row.querySelector('input[type="radio"]')?.name;
+            if (!name) return;
+            
+            const radios = row.querySelectorAll('input[type="radio"]');
+            let anyChecked = false;
+            
+            radios.forEach(function(radio) {
+                if (radio.checked) {
+                    anyChecked = true;
+                }
+            });
+            
+            if (!anyChecked) {
+                unanswered.push(index);
+                row.classList.add('unanswered');
+            } else {
+                row.classList.remove('unanswered');
+            }
+        });
+        
+        // Show warning if there are unanswered questions
+        if (unanswered.length > 0) {
+            if (!document.getElementById('unansweredWarning')) {
+                const warning = document.createElement('div');
+                warning.id = 'unansweredWarning';
+                warning.className = 'alert alert-danger sticky-top mt-2 mb-3';
+                warning.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <strong>Perhatian!</strong>
+                            <p class="mb-0">Ada ${unanswered.length} pertanyaan yang belum dijawab. Silakan isi semua pertanyaan.</p>
+                        </div>
+                        <div class="ms-auto">
+                            <button id="btnScrollToNext" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-arrow-down me-1"></i> Lihat Pertanyaan
+                            </button>
+                        </div>
+                    </div>
+                `;
+                const formElement = document.getElementById('ueqForm');
+                formElement.insertAdjacentElement('beforebegin', warning);
+                
+                // Add event listener to scroll to next unanswered question
+                document.getElementById('btnScrollToNext').addEventListener('click', function() {
+                    if (unanswered.length > 0) {
+                        scrollToRow(unanswered[0]);
+                    }
+                });
+            } else {
+                document.getElementById('unansweredWarning').querySelector('p').textContent = 
+                    `Ada ${unanswered.length} pertanyaan yang belum dijawab. Silakan isi semua pertanyaan.`;
+            }
+        } else {
+            const warning = document.getElementById('unansweredWarning');
+            if (warning) {
+                warning.remove();
+            }
+        }
+        
+        return unanswered;
+    }
+    
+    // Update submit button status
+    function updateSubmitButtonStatus() {
+        const unanswered = checkUnansweredQuestions();
+        if (unanswered.length > 0) {
+            submitButton.disabled = true;
+            submitButton.textContent = `Masih ada ${unanswered.length} pertanyaan belum dijawab`;
+        } else {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Kirim';
+        }
+    }
+    
+    // Scroll to specific row with animation
+    function scrollToRow(rowIndex) {
+        if (rowIndex >= 0 && rowIndex < rows.length) {
+            const row = rows[rowIndex];
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('flash-highlight');
+            setTimeout(() => {
+                row.classList.remove('flash-highlight');
+            }, 2000);
+        }
+    }
+    
+    // Helper function to find row index by field name
+    function findRowIndexByFieldName(fieldName) {
+        for (let i = 0; i < rows.length; i++) {
+            const radio = rows[i].querySelector(`input[name="${fieldName}"]`);
+            if (radio) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    // Add event listeners to all radio buttons and cells
+    rows.forEach(function(row) {
+        const radios = row.querySelectorAll('input[type="radio"]');
+        radios.forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                row.classList.remove('unanswered');
+                checkUnansweredQuestions();
+                updateSubmitButtonStatus();
+                saveAnswers(); // Save changes immediately
+            });
+        });
+        
+        // Make entire cell clickable
+        const cells = row.querySelectorAll('.radio-cell');
+        cells.forEach(function(cell, index) {
+            cell.addEventListener('click', function(e) {
+                // Prevent clicking if already clicking on the radio button itself
+                if (e.target.tagName !== 'INPUT') {
+                    const radio = cell.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        // Trigger change event
+                        const event = new Event('change');
+                        radio.dispatchEvent(event);
+                    }
+                }
+            });
+        });
+    });
+    
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        const unanswered = checkUnansweredQuestions();
+        if (unanswered.length > 0) {
+            e.preventDefault();
+            scrollToRow(unanswered[0]);
+            return false;
+        }
+        
+        // Optional: Clear localStorage after successful submission
+        // localStorage.removeItem('ueq_survey_answers');
+        return true;
+    });
+    
+    // Add CSS for flash highlight animation
+    const style = document.createElement('style');
+    style.textContent = `
+        .flash-highlight {
+            animation: flash 0.5s 3;
+        }
+        
+        @keyframes flash {
+            0%, 100% { background-color: inherit; }
+            50% { background-color: #ffe066; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Initialize on page load
+    loadAnswers();
+    checkUnansweredQuestions();
+    updateSubmitButtonStatus();
+    
+    // Scroll to first error if any
+    @if($errors->any() || session('missingFields'))
+        setTimeout(function() {
+            const firstUnanswered = document.querySelector('.unanswered');
+            if (firstUnanswered) {
+                firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstUnanswered.classList.add('flash-highlight');
+                setTimeout(() => {
+                    firstUnanswered.classList.remove('flash-highlight');
+                }, 2000);
+            }
+        }, 500);
+    @endif
+});
+</script>
+@endpush

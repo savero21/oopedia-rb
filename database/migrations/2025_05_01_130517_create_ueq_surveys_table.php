@@ -38,6 +38,8 @@ return new class extends Migration
             $table->integer('attractive_unattractive');
             $table->integer('friendly_unfriendly');
             $table->integer('conservative_innovative');
+            $table->text('comments')->nullable();
+            $table->text('suggestions')->nullable();
             $table->timestamps();
         });
     }

@@ -209,10 +209,5 @@
             sessionStorage.setItem('skip_tour', 'true');
         });
     });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Tidak ada lagi pemeriksaan akses untuk halaman questions
-        console.log('Guest access enabled for questions');
-    });
 </script>
 @endpush
