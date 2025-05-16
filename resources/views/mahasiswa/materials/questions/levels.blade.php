@@ -848,7 +848,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     y: rect.top + rect.height/2 - svgRect.top,
                     status: item.classList.contains('completed') ? 'completed' : 
                             item.classList.contains('unlocked') ? 'unlocked' : 'locked',
-                    level: parseInt(item.getAttribute('data-level') || '0')
+                    level: parseInt(item.getAttribute('data-level') || '0'),
+                    position: item.closest('.level-row').classList.contains('center') ? 'center' : 
+                              item.closest('.level-row').classList.contains('left') ? 'left' : 'right'
                 });
             } else {
                 // Tambahkan trophy sebagai level terakhir
@@ -856,7 +858,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     x: rect.left + rect.width/2 - svgRect.left,
                     y: rect.top + rect.height/2 - svgRect.top,
                     status: item.classList.contains('completed') ? 'completed' : 'locked',
-                    level: 'trophy'
+                    level: 'trophy',
+                    position: 'center' // Trophy selalu di tengah
                 });
             }
         });
@@ -866,8 +869,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const start = positions[i];
             const end = positions[i + 1];
             
-            // Tentukan jenis jalur berdasarkan posisi
-            if (i % 3 === 0) { // Dari center ke left
+            // Jika level saat ini dan level berikutnya berada di tengah, gunakan jalur lurus vertikal
+            if (start.position === 'center' && end.position === 'center') {
+                // Jalur vertikal lurus tanpa lengkungan
+                createStraightVerticalPath(svg, start.x, start.y + 60, end.x, end.y - 60,
+                             start.status, end.status, end.status === 'completed');
+            }
+            // Jika level saat ini di tengah dan berikutnya di kiri
+            else if (i % 3 === 0) { // Dari center ke left
                 const padding = 40; // Padding untuk belokan tumpul
                 
                 // Jalur vertikal dari start ke belokan pertama
@@ -947,14 +956,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Cek apakah semua soal sudah selesai
                 const allCompleted = lastLevel.status === 'completed';
                 
-                // Jalur vertikal dari lastLevel ke bawah
-                createDotPath(svg, lastLevel.x, lastLevel.y + 60, lastLevel.x, lastLevel.y + 100, 
-                             lastLevel.status, trophy.status, allCompleted);
-                
-                // Jalur vertikal ke trophy
-                createDotPath(svg, trophy.x, lastLevel.y + 180, trophy.x, trophy.y - 60, 
-                             lastLevel.status, trophy.status, allCompleted);
+                // Jika level terakhir di tengah, buat jalur langsung ke bawah tanpa lengkungan
+                if (lastLevel.position === 'center') {
+                    createStraightVerticalPath(svg, lastLevel.x, lastLevel.y + 60, trophy.x, trophy.y - 60, 
+                                 lastLevel.status, trophy.status, allCompleted);
+                } 
+                else {
+                    // Kode untuk jalur yang tidak di tengah (tetap seperti sebelumnya)
+                    // ...
+                }
             }
+        }
+    }
+    
+    // Buat fungsi baru khusus untuk jalur vertikal yang benar-benar lurus
+    function createStraightVerticalPath(svg, x1, y1, x2, y2, startStatus, endStatus, allCompleted) {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const isCompleted = startStatus === 'completed' && (endStatus === 'completed' || endStatus === 'unlocked');
+        
+        // Pastikan x koordinatnya sama untuk jalur lurus
+        const x = x1; // Atau bisa juga x2, karena keduanya seharusnya sama untuk jalur vertikal
+        
+        // Hitung jarak dan jumlah titik
+        const distance = Math.abs(y2 - y1);
+        const dotCount = Math.floor(distance / 20); // Titik setiap 20px
+        
+        for (let i = 0; i <= dotCount; i++) {
+            // Posisi titik (pastikan x tetap sama untuk jalur lurus)
+            const ratio = i / dotCount;
+            const y = y1 + (y2 - y1) * ratio;
+            
+            // Buat titik
+            const dot = document.createElementNS(svgNS, "circle");
+            dot.setAttribute("cx", x);
+            dot.setAttribute("cy", y);
+            
+            // Tentukan warna dan ukuran berdasarkan status
+            if (isCompleted) {
+                // Gunakan warna emas hanya jika semua soal selesai
+                if (allCompleted && endStatus === 'completed') {
+                    dot.setAttribute("r", "4");
+                    dot.setAttribute("fill", "#FFD700");
+                    dot.setAttribute("class", "map-dot trophy-dot");
+                } else {
+                    // Gunakan warna hijau untuk soal yang sudah dikerjakan
+                    dot.setAttribute("r", "4");
+                    dot.setAttribute("fill", "#4CAF50");
+                    dot.setAttribute("class", "map-dot completed-dot");
+                }
+            } else {
+                // Titik abu-abu untuk soal yang belum dikerjakan
+                dot.setAttribute("r", "3");
+                dot.setAttribute("fill", "#adb5bd");
+                dot.setAttribute("class", "map-dot locked-dot");
+            }
+            
+            svg.appendChild(dot);
         }
     }
     

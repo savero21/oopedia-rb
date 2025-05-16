@@ -87,7 +87,6 @@
                                             <thead>
                                                 <tr>
                                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Soal</th>
-                                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Materi</th>
                                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Kesulitan</th>
                                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tipe Soal</th>
                                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
@@ -104,9 +103,6 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </td>
-                                                    <td>
-                                                        {{ $question->material->title ?? 'Tidak ada materi' }}
                                                     </td>
                                                     <td>
                                                         <span class="badge bg-{{ $question->difficulty == 'beginner' ? 'success' : ($question->difficulty == 'medium' ? 'warning' : 'danger') }}">

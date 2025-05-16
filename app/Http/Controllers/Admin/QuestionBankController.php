@@ -41,7 +41,8 @@ class QuestionBankController extends Controller
      */
     public function create()
     {
-        return view('admin.question-banks.create');
+        $materials = Material::all();
+        return view('admin.question-banks.create', compact('materials'));
     }
 
     /**
@@ -52,13 +53,17 @@ class QuestionBankController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'material_id' => 'required|exists:materials,id',
         ]);
         
-        $questionBank = QuestionBank::create([
+        $questionBank = new QuestionBank([
             'name' => $request->name,
             'description' => $request->description,
+            'material_id' => $request->material_id,
             'created_by' => auth()->id(),
         ]);
+        
+        $questionBank->save();
         
         return redirect()->route('admin.question-banks.index')
             ->with('success', 'Bank soal berhasil dibuat.');
@@ -127,13 +132,13 @@ class QuestionBankController extends Controller
     {
         $search = $request->input('search');
         $difficulty = $request->input('difficulty');
-        $materialId = $request->input('material_id');
         
         // Get existing question IDs in this bank
         $existingQuestionIds = $questionBank->questions->pluck('id')->toArray();
         
-        // Query to get questions not in the bank yet
+        // Query to get questions not in the bank yet and from the same material
         $questionsQuery = Question::with(['material', 'answers'])
+            ->where('material_id', $questionBank->material_id)
             ->whereNotIn('id', $existingQuestionIds);
             
         // Apply filters
@@ -145,17 +150,11 @@ class QuestionBankController extends Controller
             $questionsQuery->where('difficulty', $difficulty);
         }
         
-        if ($materialId) {
-            $questionsQuery->where('material_id', $materialId);
-        }
-        
         $questions = $questionsQuery->paginate(10);
-        $materials = Material::all();
         
         return view('admin.question-banks.manage-questions', compact(
             'questionBank', 
-            'questions', 
-            'materials'
+            'questions'
         ));
     }
     
@@ -164,7 +163,11 @@ class QuestionBankController extends Controller
      */
     public function addQuestion(QuestionBank $questionBank, Question $question)
     {
-        // Check if question already exists in the bank
+        // Check if question already exists in the bank and from same material
+        if ($question->material_id != $questionBank->material_id) {
+            return redirect()->back()->with('error', 'Soal tidak dapat ditambahkan karena tidak sesuai dengan materi bank soal.');
+        }
+        
         if (!$questionBank->questions->contains($question->id)) {
             $questionBank->questions()->attach($question->id);
             return redirect()->back()->with('success', 'Soal berhasil ditambahkan ke bank soal.');

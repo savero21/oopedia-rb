@@ -410,9 +410,11 @@ function initializeQuestionForm() {
             })
             .then(response => response.json())
             .then(data => {
+                hideLoading(); // Hide loading overlay
                 showFeedback(data);
             })
             .catch(error => {
+                hideLoading(); // Hide loading overlay
                 console.error('Error:', error);
                 alert('Terjadi kesalahan saat memeriksa jawaban. Silakan coba lagi.');
                 if (checkAnswerBtn) {
