@@ -5,7 +5,7 @@
 <div class="materi-card shadow-sm rounded">
     <div class="materi-card-body p-4">
         <div id="questionContainer">
-            <form id="questionForm" class="ajax-form" action="{{ route('questions.check-answer', [
+            <form id="questionForm" action="{{ route('questions.check-answer', [
                 'material' => $material->id,
                 'question' => $currentQuestion->id,
                 'difficulty' => $difficulty

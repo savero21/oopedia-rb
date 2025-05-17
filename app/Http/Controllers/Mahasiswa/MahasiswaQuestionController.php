@@ -104,16 +104,20 @@ class MahasiswaQuestionController extends Controller
                 }
             }
             
+            // Tambahkan info untuk navigasi
+            $answeredCount = count(session('guest_progress.' . $request->material_id, []));
+            
             // PERUBAHAN: Jika jawaban benar, arahkan kembali ke halaman levels
-            if ($isCorrect) {
+            if ($isCorrect && (!auth()->check() || auth()->user()->role_id === 4)) {
+                // Kirim respons sederhana yang mengarahkan langsung ke halaman levels
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Jawaban Benar!',
-                    'selectedAnswerText' => $selectedAnswerText,
-                    'correctAnswerText' => $correctAnswerText,
-                    'explanation' => $explanation,
-                    'hasNextQuestion' => false,
-                    'levelUrl' => route('mahasiswa.materials.questions.levels', [
+                    'selectedAnswerText' => $selectedAnswerText ?? null,
+                    'correctAnswerText' => $correctAnswerText ?? null,
+                    'explanation' => $explanation ?? null,
+                    // Parameter khusus untuk menangani guest
+                    'redirect_url' => route('mahasiswa.materials.questions.levels', [
                         'material' => $request->material_id,
                         'difficulty' => $request->difficulty
                     ])

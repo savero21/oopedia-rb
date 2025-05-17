@@ -15,11 +15,11 @@ class MaterialQuestionController extends Controller
 {
     public function index()
     {
+        $userId = auth()->id();
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
         // Get all materials first
         $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
-        
-        // Determine if user is guest (not logged in or role_id = 4)
-        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
         
         // If user is guest, only show half of the materials
         if ($isGuest) {
@@ -27,42 +27,55 @@ class MaterialQuestionController extends Controller
             $materialsToShow = ceil($totalMaterials / 2);
             $allMaterials = $allMaterials->take($materialsToShow);
         }
-
-        $materials = $allMaterials->map(function($material) use ($isGuest) {
-            // Jika user adalah guest, tampilkan hanya 3 soal per kesulitan
+        
+        // Get progress statistics
+        $progressStats = DB::table('progress')
+            ->select(
+                'material_id',
+                DB::raw('COUNT(DISTINCT question_id) as answered_questions'),
+                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+            )
+            ->where('user_id', $userId)
+            ->groupBy('material_id')
+            ->get();
+        
+        // Format materials for view
+        $materials = $allMaterials->map(function($material) use ($progressStats, $isGuest) {
+            // Calculate question counts based on configuration
             if ($isGuest) {
-                $beginnerCount = 3;
-                $mediumCount = 3;
-                $hardCount = 3;
+                // For guests, limit to 3 per difficulty
+                $beginnerCount = min(3, $material->questions->where('difficulty', 'beginner')->count());
+                $mediumCount = min(3, $material->questions->where('difficulty', 'medium')->count());
+                $hardCount = min(3, $material->questions->where('difficulty', 'hard')->count());
+                $configuredTotalQuestions = $beginnerCount + $mediumCount + $hardCount;
             } else {
-                // Ambil konfigurasi dari QuestionBankConfig yang aktif
+                // For registered users, use admin configuration
                 $config = QuestionBankConfig::where('material_id', $material->id)
                     ->where('is_active', true)
                     ->first();
                 
-                // Jika ada konfigurasi, gunakan nilai dari konfigurasi
                 if ($config) {
-                    $beginnerCount = $config->beginner_count;
-                    $mediumCount = $config->medium_count;
-                    $hardCount = $config->hard_count;
+                    $configuredTotalQuestions = $config->beginner_count + $config->medium_count + $config->hard_count;
                 } else {
-                    // Default jika tidak ada konfigurasi
-                    $beginnerCount = $material->questions->where('difficulty', 'beginner')->count();
-                    $mediumCount = $material->questions->where('difficulty', 'medium')->count();
-                    $hardCount = $material->questions->where('difficulty', 'hard')->count();
+                    $configuredTotalQuestions = $material->questions->count();
                 }
             }
-
+            
+            $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+            $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
+            
+            $progressPercentage = $configuredTotalQuestions > 0 
+                ? min(100, round(($correctAnswers / $configuredTotalQuestions) * 100))
+                : 0;
+            
             return [
                 'material' => $material,
-                'config' => [
-                    'beginner' => $beginnerCount,
-                    'medium' => $mediumCount,
-                    'hard' => $hardCount
-                ]
+                'percentage' => $progressPercentage,
+                'correctAnswers' => $correctAnswers,
+                'totalQuestions' => $configuredTotalQuestions
             ];
         });
-
+        
         return view('mahasiswa.materials.questions.index', compact('materials', 'isGuest'));
     }
 
@@ -573,6 +586,45 @@ class MaterialQuestionController extends Controller
             'configuredMediumQuestions' => $configuredMediumQuestions,
             'configuredHardQuestions' => $configuredHardQuestions,
             // other variables...
+        ]);
+    }
+
+    /**
+     * Debug endpoint to check guest progress
+     */
+    public function debugGuestProgress(Request $request)
+    {
+        $materialId = $request->query('material_id');
+        
+        // Get guest progress from session
+        $sessionKey = 'guest_progress';
+        $guestProgress = session($sessionKey, []);
+        
+        // Get material progress from session
+        $materialProgress = session('guest_progress.' . $materialId, []);
+        
+        // Get all progress entries for this material
+        $materialEntries = [];
+        foreach ($guestProgress as $key => $progress) {
+            $parts = explode('_', $key);
+            if (count($parts) >= 2 && $parts[0] == $materialId) {
+                $materialEntries[$key] = $progress;
+            }
+        }
+        
+        // Log the data for debugging
+        \Log::info('Guest Progress Debug', [
+            'material_id' => $materialId,
+            'guest_progress' => $guestProgress,
+            'material_progress' => $materialProgress,
+            'material_entries' => $materialEntries
+        ]);
+        
+        return response()->json([
+            'material_id' => $materialId,
+            'guest_progress' => $guestProgress,
+            'material_progress' => $materialProgress,
+            'material_entries' => $materialEntries
         ]);
     }
 } 

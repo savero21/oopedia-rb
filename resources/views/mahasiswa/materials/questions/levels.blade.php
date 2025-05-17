@@ -34,13 +34,13 @@
             <div class="legend-title mb-3">Keterangan:</div>
             <div class="legend-items">
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #4CAF50;">
+                    <div class="legend-icon" style="background: #2196F3;">
                         <span class="text-white"></span>
                     </div>
                     <div class="legend-text">Soal yang bisa dikerjakan</div>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #2196F3;">
+                    <div class="legend-icon" style="background: #4CAF50;">
                         <i class="fas fa-check text-white"></i>
                     </div>
                     <div class="legend-text">Soal yang sudah dijawab benar</div>
@@ -75,7 +75,7 @@
             
             @foreach($levels as $index => $level)
                 <div class="level-row {{ $index % 3 == 0 ? 'center' : ($index % 3 == 1 ? 'left' : 'right') }}">
-                    <div class="level-item {{ $level['status'] }}" data-level="{{ $index + 1 }}" {{ $level['status'] === 'unlocked' ? 'id=unlockedLevel' : '' }}>
+                    <div class="level-item {{ $level['status'] }}" data-level="{{ $level['level'] }}" data-question-id="{{ $level['question_id'] }}" {{ $level['status'] === 'unlocked' ? 'id=unlockedLevel' : '' }}>
                         @if($level['status'] === 'locked')
                             <div class="level-circle">
                                 <span class="level-number">{{ $level['level'] }}</span>
@@ -849,6 +849,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     status: item.classList.contains('completed') ? 'completed' : 
                             item.classList.contains('unlocked') ? 'unlocked' : 'locked',
                     level: parseInt(item.getAttribute('data-level') || '0'),
+                    questionId: item.getAttribute('data-question-id'),
                     position: item.closest('.level-row').classList.contains('center') ? 'center' : 
                               item.closest('.level-row').classList.contains('left') ? 'left' : 'right'
                 });
@@ -1149,6 +1150,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const newUrl = window.location.pathname + 
                 window.location.search.replace('scroll=true', '').replace('?&', '?').replace('&&', '&');
             window.history.replaceState({}, '', newUrl);
+        }
+    }
+    
+    // Handle navigation for guest users
+    const isGuest = {{ $isGuest ? 'true' : 'false' }};
+    
+    if (isGuest) {
+        // For guest users, check local storage for completed questions
+        const questionCompleted = localStorage.getItem('questionCompleted');
+        
+        if (questionCompleted === 'true') {
+            // Clear the flag
+            localStorage.removeItem('questionCompleted');
+            
+            // Check if scroll=true is in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('scroll') === 'true') {
+                // Force redraw of map by calling drawTreasureMap again
+                setTimeout(function() {
+                    drawTreasureMap();
+                }, 100);
+            }
         }
     }
 });

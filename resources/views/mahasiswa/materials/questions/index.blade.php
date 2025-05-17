@@ -51,32 +51,16 @@
                         <div class="progress-info d-flex justify-content-between">
                             <span class="progress-text">Progress</span>
                             <span class="progress-percentage">
-                                @php
-                                    $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
-                                    
-                                    if ($isGuest) {
-                                        // Untuk guest, tetap gunakan batasan 9 soal (3 per tingkat kesulitan)
-                                        $totalQuestions = min(9, $material['material']->questions->count());
-                                    } else {
-                                        // Untuk pengguna terdaftar, ambil dari config yang sudah dihitung di controller
-                                        $totalQuestions = $material['config']['beginner'] + $material['config']['medium'] + $material['config']['hard'];
-                                    }
-                                    
-                                    $correctAnswers = $material['material']->completed_questions ?? 0;
-                                    $percentage = $totalQuestions > 0 ? min(100, round(($correctAnswers / $totalQuestions) * 100)) : 0;
-                                @endphp
-                                {{ $percentage }}%
+                                {{ $material['percentage'] }}%
                             </span>
                         </div>
                         <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: {{ $percentage }}%"></div>
+                            <div class="progress-bar" style="width: {{ $material['percentage'] }}%"></div>
                         </div>
                         <div class="progress-details mt-2">
                             <small>
-                                {{ $correctAnswers }} dari {{ $totalQuestions }} soal selesai
-                                @if(auth()->check() && auth()->user()->role_id === 4)
-                                    (Mode Tamu)
-                                @elseif(!auth()->check())
+                                {{ $material['correctAnswers'] }} dari {{ $material['totalQuestions'] }} soal selesai
+                                @if(auth()->check() && auth()->user()->role_id === 4 || !auth()->check())
                                     (Mode Tamu)
                                 @endif
                             </small>
@@ -88,9 +72,9 @@
                             <i class="fas fa-tasks"></i>
                             <span>
                                 @if(auth()->check() && auth()->user()->role_id === 4 || !auth()->check())
-                                    9 Soal
+                                    {{ $material['totalQuestions'] }} Soal
                                 @else
-                                    {{ $material['material']->total_questions }} Soal
+                                    {{ $material['totalQuestions'] }} Soal
                                 @endif
                             </span>
                         </div>
