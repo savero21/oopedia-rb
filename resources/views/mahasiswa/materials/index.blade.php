@@ -42,6 +42,10 @@
                         <i class="fas fa-book-open"></i>
                     </div>
                 </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 29ff6dd1c83b86081a6cad5db73a75b0b1a473b7
             @endif
             
             <div class="material-icon">
@@ -56,6 +60,7 @@
                 <div class="material-meta">
                     <div class="meta-item">
                         <i class="fas fa-user"></i> {{ $material->creator ? $material->creator->name : 'Admin' }}
+
                     </div>
                     <div class="meta-item">
                         <i class="far fa-calendar-alt"></i> {{ $material->updated_at->format('d M Y') }}
@@ -199,6 +204,7 @@
         flex-direction: column;
         flex-grow: 1;
     }
+
     
     .material-title {
         font-weight: 700;
@@ -328,6 +334,11 @@
 
     /* Perbaikan Gaya untuk Tour Guide */
     .introjs-tooltip {
+
+
+}/* Perbaikan Gaya untuk Tour Guide */
+.introjs-tooltip {
+
         border-radius: 12px !important;
         padding: 20px !important;
         max-width: 400px !important;
@@ -478,6 +489,15 @@
         }).onexit(function() {
             sessionStorage.setItem('material_index_tour_complete', 'true');
         }).start();
+
     }
 </script>
+<style>
+    .no-image-icon {
+        font-size: 48px;
+        color: #0057B8;
+        opacity: 0.4;
+    }
+</style>
+
 @endpush

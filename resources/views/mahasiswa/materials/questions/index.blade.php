@@ -149,6 +149,7 @@
                 `
             },
             {
+
                 element: document.querySelector('.material-question-card'),
                 intro: "Ini adalah kartu materi latihan soal. Pilih salah satu materi untuk mulai berlatih."
             },
@@ -159,6 +160,38 @@
             {
                 element: document.querySelector('.btn-start-exercise'),
                 intro: "Klik tombol ini untuk melihat detail dan mulai mengerjakan latihan soal."
+
+            },
+            {
+                element: document.querySelector('.material-card:first-child'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Kartu Materi</h5>
+                        <p>Setiap kartu mewakili satu materi yang bisa Anda pelajari. Pilih materi untuk mulai berlatih.</p>
+                    </div>
+                `,
+                position: 'bottom'
+            },
+            {
+                element: document.querySelector('.progress-container'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Progress Belajar</h5>
+                        <p>Pantau perkembangan Anda melalui indikator progress ini.</p>
+                    </div>
+                `,
+                position: 'bottom'
+            },
+            {
+                element: document.querySelector('.material-actions .btn-read-material'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Mulai Berlatih</h5>
+                        <p>Klik tombol ini untuk mengakses soal-soal latihan dari materi yang dipilih.</p>
+                    </div>
+                `,
+                position: 'top'
+
             },
             {
                 intro: `

@@ -174,8 +174,9 @@ use Illuminate\Support\Str;
         padding-top: 1rem !important;
     }
 
-    /* Custom Tour Styling */ 
-    .introjs-tooltip {
+
+    /* Custom Tour Styling */ .introjs-tooltip {
+
         border-radius: 12px !important;
         padding: 20px !important;
         max-width: 400px !important;
@@ -275,6 +276,7 @@ use Illuminate\Support\Str;
         color: #2c3e50;
         font-size: 0.95rem;
         line-height: 1.6;
+
     }
 
     .dashboard-icon {
@@ -303,6 +305,9 @@ use Illuminate\Support\Str;
         align-items: center;
         justify-content: center;
         padding: 15px 0;
+
+
+
     }
 </style>
 @endpush
