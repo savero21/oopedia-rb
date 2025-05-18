@@ -30,17 +30,29 @@
     </div>
 
     <div class="level-container">
+        <!-- Tambahkan peringatan tentang sistem penilaian hanya untuk user mahasiswa (bukan tamu) -->
+        @if(auth()->check() && auth()->user()->role_id === 3)
+            <div class="alert alert-info mb-4" role="alert">
+                <h5><i class="fas fa-info-circle"></i> Sistem Penilaian Pada Leaderboard</h5>
+                <p>Perhatikan bahwa nilai Anda di leaderboard bergantung pada jumlah percobaan yang dibutuhkan untuk menjawab soal dengan benar:</p>
+                
+                <div class="mt-2 fw-bold text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Pastikan jawaban Anda sudah benar sebelum mengirim untuk mendapatkan nilai maksimal!
+                </div>
+            </div>
+        @endif
+
         <div class="level-legend mb-4">
             <div class="legend-title mb-3">Keterangan:</div>
             <div class="legend-items">
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #4CAF50;">
+                    <div class="legend-icon" style="background: #2196F3;">
                         <span class="text-white"></span>
                     </div>
                     <div class="legend-text">Soal yang bisa dikerjakan</div>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-icon" style="background: #2196F3;">
+                    <div class="legend-icon" style="background: #4CAF50;">
                         <i class="fas fa-check text-white"></i>
                     </div>
                     <div class="legend-text">Soal yang sudah dijawab benar</div>
@@ -75,7 +87,7 @@
             
             @foreach($levels as $index => $level)
                 <div class="level-row {{ $index % 3 == 0 ? 'center' : ($index % 3 == 1 ? 'left' : 'right') }}">
-                    <div class="level-item {{ $level['status'] }}" data-level="{{ $index + 1 }}" {{ $level['status'] === 'unlocked' ? 'id=unlockedLevel' : '' }}>
+                    <div class="level-item {{ $level['status'] }}" data-level="{{ $level['level'] }}" data-question-id="{{ $level['question_id'] }}" {{ $level['status'] === 'unlocked' ? 'id=unlockedLevel' : '' }}>
                         @if($level['status'] === 'locked')
                             <div class="level-circle">
                                 <span class="level-number">{{ $level['level'] }}</span>
@@ -848,7 +860,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     y: rect.top + rect.height/2 - svgRect.top,
                     status: item.classList.contains('completed') ? 'completed' : 
                             item.classList.contains('unlocked') ? 'unlocked' : 'locked',
-                    level: parseInt(item.getAttribute('data-level') || '0')
+                    level: parseInt(item.getAttribute('data-level') || '0'),
+                    questionId: item.getAttribute('data-question-id'),
+                    position: item.closest('.level-row').classList.contains('center') ? 'center' : 
+                              item.closest('.level-row').classList.contains('left') ? 'left' : 'right'
                 });
             } else {
                 // Tambahkan trophy sebagai level terakhir
@@ -856,7 +871,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     x: rect.left + rect.width/2 - svgRect.left,
                     y: rect.top + rect.height/2 - svgRect.top,
                     status: item.classList.contains('completed') ? 'completed' : 'locked',
-                    level: 'trophy'
+                    level: 'trophy',
+                    position: 'center' // Trophy selalu di tengah
                 });
             }
         });
@@ -866,8 +882,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const start = positions[i];
             const end = positions[i + 1];
             
-            // Tentukan jenis jalur berdasarkan posisi
-            if (i % 3 === 0) { // Dari center ke left
+            // Jika level saat ini dan level berikutnya berada di tengah, gunakan jalur lurus vertikal
+            if (start.position === 'center' && end.position === 'center') {
+                // Jalur vertikal lurus tanpa lengkungan
+                createStraightVerticalPath(svg, start.x, start.y + 60, end.x, end.y - 60,
+                             start.status, end.status, end.status === 'completed');
+            }
+            // Jika level saat ini di tengah dan berikutnya di kiri
+            else if (i % 3 === 0) { // Dari center ke left
                 const padding = 40; // Padding untuk belokan tumpul
                 
                 // Jalur vertikal dari start ke belokan pertama
@@ -947,14 +969,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Cek apakah semua soal sudah selesai
                 const allCompleted = lastLevel.status === 'completed';
                 
-                // Jalur vertikal dari lastLevel ke bawah
-                createDotPath(svg, lastLevel.x, lastLevel.y + 60, lastLevel.x, lastLevel.y + 100, 
-                             lastLevel.status, trophy.status, allCompleted);
-                
-                // Jalur vertikal ke trophy
-                createDotPath(svg, trophy.x, lastLevel.y + 180, trophy.x, trophy.y - 60, 
-                             lastLevel.status, trophy.status, allCompleted);
+                // Jika level terakhir di tengah, buat jalur langsung ke bawah tanpa lengkungan
+                if (lastLevel.position === 'center') {
+                    createStraightVerticalPath(svg, lastLevel.x, lastLevel.y + 60, trophy.x, trophy.y - 60, 
+                                 lastLevel.status, trophy.status, allCompleted);
+                } 
+                else {
+                    // Kode untuk jalur yang tidak di tengah (tetap seperti sebelumnya)
+                    // ...
+                }
             }
+        }
+    }
+    
+    // Buat fungsi baru khusus untuk jalur vertikal yang benar-benar lurus
+    function createStraightVerticalPath(svg, x1, y1, x2, y2, startStatus, endStatus, allCompleted) {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const isCompleted = startStatus === 'completed' && (endStatus === 'completed' || endStatus === 'unlocked');
+        
+        // Pastikan x koordinatnya sama untuk jalur lurus
+        const x = x1; // Atau bisa juga x2, karena keduanya seharusnya sama untuk jalur vertikal
+        
+        // Hitung jarak dan jumlah titik
+        const distance = Math.abs(y2 - y1);
+        const dotCount = Math.floor(distance / 20); // Titik setiap 20px
+        
+        for (let i = 0; i <= dotCount; i++) {
+            // Posisi titik (pastikan x tetap sama untuk jalur lurus)
+            const ratio = i / dotCount;
+            const y = y1 + (y2 - y1) * ratio;
+            
+            // Buat titik
+            const dot = document.createElementNS(svgNS, "circle");
+            dot.setAttribute("cx", x);
+            dot.setAttribute("cy", y);
+            
+            // Tentukan warna dan ukuran berdasarkan status
+            if (isCompleted) {
+                // Gunakan warna emas hanya jika semua soal selesai
+                if (allCompleted && endStatus === 'completed') {
+                    dot.setAttribute("r", "4");
+                    dot.setAttribute("fill", "#FFD700");
+                    dot.setAttribute("class", "map-dot trophy-dot");
+                } else {
+                    // Gunakan warna hijau untuk soal yang sudah dikerjakan
+                    dot.setAttribute("r", "4");
+                    dot.setAttribute("fill", "#4CAF50");
+                    dot.setAttribute("class", "map-dot completed-dot");
+                }
+            } else {
+                // Titik abu-abu untuk soal yang belum dikerjakan
+                dot.setAttribute("r", "3");
+                dot.setAttribute("fill", "#adb5bd");
+                dot.setAttribute("class", "map-dot locked-dot");
+            }
+            
+            svg.appendChild(dot);
         }
     }
     
@@ -1092,6 +1162,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const newUrl = window.location.pathname + 
                 window.location.search.replace('scroll=true', '').replace('?&', '?').replace('&&', '&');
             window.history.replaceState({}, '', newUrl);
+        }
+    }
+    
+    // Handle navigation for guest users
+    const isGuest = {{ $isGuest ? 'true' : 'false' }};
+    
+    if (isGuest) {
+        // For guest users, check local storage for completed questions
+        const questionCompleted = localStorage.getItem('questionCompleted');
+        
+        if (questionCompleted === 'true') {
+            // Clear the flag
+            localStorage.removeItem('questionCompleted');
+            
+            // Check if scroll=true is in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('scroll') === 'true') {
+                // Force redraw of map by calling drawTreasureMap again
+                setTimeout(function() {
+                    drawTreasureMap();
+                }, 100);
+            }
         }
     }
 });

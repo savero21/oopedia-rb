@@ -47,4 +47,9 @@ class Material extends Model
     {
         return $this->hasMany(QuestionBankConfig::class);
     }
+
+    public function questionBanks()
+    {
+        return $this->hasMany(QuestionBank::class);
+    }
 }

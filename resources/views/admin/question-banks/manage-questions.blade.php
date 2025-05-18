@@ -34,42 +34,26 @@
                         <div class="card-body pt-4">
                             <!-- Filter and search -->
                             <div class="row mb-4">
-                                <div class="col-md-12">
-                                    <form action="{{ route('admin.question-banks.manage-questions', $questionBank) }}" method="GET" class="row g-3">
-                                        <div class="col-md-4">
-                                            <div class="input-group input-group-outline">
-                                                <input type="text" name="search" class="form-control" placeholder="Cari soal..." value="{{ request('search') }}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="input-group input-group-outline">
-                                                <select name="difficulty" class="form-control">
-                                                    <option value="">Semua Tingkat Kesulitan</option>
-                                                    <option value="beginner" {{ request('difficulty') == 'beginner' ? 'selected' : '' }}>Beginner</option>
-                                                    <option value="medium" {{ request('difficulty') == 'medium' ? 'selected' : '' }}>Medium</option>
-                                                    <option value="hard" {{ request('difficulty') == 'hard' ? 'selected' : '' }}>Hard</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="input-group input-group-outline">
-                                                <select name="material_id" class="form-control">
-                                                    <option value="">Semua Materi</option>
-                                                    @foreach($materials as $material)
-                                                        <option value="{{ $material->id }}" {{ request('material_id') == $material->id ? 'selected' : '' }}>
-                                                            {{ $material->title }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="submit" class="btn btn-primary w-100">
-                                                <i class="material-icons text-sm">search</i>
-                                                <span>Filter</span>
-                                            </button>
-                                        </div>
-                                    </form>
+                                <div class="col-md-5">
+                                    <div class="input-group input-group-outline">
+                                        <input type="text" name="search" class="form-control" placeholder="Cari soal..." value="{{ request('search') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group input-group-outline">
+                                        <select name="difficulty" class="form-control">
+                                            <option value="">Semua Tingkat Kesulitan</option>
+                                            <option value="beginner" {{ request('difficulty') == 'beginner' ? 'selected' : '' }}>Beginner</option>
+                                            <option value="medium" {{ request('difficulty') == 'medium' ? 'selected' : '' }}>Medium</option>
+                                            <option value="hard" {{ request('difficulty') == 'hard' ? 'selected' : '' }}>Hard</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="material-icons text-sm">search</i>
+                                        <span>Filter</span>
+                                    </button>
                                 </div>
                             </div>
                             

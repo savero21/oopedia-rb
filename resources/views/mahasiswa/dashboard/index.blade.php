@@ -34,9 +34,9 @@ use Illuminate\Support\Str;
                     <div class="materi-card-body">
                         <h3 class="materi-title">Materi Pembelajaran</h3>
                         <div class="materi-overview">
-                            <div class="materi-count">
-                                <i class="fas fa-book me-2"></i>
-                                <span class="count-number">{{ $totalMaterials }}</span>
+                            <div class="materi-count text-center">
+                                <img src="{{ asset('images/book-icon.png') }}" alt="Materi" class="dashboard-icon-large mb-2">
+                                <div class="count-number-large">{{ $totalMaterials }}</div>
                             </div>
                             <p class="materi-description">Total materi tersedia untuk dipelajari</p>
                             <div class="button-container">
@@ -55,9 +55,9 @@ use Illuminate\Support\Str;
                     <div class="materi-card-body">
                         <h3 class="materi-title">Latihan Soal</h3>
                         <div class="materi-overview">
-                            <div class="materi-count">
-                                <i class="fas fa-question-circle me-2"></i>
-                                <span class="count-number">{{ $totalQuestions }}</span>
+                            <div class="materi-count text-center">
+                                <img src="{{ asset('images/question-icon.png') }}" alt="Soal" class="dashboard-icon-large mb-2">
+                                <div class="count-number-large">{{ $totalQuestions }}</div>
                             </div>
                             <p class="materi-description">Total soal tersedia untuk latihan</p>
                             <div class="difficulty-breakdown">
@@ -173,6 +173,7 @@ use Illuminate\Support\Str;
     #dashboard-container .container-fluid {
         padding-top: 1rem !important;
     }
+
     /* Custom Tour Styling */ .introjs-tooltip {
         border-radius: 12px !important;
         padding: 20px !important;
@@ -273,6 +274,7 @@ use Illuminate\Support\Str;
         color: #2c3e50;
         font-size: 0.95rem;
         line-height: 1.6;
+
     }
 </style>
 @endpush

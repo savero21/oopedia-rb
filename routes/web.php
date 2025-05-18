@@ -138,6 +138,10 @@ Route::middleware('auth')->group(function () {
             ->name('question-banks.store-config');
         Route::delete('question-bank-configs/{config}', [QuestionBankController::class, 'deleteConfig'])
             ->name('question-bank-configs.delete');
+
+        // Media routes
+        Route::get('/media/delete/{id}', [AdminMaterialController::class, 'deleteMedia'])
+            ->name('media.delete');
     });
 
     // Mahasiswa & Guest Routes (role 3 = mahasiswa, role 4 = guest)
@@ -153,9 +157,9 @@ Route::middleware('auth')->group(function () {
             Route::put('profile', [MahasiswaProfileController::class, 'update'])->name('profile.update');
             
             // UEQ Survey routes
-            Route::get('ueq-survey', [MahasiswaUeqSurveyController::class, 'create'])->name('ueq.create');
-            Route::post('ueq-survey', [MahasiswaUeqSurveyController::class, 'store'])->name('ueq.store');
-            Route::get('ueq-survey/thankyou', [MahasiswaUeqSurveyController::class, 'thankyou'])->name('ueq.thankyou');
+            Route::get('/ueq-survey', [MahasiswaUeqSurveyController::class, 'create'])->name('ueq.create');
+            Route::post('/ueq-survey', [MahasiswaUeqSurveyController::class, 'store'])->name('ueq.store');
+            Route::get('/ueq-survey/thankyou', [MahasiswaUeqSurveyController::class, 'thankyou'])->name('ueq.thankyou');
         });
         
         // Materials (for both mahasiswa and guest)
@@ -237,6 +241,13 @@ Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'che
     ->name('questions.check-answer')
     ->withoutMiddleware('auth');
 
+// UEQ Survey routes for mahasiswa
+Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+    Route::get('/ueq-survey', [MahasiswaUeqSurveyController::class, 'create'])->name('ueq.create');
+    Route::post('/ueq-survey', [MahasiswaUeqSurveyController::class, 'store'])->name('ueq.store');
+    Route::get('/ueq-survey/thankyou', [MahasiswaUeqSurveyController::class, 'thankyou'])->name('ueq.thankyou');
+});
+
 // Fallback route for 404 errors
 Route::fallback(function () {
     if (auth()->check()) {
@@ -274,5 +285,6 @@ Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
 Route::middleware(['auth', 'role:1|2'])->group(function () {
     Route::get('/admin/ueq-survey', [UeqSurveyController::class, 'index'])->name('admin.ueq.index');
     Route::get('/admin/ueq-survey/export', [UeqSurveyController::class, 'export'])->name('admin.ueq.export');
+    Route::get('/admin/ueq/{user}/detail', [UeqSurveyController::class, 'detail'])->name('admin.ueq.detail');
 });
 

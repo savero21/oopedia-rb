@@ -74,71 +74,85 @@ class QuestionController extends Controller
     }
 
     public function store(Request $request, Material $material = null)
-    {
-        // Validasi dasar untuk semua field kecuali answers
-        $baseValidation = [
-            'question_text' => 'required|string',
-            'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
-            'difficulty' => 'required|in:beginner,medium,hard',
-            'material_id' => 'required|exists:materials,id',
-        ];
-        
-        // Validasi khusus untuk answers berdasarkan tipe soal
-        if ($request->question_type === 'fill_in_the_blank') {
-            $answersValidation = ['answers' => 'required|array|min:1'];
-        } else {
-            $answersValidation = ['answers' => 'required|array|min:2'];
-        }
-        
-        // Gabungkan validasi
-        $validationRules = array_merge($baseValidation, $answersValidation);
-        
-        // Tambahkan validasi untuk setiap jawaban
-        $validationRules['answers.*.answer_text'] = 'required|string';
-        $validationRules['answers.*.is_correct'] = 'required|boolean';
-        $validationRules['answers.*.explanation'] = 'nullable|string|max:500';
-        
-        $request->validate($validationRules);
+{
+    // Validasi dasar untuk semua field kecuali answers
+    $baseValidation = [
+        'question_text' => 'required|string',
+        'question_type' => 'required|in:radio_button,drag_and_drop,fill_in_the_blank',
+        'difficulty' => 'required|in:beginner,medium,hard',
+        'material_id' => 'required|exists:materials,id',
+    ];
+    
+    // Validasi khusus untuk answers berdasarkan tipe soal
+    if ($request->question_type === 'fill_in_the_blank') {
+        $answersValidation = ['answers' => 'required|array|min:1'];
+    } else {
+        $answersValidation = ['answers' => 'required|array|min:2'];
+    }
+    
+    // Gabungkan validasi
+    $validationRules = array_merge($baseValidation, $answersValidation);
+    
+    // Tambahkan validasi untuk setiap jawaban
+    $validationRules['answers.*.answer_text'] = 'required|string';
+    
+    $request->validate($validationRules);
 
-        $questionType = $request->question_type;
-
-        if (in_array($request->question_type, ['fill_in_the_blank','radio_button',])) {
-            $correctAnswersCount = collect($request->answers)->where('is_correct', true)->count();
+    // Proses correct_answer untuk radio_button dan fill_in_the_blank
+    $answers = $request->answers;
+    
+    if (in_array($request->question_type, ['radio_button', 'fill_in_the_blank'])) {
+        if ($request->has('correct_answer')) {
+            $correctIndex = $request->correct_answer;
+            
+            // Create a new array instead of trying to modify by reference
+            $processedAnswers = [];
+            foreach ($answers as $index => $answer) {
+                $answer['is_correct'] = ($index == $correctIndex) ? 1 : 0;
+                $processedAnswers[] = $answer;
+            }
+            $answers = $processedAnswers;
+            
+            // Pastikan hanya ada 1 jawaban benar
+            $correctAnswersCount = collect($answers)->sum(function ($answer) {
+                return $answer['is_correct'];
+            });
+            
             if ($correctAnswersCount !== 1) {
                 return redirect()->back()->withInput()->with('error', ucfirst(str_replace('_', ' ', $request->question_type)) . ' questions must have exactly one correct answer.');
             }
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Please select the correct answer.');
         }
+    }
 
-        $question = Question::create([
-            'question_text' => $request->question_text,
-            'question_type' => $request->question_type,
-            'difficulty' => $request->difficulty,
-            'material_id' => $request->material_id,
-            'created_by' => auth()->id(),
+    $question = Question::create([
+        'question_text' => $request->question_text,
+        'question_type' => $request->question_type,
+        'difficulty' => $request->difficulty,
+        'material_id' => $request->material_id,
+        'created_by' => auth()->id(),
+    ]);
+
+    foreach ($answers as $answer) {
+        Answer::create([
+            'question_id' => $question->id,
+            'answer_text' => $answer['answer_text'],
+            'is_correct' => $answer['is_correct'] ?? 0,
+            'explanation' => $answer['explanation'] ?? null,
         ]);
+    }
 
-        foreach ($request->answers as $answer) {
-            Answer::create([
-                'question_id' => $question->id,
-                'answer_text' => $answer['answer_text'],
-                'is_correct' => $answer['is_correct'],
-                'explanation' => $answer['explanation'] ?? null,
-                'drag_source' => $answer['drag_source'] ?? null,
-                'drag_target' => $answer['drag_target'] ?? null,
-                'blank_position' => $answer['blank_position'] ?? null
-            ]);
-        }
-
-        if ($material) {
-            return redirect()
-                ->route('admin.materials.questions.index', $material)
-                ->with('success', 'Soal berhasil ditambahkan.');
-        }
-
+    if ($material) {
         return redirect()
-            ->route('admin.questions.index')
+            ->route('admin.materials.questions.index', $material)
             ->with('success', 'Soal berhasil ditambahkan.');
     }
+
+    return redirect()
+        ->route('admin.questions.index')
+        ->with('success', 'Soal berhasil ditambahkan.');
+}
 
     public function edit(Material $material = null, Question $question)
     {

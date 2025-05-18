@@ -9,11 +9,16 @@ use App\Models\Progress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Material;
+use App\Models\StudentAnswer;
 
 class QuestionController extends Controller
 {
     public function checkAnswer(Request $request)
     {
+        // Tambahkan di awal fungsi checkAnswer atau submitAnswer pada setiap controller
+        \Log::info("CONTROLLER_TRACE: " . __CLASS__ . " handling answer submission");
+        
         // Log semua data request untuk debugging
         Log::info('Request data for checkAnswer:', $request->all());
         
@@ -100,6 +105,15 @@ class QuestionController extends Controller
             
             // Update progress jika user login
             if (auth()->check()) {
+                // Hitung attempt number dengan benar
+                $attemptsCount = Progress::where([
+                    'user_id' => auth()->id(),
+                    'material_id' => $request->material_id,
+                    'question_id' => $question->id
+                ])->count();
+                
+                $attemptNumber = $attemptsCount > 0 ? $attemptsCount + 1 : 1;
+                
                 Progress::updateOrCreate(
                     [
                         'user_id' => auth()->id(),
@@ -108,9 +122,51 @@ class QuestionController extends Controller
                     ],
                     [
                         'is_correct' => $isCorrect,
-                        'attempt_number' => DB::raw('attempt_number + 1')
+                        'is_answered' => true,
+                        'attempt_number' => $attemptNumber
                     ]
                 );
+            } else {
+                // Untuk guest, simpan progress di session
+                $sessionKey = 'guest_progress';
+                $guestProgress = session($sessionKey, []);
+                
+                // Format 1: "material_id_question_id" => ["is_correct" => true]
+                $progressKey = $request->material_id . '_' . $question->id;
+                $guestProgress[$progressKey] = [
+                    'is_correct' => $isCorrect,
+                    'attempt_number' => isset($guestProgress[$progressKey]) ? 
+                        $guestProgress[$progressKey]['attempt_number'] + 1 : 1
+                ];
+                
+                session([$sessionKey => $guestProgress]);
+                
+                // Format 2: guest_progress.material_id => [question_id => [...]]
+                if ($isCorrect) {
+                    // Pastikan array guest_progress ada
+                    if (!session()->has('guest_progress')) {
+                        session(['guest_progress' => []]);
+                    }
+                    
+                    // Pastikan array untuk material ini ada
+                    if (!session()->has('guest_progress.' . $request->material_id)) {
+                        session(['guest_progress.' . $request->material_id => []]);
+                    }
+                    
+                    // Simpan progres dengan format yang dibutuhkan untuk level tracking
+                    $currentProgress = session('guest_progress.' . $request->material_id, []);
+                    $currentProgress[$question->id] = [
+                        'is_correct' => true,
+                        'answered_at' => now()->toDateTimeString()
+                    ];
+                    
+                    session(['guest_progress.' . $request->material_id => $currentProgress]);
+                    
+                    \Log::info('Guest progress saved', [
+                        'session_after' => session()->all(),
+                        'material_progress' => session('guest_progress.' . $request->material_id)
+                    ]);
+                }
             }
             
             // Cek apakah ada soal berikutnya
@@ -139,5 +195,34 @@ class QuestionController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function index($id)
+    {
+        $material = Material::with(['questions', 'media'])->findOrFail($id);
+        
+        // Dapatkan total questions dan completed questions
+        $totalQuestions = $material->questions->count();
+        
+        // Jika pengguna sudah login, hitung progress
+        if (auth()->check()) {
+            $completedQuestions = StudentAnswer::where('student_id', auth()->id())
+                ->whereIn('question_id', $material->questions->pluck('id'))
+                ->where('is_correct', true)
+                ->distinct('question_id')
+                ->count();
+        } else {
+            $completedQuestions = 0;
+        }
+        
+        // Hitung persentase
+        $progressPercentage = $totalQuestions > 0 ? round(($completedQuestions / $totalQuestions) * 100) : 0;
+        
+        return view('mahasiswa.materials.questions.index', compact(
+            'material', 
+            'totalQuestions', 
+            'completedQuestions', 
+            'progressPercentage'
+        ));
     }
 }

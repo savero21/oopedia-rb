@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Models\User;
 use App\Models\Question;
 use App\Models\Progress;
+use App\Models\QuestionBankConfig;
 use Illuminate\Support\Facades\DB;
 
 class MahasiswaController extends Controller
@@ -65,10 +66,87 @@ class MahasiswaController extends Controller
 
     public function leaderboard()
     {
-        // Hitung total pertanyaan
-        $totalQuestions = Question::count();
+        // Hitung jumlah soal per kategori untuk badge
+        $questionCounts = DB::table('questions')
+            ->select(
+                DB::raw('COUNT(*) as total'),
+                DB::raw('SUM(CASE WHEN difficulty = "beginner" THEN 1 ELSE 0 END) as beginner_count'),
+                DB::raw('SUM(CASE WHEN difficulty = "medium" THEN 1 ELSE 0 END) as medium_count'),
+                DB::raw('SUM(CASE WHEN difficulty = "hard" THEN 1 ELSE 0 END) as hard_count')
+            )
+            ->first();
         
-        // Ambil data progress untuk semua mahasiswa
+        $totalBeginner = $questionCounts->beginner_count;
+        $totalMedium = $questionCounts->medium_count;
+        $totalHard = $questionCounts->hard_count;
+        
+        // Ambil data jawaban benar untuk setiap user dengan percobaan minimum
+        $correctAnswers = DB::table('progress')
+            ->join('questions', 'progress.question_id', '=', 'questions.id')
+            ->join('users', 'progress.user_id', '=', 'users.id')
+            ->select(
+                'progress.user_id',
+                'progress.question_id',
+                'questions.difficulty',
+                DB::raw('MIN(progress.attempt_number) as attempts_needed')
+            )
+            ->where('progress.is_correct', 1)
+            ->where('users.role_id', 3)
+            ->groupBy('progress.user_id', 'progress.question_id', 'questions.difficulty')
+            ->get();
+        
+        // SISTEM POIN SEDERHANA YANG DIPERBAIKI
+        $userScores = [];
+        
+        foreach ($correctAnswers as $answer) {
+            $userId = $answer->user_id;
+            $attempts = (int)$answer->attempts_needed;
+            
+            if (!isset($userScores[$userId])) {
+                $userScores[$userId] = 0;
+            }
+            
+            // SISTEM POIN DASAR: Nilai berdasarkan kesulitan
+            $basePoin = 0;
+            switch ($answer->difficulty) {
+                case 'beginner':
+                    $basePoin = 5; // Soal beginner = 5 poin
+                    break;
+                case 'medium':
+                    $basePoin = 10; // Soal medium = 10 poin
+                    break;
+                case 'hard':
+                    $basePoin = 15; // Soal hard = 15 poin
+                    break;
+            }
+            
+            // SISTEM BONUS/PENALTI: Berdasarkan jumlah percobaan
+            $attemptMultiplier = 1.0; // Default untuk percobaan pertama
+            
+            if ($attempts == 1) {
+                $attemptMultiplier = 1.0; // 100% poin untuk percobaan pertama
+            } elseif ($attempts == 2) {
+                $attemptMultiplier = 0.8; // 80% poin untuk percobaan kedua
+            } elseif ($attempts == 3) {
+                $attemptMultiplier = 0.6; // 60% poin untuk percobaan ketiga
+            } elseif ($attempts == 4) {
+                $attemptMultiplier = 0.4; // 40% poin untuk percobaan keempat
+            } else {
+                $attemptMultiplier = 0.2; // 20% poin untuk percobaan kelima atau lebih
+            }
+            
+            // Hitung poin akhir (pembulatan ke bawah)
+            $finalPoin = floor($basePoin * $attemptMultiplier);
+            
+            // Tambahkan poin ke total user
+            $userScores[$userId] += $finalPoin;
+            
+            // Log untuk debugging
+            \Log::info("POIN: User {$userId}, Soal {$answer->question_id}, Kesulitan: {$answer->difficulty}, 
+                       Percobaan: {$attempts}, Poin Dasar: {$basePoin}, Multiplier: {$attemptMultiplier}, Poin Akhir: {$finalPoin}");
+        }
+        
+        // Ambil data untuk leaderboard
         $leaderboardData = DB::table('users')
             ->leftJoin('progress', 'users.id', '=', 'progress.user_id')
             ->leftJoin('questions', 'progress.question_id', '=', 'questions.id')
@@ -76,108 +154,57 @@ class MahasiswaController extends Controller
                 'users.id',
                 'users.name',
                 'users.email',
-                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 THEN questions.id END) as total_correct_questions'),
-                DB::raw('COUNT(DISTINCT questions.id) as total_attempted'),
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 THEN progress.question_id END) as total_correct_questions'),
+                DB::raw('COUNT(DISTINCT progress.question_id) as total_attempted'),
                 DB::raw('SUM(CASE WHEN progress.is_correct = 1 THEN 1 ELSE 0 END) as correct_answers'),
                 DB::raw('MAX(progress.updated_at) as completion_date'),
-                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "beginner" THEN questions.id END) as beginner_completed'),
-                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "medium" THEN questions.id END) as medium_completed'),
-                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "hard" THEN questions.id END) as hard_completed'),
-                DB::raw('COUNT(progress.id) as total_attempts'),
-                DB::raw('SUM(
-                    CASE 
-                        WHEN progress.is_correct = 1 AND questions.difficulty = "beginner" THEN 
-                            CASE 
-                                WHEN (
-                                    SELECT COUNT(*) 
-                                    FROM progress p2 
-                                    WHERE p2.user_id = users.id 
-                                    AND p2.question_id = questions.id 
-                                    AND p2.created_at <= progress.created_at
-                                ) = 1 THEN 3
-                                WHEN (
-                                    SELECT COUNT(*) 
-                                    FROM progress p2 
-                                    WHERE p2.user_id = users.id 
-                                    AND p2.question_id = questions.id 
-                                    AND p2.created_at <= progress.created_at
-                                ) = 2 THEN 2
-                                ELSE 1
-                            END
-                        WHEN progress.is_correct = 1 AND questions.difficulty = "medium" THEN 
-                            CASE 
-                                WHEN (
-                                    SELECT COUNT(*) 
-                                    FROM progress p2 
-                                    WHERE p2.user_id = users.id 
-                                    AND p2.question_id = questions.id 
-                                    AND p2.created_at <= progress.created_at
-                                ) = 1 THEN 6
-                                WHEN (
-                                    SELECT COUNT(*) 
-                                    FROM progress p2 
-                                    WHERE p2.user_id = users.id 
-                                    AND p2.question_id = questions.id 
-                                    AND p2.created_at <= progress.created_at
-                                ) = 2 THEN 4
-                                ELSE 2
-                            END
-                        WHEN progress.is_correct = 1 AND questions.difficulty = "hard" THEN 
-                            CASE 
-                                WHEN (
-                                    SELECT COUNT(*) 
-                                    FROM progress p2 
-                                    WHERE p2.user_id = users.id 
-                                    AND p2.question_id = questions.id 
-                                    AND p2.created_at <= progress.created_at
-                                ) = 1 THEN 9
-                                WHEN (
-                                    SELECT COUNT(*) 
-                                    FROM progress p2 
-                                    WHERE p2.user_id = users.id 
-                                    AND p2.question_id = questions.id 
-                                    AND p2.created_at <= progress.created_at
-                                ) = 2 THEN 6
-                                WHEN (
-                                    SELECT COUNT(*) 
-                                    FROM progress p2 
-                                    WHERE p2.user_id = users.id 
-                                    AND p2.question_id = questions.id 
-                                    AND p2.created_at <= progress.created_at
-                                ) = 3 THEN 4
-                                ELSE 2
-                            END
-                        ELSE 0 
-                    END) as weighted_score'),
-                DB::raw('AVG(TIMESTAMPDIFF(SECOND, progress.created_at, progress.updated_at)) as avg_completion_time')
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "beginner" THEN progress.question_id END) as beginner_completed'),
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "medium" THEN progress.question_id END) as medium_completed'),
+                DB::raw('COUNT(DISTINCT CASE WHEN progress.is_correct = 1 AND questions.difficulty = "hard" THEN progress.question_id END) as hard_completed'),
+                DB::raw('COUNT(progress.id) as total_attempts')
             )
             ->where('users.role_id', 3)
             ->groupBy('users.id', 'users.name', 'users.email')
-            ->orderByDesc('weighted_score')
-            ->orderByDesc('correct_answers')
-            ->orderBy('avg_completion_time')
             ->get();
         
-        // Hitung total soal per tingkat kesulitan
-        $totalBeginner = Question::where('difficulty', 'beginner')->count();
-        $totalMedium = Question::where('difficulty', 'medium')->count();
-        $totalHard = Question::where('difficulty', 'hard')->count();
+        // Tambahkan weighted_score ke leaderboard data
+        foreach ($leaderboardData as $data) {
+            $data->weighted_score = $userScores[$data->id] ?? 0;
+            \Log::info("TOTAL SKOR: {$data->name} (ID: {$data->id}): {$data->weighted_score}");
+        }
         
-        // Tambahkan peringkat dan persentase
+        // Urutkan berdasarkan skor
+        $leaderboardData = $leaderboardData->sortByDesc('weighted_score')->values();
+        
         $rank = 1;
         foreach ($leaderboardData as $index => $data) {
             $data->rank = $rank++;
             
-            $data->percentage = $totalQuestions > 0 
-                ? round(($data->total_correct_questions / $totalQuestions) * 100, 1) 
-                : 0;
-            
-            if ($data->total_correct_questions >= $totalQuestions) {
-                $data->percentage = 100;
+            // Ambil data materials dengan konfigurasi bank soal yang aktif
+            $materials = Material::with(['questionBankConfigs' => function($query) {
+                $query->where('is_active', true);
+            }])->get();
+
+            // Hitung total soal yang dikonfigurasi dari seluruh materi
+            $totalConfiguredQuestions = 0;
+            foreach ($materials as $material) {
+                $config = $material->questionBankConfigs->first();
+                if ($config) {
+                    $totalConfiguredQuestions += $config->beginner_count + $config->medium_count + $config->hard_count;
+                } else {
+                    // Jika tidak ada konfigurasi, gunakan semua soal
+                    $totalConfiguredQuestions += $material->questions()->count();
+                }
             }
+
+            // Hitung persentase berdasarkan total soal yang dikonfigurasi
+            $data->percentage = $totalConfiguredQuestions > 0
+                ? min(100, round(($data->total_correct_questions / $totalConfiguredQuestions) * 100))
+                : 0;
             
             $data->formatted_score = number_format($data->weighted_score, 0, ',', '.');
             
+            // Penentuan badge berdasarkan level
             if ($data->hard_completed >= $totalHard && $totalHard > 0) {
                 $data->badge = 'Hard';
                 $data->badge_color = 'danger';
@@ -191,32 +218,19 @@ class MahasiswaController extends Controller
                 $data->badge = 'Learner';
                 $data->badge_color = 'secondary';
             }
-            
-            // Tambahkan perhitungan attempts per question
-            $data->attempts_per_question = DB::table('progress')
-                ->select('question_id', DB::raw('COUNT(*) as attempts'))
-                ->where('user_id', $data->id)
-                ->groupBy('question_id')
-                ->get()
-                ->avg('attempts');
-            
-            $data->show_attempts = $data->attempts_per_question > 1;
         }
         
-        // Cari posisi user saat ini
+        // Tentukan peringkat pengguna saat ini
+        $currentUserId = auth()->id();
         $currentUserRank = null;
-        foreach ($leaderboardData as $index => $data) {
-            if ($data->id === auth()->id()) {
+        
+        foreach ($leaderboardData as $data) {
+            if ($data->id == $currentUserId) {
                 $currentUserRank = $data;
                 break;
             }
         }
         
-        return view('mahasiswa.leaderboard', [
-            'leaderboardData' => $leaderboardData,
-            'currentUserRank' => $currentUserRank,
-            'totalQuestions' => $totalQuestions,
-            'materials' => Material::all() // Untuk navbar
-        ]);
+        return view('mahasiswa.leaderboard', compact('leaderboardData', 'currentUserRank'));
     }
 }

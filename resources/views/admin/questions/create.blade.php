@@ -136,7 +136,7 @@
         </div>
     </main>
 
-    @push('scripts')
+    @push('js')
     <script>
         let answerCount = 1;
 
@@ -274,13 +274,8 @@
 
             // Inisialisasi awal
             handleQuestionTypeChange();
-
-            if (!localStorage.getItem('admin_question_create_tutorial_complete')) {
-                setTimeout(startQuestionCreateTutorial, 500);
-            }
         });
-
-        
+    </script>
     @endpush
     <x-admin.tutorial />
 </x-layout>

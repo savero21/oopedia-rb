@@ -105,7 +105,7 @@
                                     @endforeach
                                 </div>
 
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addAnswer()">
+                                <button type="button" id="add-answer-btn" class="btn btn-outline-primary btn-sm mb-3" onclick="addAnswer()">
                                     Tambah Jawaban
                                 </button>
 
@@ -129,114 +129,151 @@
 
     @push('js')
     <script>
-        let answerCount = {{ count($question->answers) }};
+        let answerCount = 1; // Mulai dari 1 karena sudah ada 1 jawaban awal
 
         function handleQuestionTypeChange() {
             const questionType = document.querySelector('[name="question_type"]').value;
-            const container = document.getElementById('answers-container');
-            const existingAnswers = container.getElementsByClassName('answer-entry');
+            const answerContainer = document.getElementById('answers-container');
+            const addAnswerBtn = document.getElementById('add-answer-btn');
             
-            Array.from(existingAnswers).forEach((answerEntry, index) => {
-                const formCheck = answerEntry.querySelector('.form-check');
-                
-                if (questionType === 'radio_button') {
-                    const isCorrect = formCheck.querySelector('input[name$="[is_correct]"]')?.value === '1';
-                    formCheck.innerHTML = `
-                        <input class="form-check-input" type="radio" name="correct_answer" value="${index}" ${isCorrect ? 'checked' : ''}>
-                        <label class="form-check-label">Jawaban Benar</label>
-                        <input type="hidden" name="answers[${index}][is_correct]" value="${isCorrect ? '1' : '0'}">
-                    `;
-                } else {
-                    const isCorrect = formCheck.querySelector('input[name$="[is_correct]"]')?.value === '1';
-                    formCheck.innerHTML = `
-                        <input class="form-check-input" type="checkbox" name="answers[${index}][is_correct]" value="1" ${isCorrect ? 'checked' : ''}>
-                        <label class="form-check-label">Jawaban Benar</label>
-                    `;
+            // Reset container kecuali heading
+            const heading = answerContainer.querySelector('h6');
+            answerContainer.innerHTML = '';
+            answerContainer.appendChild(heading);
+            
+            // Reset counter
+            answerCount = 0;
+            
+            // Tambah jawaban berdasarkan tipe soal
+            if (questionType === 'fill_in_the_blank') {
+                addAnswer(); // Hanya satu jawaban untuk fill in the blank
+                if (addAnswerBtn) {
+                    addAnswerBtn.style.display = 'none';
                 }
-            });
+            } else {
+                // Untuk tipe soal lain, tambahkan dua jawaban dan tampilkan tombol tambah
+                addAnswer();
+                addAnswer();
+                if (addAnswerBtn) {
+                    addAnswerBtn.style.display = 'inline-block';
+                }
+            }
         }
 
         function addAnswer() {
             const container = document.getElementById('answers-container');
             const questionType = document.querySelector('[name="question_type"]').value;
+            
+            // Jangan menambahkan jawaban lagi jika tipe soal adalah fill_in_the_blank dan sudah ada jawaban
+            if (questionType === 'fill_in_the_blank' && container.getElementsByClassName('answer-entry').length >= 1) {
+                return;
+            }
+            
             const newAnswer = document.createElement('div');
             newAnswer.className = 'answer-entry mb-3';
             
-            const currentIndex = answerCount;
+            if (questionType === 'radio_button') {
+                newAnswer.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group input-group-outline">
+                                <input type="text" name="answers[${answerCount}][answer_text]" class="form-control" placeholder="Jawaban" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input correct-radio" type="radio" name="correct_answer" value="${answerCount}">
+                                <label class="form-check-label">Jawaban Benar</label>
+                                <input type="hidden" name="answers[${answerCount}][is_correct]" value="0">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (questionType === 'drag_and_drop') {
+                newAnswer.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group input-group-outline">
+                                <input type="text" name="answers[${answerCount}][answer_text]" class="form-control" placeholder="Jawaban" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="answers[${answerCount}][is_correct]" value="1">
+                                <label class="form-check-label">Jawaban Benar</label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (questionType === 'fill_in_the_blank') {
+                newAnswer.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group input-group-outline">
+                                <input type="text" name="answers[${answerCount}][answer_text]" class="form-control" placeholder="Jawaban" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input correct-radio" type="radio" name="correct_answer" value="${answerCount}" checked>
+                                <label class="form-check-label">Jawaban Benar</label>
+                                <input type="hidden" name="answers[${answerCount}][is_correct]" value="1">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
             
-            newAnswer.innerHTML = `
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="input-group input-group-outline">
-                            <input type="text" name="answers[${currentIndex}][answer_text]" class="form-control" placeholder="Jawaban" required>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-check">
-                            ${questionType === 'radio_button' ? 
-                                `<input class="form-check-input" type="radio" name="correct_answer" value="${currentIndex}">
-                                 <label class="form-check-label">Jawaban Benar</label>
-                                 <input type="hidden" name="answers[${currentIndex}][is_correct]" value="0">` :
-                                `<input class="form-check-input" type="checkbox" name="answers[${currentIndex}][is_correct]" value="1">
-                                 <label class="form-check-label">Jawaban Benar</label>`
-                            }
-                        </div>
-                    </div>
-                </div>
-            `;
             container.appendChild(newAnswer);
-            answerCount++;
+            answerCount++; // Increment counter setelah menambahkan elemen
+            
+            // Tambahkan event listener ke semua radio button
+            setupRadioButtonListeners();
+        }
+
+        function setupRadioButtonListeners() {
+            // Hapus event listener lama untuk menghindari duplikasi
+            const correctRadios = document.querySelectorAll('.correct-radio');
+            correctRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Ketika radio button dipilih, perbarui semua hidden input
+                    updateAllHiddenInputs();
+                });
+            });
+        }
+
+        function updateAllHiddenInputs() {
+            const container = document.getElementById('answers-container');
+            const entries = container.getElementsByClassName('answer-entry');
+            const selectedRadio = document.querySelector('input[name="correct_answer"]:checked');
+            
+            if (!selectedRadio) return;
+            
+            // Nilai terpilih
+            const selectedValue = selectedRadio.value;
+            
+            // Update semua hidden input
+            Array.from(entries).forEach((entry, index) => {
+                const hiddenInput = entry.querySelector('input[type="hidden"]');
+                if (hiddenInput) {
+                    hiddenInput.value = (index.toString() === selectedValue) ? '1' : '0';
+                }
+            });
+            
+            console.log('Hidden inputs updated. Selected value:', selectedValue);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
             const questionTypeSelect = document.querySelector('[name="question_type"]');
-            const form = document.getElementById('questionForm');
             
+            // Event listener untuk perubahan tipe soal
             questionTypeSelect.addEventListener('change', handleQuestionTypeChange);
             
-            document.addEventListener('change', function(e) {
-                if (e.target.type === 'radio' && e.target.name === 'correct_answer') {
-                    const container = document.getElementById('answers-container');
-                    const answers = container.getElementsByClassName('answer-entry');
-                    
-                    Array.from(answers).forEach((answer, index) => {
-                        const hiddenInput = answer.querySelector('input[name$="[is_correct]"]');
-                        hiddenInput.value = (index.toString() === e.target.value) ? '1' : '0';
-                    });
-                }
-            });
-
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Ambil nilai dari TinyMCE
-                const questionText = tinymce.get('content-editor').getContent();
-                
-                if (!questionText) {
-                    alert('Pertanyaan tidak boleh kosong!');
-                    return;
-                }
-                
-                const questionType = questionTypeSelect.value;
-                if (questionType === 'radio_button') {
-                    const selectedRadio = document.querySelector('input[name="correct_answer"]:checked');
-                    if (!selectedRadio) {
-                        alert('Pilih satu jawaban yang benar untuk tipe soal Radio Button');
-                        return;
-                    }
-                }
-                
-                // Jika semua validasi passed, submit form
-                this.submit();
-            });
-
-            // Disable tombol submit setelah diklik untuk mencegah double submit
-            document.getElementById('submitBtn').addEventListener('click', function() {
-                setTimeout(() => {
-                    this.disabled = true;
-                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
-                }, 0);
-            });
+            // Setup radio button listeners for initial elements
+            setupRadioButtonListeners();
+            
+            // Inisialisasi tipe soal
+            handleQuestionTypeChange();
         });
     </script>
     @endpush

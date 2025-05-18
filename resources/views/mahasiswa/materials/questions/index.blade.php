@@ -1,6 +1,6 @@
 `@extends('mahasiswa.layouts.app')
 
-@section('title', 'Latihan Soal')
+@section('title', 'Latihan Soal PBO')
 
 @section('content')
 @if(auth()->check() && auth()->user()->role_id === 4)
@@ -35,90 +35,90 @@
 </div>
 
 <div class="materials-container">
-    <div class="row g-4">
+    <div class="row">
         @foreach($materials as $material)
-        <div class="col-md-6 col-lg-4">
-            <div class="material-card">
-                <div class="material-card-header">
-                    <div class="material-icon">
-                        <i class="fas fa-clipboard-check"></i>
+        <div class="col-md-12 mb-4">
+            <a href="{{ route('mahasiswa.materials.questions.levels', $material->id) }}" class="card-link">
+                <div class="material-question-card horizontal">
+                    <!-- Bagian Gambar Material (Kiri) -->
+                    <div class="material-left-section">
+                        @if($material->media && $material->media->isNotEmpty())
+                            <div class="material-question-image">
+                                <img src="{{ $material->media->first()->media_url }}" alt="{{ $material->title }}">
+                            </div>
+                        @else
+                            <div class="material-question-image default-image">
+                                <div class="no-image-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                            </div>
+                        @endif
                     </div>
-                    <h4 class="material-title">{{ $material['material']->title }}</h4>
-                </div>
-                <div class="material-card-body">
                     
-                    <div class="progress-container mt-3">
-                        <div class="progress-info d-flex justify-content-between">
-                            <span class="progress-text">Progress</span>
-                            <span class="progress-percentage">
-                                @php
-                                    $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
-                                    
-                                    if ($isGuest) {
-                                        // Untuk guest, tetap gunakan batasan 9 soal (3 per tingkat kesulitan)
-                                        $totalQuestions = min(9, $material['material']->questions->count());
-                                    } else {
-                                        // Untuk pengguna terdaftar, ambil dari config yang sudah dihitung di controller
-                                        $totalQuestions = $material['config']['beginner'] + $material['config']['medium'] + $material['config']['hard'];
-                                    }
-                                    
-                                    $correctAnswers = $material['material']->completed_questions ?? 0;
-                                    $percentage = $totalQuestions > 0 ? min(100, round(($correctAnswers / $totalQuestions) * 100)) : 0;
-                                @endphp
-                                {{ $percentage }}%
-                            </span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: {{ $percentage }}%"></div>
-                        </div>
-                        <div class="progress-details mt-2">
-                            <small>
-                                {{ $correctAnswers }} dari {{ $totalQuestions }} soal selesai
-                                @if(auth()->check() && auth()->user()->role_id === 4)
-                                    (Mode Tamu)
-                                @elseif(!auth()->check())
-                                    (Mode Tamu)
-                                @endif
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="material-meta">
-                        <div class="meta-item">
-                            <i class="fas fa-tasks"></i>
-                            <span>
-                                @if(auth()->check() && auth()->user()->role_id === 4 || !auth()->check())
-                                    9 Soal
-                                @else
-                                    {{ $material['material']->total_questions }} Soal
-                                @endif
-                            </span>
+                    <!-- Bagian Konten (Kanan) -->
+                    <div class="material-right-section">
+                        <div class="material-top-section">
+                            <div class="material-info">
+                                <div class="material-badges">
+                                    <div class="material-badge">
+                                        <span class="badge-text">Tersedia</span>
+                                    </div>
+                                </div>
+                                <h2 class="material-question-title">{{ $material->title }}</h2>
+                                <!-- Material Meta Info dengan jumlah mahasiswa sebenarnya -->
+                                <div class="material-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-users"></i>
+                                        <span>{{ $material->student_count }} Mahasiswa</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Navigation Icon -->
+                            <div class="nav-icon">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
                         </div>
                         
-                        <div class="meta-item">
-                            <i class="fas fa-signal"></i>
-                            <span>Tersedia Berbagai Tingkat Kesulitan</span>
+                        <div class="material-bottom-section">
+                            <!-- Progress Section -->
+                            @if(!auth()->check() || (auth()->check() && auth()->user()->role_id === 4))
+                                <!-- Guest Mode Display -->
+                                <div class="guest-limit-section">
+                                    <div class="guest-info-icon">
+                                        <i class="fas fa-lock text-warning"></i>
+                                    </div>
+                                    <div class="guest-limit-text">
+                                        <span>Mode Tamu: Akses Terbatas</span>
+                                        <small>Hanya 3 soal per tingkat kesulitan. Login untuk akses penuh</small>
+                                    </div>
+                                </div>
+                            @else
+                                <!-- Regular Progress Section for Registered Users -->
+                                <div class="progress-section">
+                                    <div class="progress-header">
+                                        <span class="progress-label">Progress</span>
+                                        <span class="progress-percentage">{{ $material->progress_percentage }}%</span>
+                                    </div>
+                                    <div class="progress-bar-wrapper">
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" style="width: {{ $material->progress_percentage }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-detail">
+                                        {{ $material->completed_questions }} dari {{ $material->total_questions }} soal selesai
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <!-- Action Button -->
+                            <div class="btn-start-exercise">
+                                <span>Detail</span>
+                            </div>
                         </div>
-                    </div>
-
-                    @if(auth()->check()==null)
-                        <div class="guest-notice">
-                            <small>
-                                <i class="fas fa-info-circle"></i>
-                                Mode Tamu - Akses Terbatas
-                            </small>
-                        </div>
-                    @endif
-
-                    <div class="material-actions">
-                        <a href="{{ route('mahasiswa.materials.questions.levels', ['material' => $material['material']->id, 'difficulty' => 'beginner']) }}" 
-                            class="btn-read-material">
-                            <span>Mulai Latihan</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         @endforeach
     </div>
@@ -162,240 +162,324 @@
     padding: 0 15px;
 }
 
-/* Material Card Redesign */
-.material-card {
-    background: white;
+/* Card Link Styling - Menghilangkan garis bawah */
+.card-link {
+    display: block;
+    text-decoration: none !important;
+    color: inherit;
+}
+
+.card-link:hover {
+    text-decoration: none !important;
+    color: inherit;
+}
+
+.card-link:focus {
+    outline: none;
+    text-decoration: none !important;
+}
+
+.card-link .material-question-title {
+    text-decoration: none !important;
+}
+
+/* Horizontal Card Redesign */
+.material-question-card.horizontal {
+    background-color: white;
     border-radius: 15px;
+    box-shadow: 0 0 0 4px rgba(0,87,184,0.1), 0 6px 16px rgba(0,87,184,0.08);
     overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 78, 152, 0.1);
-    transition: all 0.3s ease;
+    position: relative;
+    margin-bottom: 30px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: row;
+    height: 180px;
+}
+
+.material-question-card.horizontal:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 0 4px rgba(0,87,184,0.2), 0 12px 30px rgba(0,87,184,0.15);
+}
+
+/* Left Section - Image */
+.material-left-section {
+    width: 30%;
+    overflow: hidden;
+    position: relative;
+}
+
+.material-question-image {
+    width: 100%;
     height: 100%;
     position: relative;
-    border: 1px solid rgba(0, 78, 152, 0.1);
+}
+
+.material-question-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.material-question-card:hover .material-question-image img {
+    transform: scale(1.05);
+}
+
+.default-image {
+    background: linear-gradient(135deg, #e6f2ff, #d9e9ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.no-image-icon {
+    font-size: 50px;
+    color: #0057B8;
+    opacity: 0.5;
+}
+
+/* Right Section - Content */
+.material-right-section {
+    width: 70%;
+    padding: 15px 20px;
     display: flex;
     flex-direction: column;
-}
-
-.material-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0, 78, 152, 0.15);
-    border-color: rgba(0, 78, 152, 0.2);
-}
-
-.material-card-header {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 1.5rem;
+    justify-content: space-between;
     position: relative;
-    text-align: center;
 }
 
-.material-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.8rem;
+.material-top-section {
+    display: flex;
+    justify-content: space-between;
 }
 
-.material-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.material-card-body {
-    padding: 1.5rem;
+.material-info {
     flex: 1;
+}
+
+.material-badges {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
-.material-description {
-    color: var(--text-dark);
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
-}
-
-.progress-container {
-    margin-bottom: 1.5rem;
-}
-
-.progress-info {
-    margin-bottom: 0.5rem;
-}
-
-.progress-text {
+.material-badge {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.7rem;
     font-weight: 600;
-    color: var(--text-dark);
+    box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+    margin-right: 10px;
 }
 
-.progress-percentage {
+.material-level {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.material-question-title {
     font-weight: 700;
-    color: var(--color-1);
+    font-size: 1.3rem;
+    color: #0057B8;
+    margin-bottom: 5px;
+    line-height: 1.3;
 }
 
-.progress-bar-container {
-    height: 10px;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background: var(--gradient-primary);
-    border-radius: 5px;
-    transition: width 0.6s ease;
-}
-
-.progress-details {
-    color: var(--text-muted);
-    text-align: right;
+.material-code {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+    font-weight: 500;
 }
 
 .material-meta {
-    margin: 1rem 0;
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+    gap: 15px;
+    font-size: 0.85rem;
 }
 
 .meta-item {
     display: flex;
     align-items: center;
-    font-size: 0.9rem;
-    color: var(--text-dark);
-    background-color: rgba(0, 78, 152, 0.05);
-    padding: 0.5rem 0.8rem;
-    border-radius: 6px;
+    color: #495057;
 }
 
 .meta-item i {
-    color: var(--color-1);
-    margin-right: 8px;
-    font-size: 1rem;
+    margin-right: 5px;
+    color: #0057B8;
 }
 
-.guest-notice {
-    background-color: #fff8e1;
-    border-left: 4px solid #ffc107;
-    color: #856404;
-    padding: 0.8rem;
-    border-radius: 6px;
-    margin: 1rem 0;
-}
-
-.material-actions {
-    position: relative;
-    padding-top: 5px;
-    margin-top: auto;
-}
-
-.btn-read-material {
+.nav-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--gradient-primary);
-    color: white !important;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    text-decoration: none;
+    width: 36px;
+    height: 36px;
+    background-color: #f0f7ff;
+    border-radius: 50%;
+    color: #0057B8;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 78, 152, 0.2);
 }
 
-.btn-read-material span {
-    transition: all 0.3s ease;
-    position: relative;
-    z-index: 2;
-}
-
-.btn-read-material i {
-    margin-left: 10px;
-    transition: all 0.3s ease;
-    position: relative;
-    z-index: 2;
-}
-
-.btn-read-material:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 78, 152, 0.3);
-}
-
-.btn-read-material:hover i {
+.material-question-card:hover .nav-icon {
+    background-color: #0057B8;
+    color: white;
     transform: translateX(5px);
 }
 
-.btn-read-material::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+.material-bottom-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+/* Progress Section */
+.progress-section {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.progress-label {
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.8rem;
+}
+
+.progress-percentage {
+    font-weight: 700;
+    color: #0057B8;
+    font-size: 0.8rem;
+}
+
+.progress-bar-wrapper {
+    margin-bottom: 5px;
+}
+
+.progress-bar-bg {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
     height: 100%;
-    background: var(--gradient-secondary);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 1;
+    background: linear-gradient(to right, #0057B8, #0074D9);
+    border-radius: 4px;
 }
 
-.btn-read-material:hover::after {
-    opacity: 1;
+.progress-detail {
+    font-size: 0.75rem;
+    color: #718096;
 }
 
-/* Responsiveness Improvements */
-@media (max-width: 768px) {
-    .main-title {
-        font-size: 2rem;
+/* Action Button */
+.btn-start-exercise {
+    background: linear-gradient(135deg, #0057B8, #0074D9);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,87,184,0.2);
+    border: none;
+    display: inline-block;
+}
+
+.btn-start-exercise:hover {
+    background: linear-gradient(135deg, #004a9e, #0066c0);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,87,184,0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Responsiveness */
+@media (max-width: 992px) {
+    .material-question-card.horizontal {
+        flex-direction: column;
+        height: auto;
     }
     
-    .material-card-header {
-        padding: 1.2rem;
+    .material-left-section, .material-right-section {
+        width: 100%;
     }
     
-    .material-card-body {
-        padding: 1.2rem;
+    .material-left-section {
+        height: 180px;
+    }
+    
+    .material-bottom-section {
+        margin-top: 15px;
     }
 }
 
 @media (max-width: 576px) {
-    .main-title {
-        font-size: 1.8rem;
+    .material-question-title {
+        font-size: 1.1rem;
     }
     
-    .material-meta {
+    .material-bottom-section {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 15px;
+    }
+    
+    .progress-section {
+        margin-right: 0;
+    }
+    
+    .btn-start-exercise {
+        width: 100%;
+    }
+    
+    .material-left-section {
+        height: 150px;
     }
 }
 
-.guest-limited {
-    background: linear-gradient(135deg, #ffa000, #ff6f00) !important;
-    position: relative;
-    padding-top: 12px !important;
-    margin-top: 10px !important;
+/* Guest mode display styling */
+.guest-limit-section {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #fff8e1;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
 }
 
-.guest-limited::before {
-    content: "Terbatas";
-    position: absolute;
-    top: -10px;
-    right: 10px;
-    background: #ff3d00;
-    color: white;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: bold;
-    z-index: 1;
+.guest-info-icon {
+    font-size: 1.5rem;
+    margin-right: 15px;
 }
 
-.guest-limited span, 
-.guest-limited i {
-    position: relative;
-    z-index: 0;
+.guest-limit-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.guest-limit-text span {
+    font-weight: 600;
+    color: #555;
+}
+
+.guest-limit-text small {
+    color: #777;
+    font-size: 0.8rem;
 }
 
 /* Skip Tour Button Style */
@@ -623,6 +707,7 @@
                 `
             },
             {
+
                 element: document.querySelector('.material-card:first-child'),
                 intro: `
                     <div>

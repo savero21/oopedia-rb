@@ -53,6 +53,26 @@
                                     </div>
                                 </div>
                                 <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Materi</label>
+                                            <div class="input-group input-group-outline">
+                                                <select name="material_id" class="form-control" required>
+                                                    <option value="">-- Pilih Materi --</option>
+                                                    @foreach($materials as $material)
+                                                        <option value="{{ $material->id }}" {{ old('material_id') == $material->id ? 'selected' : '' }}>
+                                                            {{ $material->title }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            @error('material_id')
+                                                <span class="text-danger">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-12">
                                         <button type="submit" class="btn btn-primary">Simpan</button>
                                         <a href="{{ route('admin.question-banks.index') }}" class="btn btn-outline-secondary">Batal</a>

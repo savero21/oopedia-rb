@@ -10,59 +10,82 @@ use App\Models\Answer;
 use App\Models\QuestionBankConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class MaterialQuestionController extends Controller
 {
     public function index()
     {
-        // Get all materials first
-        $allMaterials = Material::with(['questions'])->orderBy('created_at', 'asc')->get();
-        
-        // Determine if user is guest (not logged in or role_id = 4)
         $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        $userId = $isGuest ? session()->getId() : auth()->id();
         
-        // If user is guest, only show half of the materials
+        $allMaterials = Material::with(['questions', 'media'])->get();
+        
+        // Untuk guest, hanya tampilkan setengah dari total materi
         if ($isGuest) {
             $totalMaterials = $allMaterials->count();
             $materialsToShow = ceil($totalMaterials / 2);
             $allMaterials = $allMaterials->take($materialsToShow);
         }
+        
+        // Mendapatkan statistik progress
+        $progressStats = DB::table('progress')
+            ->select(
+                'material_id',
+                DB::raw('COUNT(DISTINCT question_id) as answered_questions'),
+                DB::raw('SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+            )
+            ->where('user_id', $userId)
+            ->groupBy('material_id')
+            ->get();
+        
+        // Mendapatkan jumlah mahasiswa unik yang mencoba soal untuk setiap materi
+        $studentCounts = DB::table('progress')
+            ->select('material_id', DB::raw('COUNT(DISTINCT user_id) as student_count'))
+            ->groupBy('material_id')
+            ->get()
+            ->keyBy('material_id');
 
-        $materials = $allMaterials->map(function($material) use ($isGuest) {
-            // Jika user adalah guest, tampilkan hanya 3 soal per kesulitan
+        // Proses setiap materi
+        $materials = $allMaterials->map(function($material) use ($progressStats, $isGuest, $studentCounts) {
+            // Hitung soal berdasarkan konfigurasi
             if ($isGuest) {
-                $beginnerCount = 3;
-                $mediumCount = 3;
-                $hardCount = 3;
+                // Untuk guest, batasi 3 soal per tingkat kesulitan
+                $beginnerCount = min(3, $material->questions->where('difficulty', 'beginner')->count());
+                $mediumCount = min(3, $material->questions->where('difficulty', 'medium')->count());
+                $hardCount = min(3, $material->questions->where('difficulty', 'hard')->count());
+                $configuredTotalQuestions = $beginnerCount + $mediumCount + $hardCount;
             } else {
-                // Ambil konfigurasi dari QuestionBankConfig yang aktif
+                // Untuk pengguna terdaftar, gunakan konfigurasi admin
                 $config = QuestionBankConfig::where('material_id', $material->id)
                     ->where('is_active', true)
                     ->first();
                 
-                // Jika ada konfigurasi, gunakan nilai dari konfigurasi
                 if ($config) {
-                    $beginnerCount = $config->beginner_count;
-                    $mediumCount = $config->medium_count;
-                    $hardCount = $config->hard_count;
+                    $configuredTotalQuestions = $config->beginner_count + $config->medium_count + $config->hard_count;
                 } else {
-                    // Default jika tidak ada konfigurasi
-                    $beginnerCount = $material->questions->where('difficulty', 'beginner')->count();
-                    $mediumCount = $material->questions->where('difficulty', 'medium')->count();
-                    $hardCount = $material->questions->where('difficulty', 'hard')->count();
+                    $configuredTotalQuestions = $material->questions->count();
                 }
             }
-
-            return [
-                'material' => $material,
-                'config' => [
-                    'beginner' => $beginnerCount,
-                    'medium' => $mediumCount,
-                    'hard' => $hardCount
-                ]
-            ];
+            
+            $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+            $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
+            
+            $progressPercentage = $configuredTotalQuestions > 0 
+                ? min(100, round(($correctAnswers / $configuredTotalQuestions) * 100))
+                : 0;
+            
+            // Ambil jumlah mahasiswa yang sudah mencoba soal ini
+            $studentCount = isset($studentCounts[$material->id]) ? $studentCounts[$material->id]->student_count : 0;
+            
+            $material->progress_percentage = $progressPercentage;
+            $material->total_questions = $configuredTotalQuestions;
+            $material->completed_questions = $correctAnswers;
+            $material->student_count = $studentCount;
+            
+            return $material;
         });
-
+        
         return view('mahasiswa.materials.questions.index', compact('materials', 'isGuest'));
     }
 
@@ -139,10 +162,24 @@ class MaterialQuestionController extends Controller
         }
         
         // Get answered questions for progress tracking
-        $answeredQuestionIds = Progress::where('user_id', auth()->id() ?? session()->getId())
-            ->where('material_id', $material->id)
-            ->where('is_correct', true)
-            ->pluck('question_id');
+        $answeredQuestionIds = collect([]);
+        
+        // Check if user is a guest
+        if ($isGuest) {
+            // For guest users, check session data
+            $materialProgress = session('guest_progress.' . $material->id, []);
+            
+            // Convert session data to a collection of question IDs
+            if (!empty($materialProgress)) {
+                $answeredQuestionIds = collect(array_keys($materialProgress));
+            }
+        } else {
+            // For logged-in users, get from database
+            $answeredQuestionIds = Progress::where('user_id', auth()->id())
+                ->where('material_id', $material->id)
+                ->where('is_correct', true)
+                ->pluck('question_id');
+        }
         
         // Inisialisasi currentQuestion
         $currentQuestion = null;
@@ -210,30 +247,53 @@ class MaterialQuestionController extends Controller
         $difficulty = $request->query('difficulty', 'beginner');
         $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
         
-        // Filter soal berdasarkan difficulty
-        $questions = $material->questions()->where('difficulty', $difficulty)->get();
+        // Filter questions based on difficulty
+        $questions = $material->questions()
+            ->when($difficulty !== 'all', function($query) use ($difficulty) {
+                return $query->where('difficulty', $difficulty);
+            })
+            ->get();
+
+        // Determine which questions have been answered correctly
+        $userId = auth()->id() ?? session()->getId();
         
-        // Jika user adalah guest, batasi hanya 3 soal
+        // For guests, special handling needed (both session formats)
         if ($isGuest) {
-            $questions = $questions->take(3);
-        } else {
-            // Untuk user terdaftar, gunakan konfigurasi dari admin
-            $config = QuestionBankConfig::where('material_id', $material->id)
-                ->where('is_active', true)
-                ->first();
-                
-            if ($config) {
-                $countField = $difficulty . '_count';
-                $limit = $config->$countField;
-                $questions = $questions->take($limit);
+            $answeredQuestionIds = collect([]);
+            
+            // Check both formats of guest progress storage
+            $guestProgress = session('guest_progress', []);
+            $materialProgress = session('guest_progress.' . $material->id, []);
+            
+            // FORCE ADD QUESTION IDs FROM MATERIAL PROGRESS
+            // This ensures that if a question is marked as correct in the material progress
+            // it gets added to the answered questions list
+            if (is_array($materialProgress)) {
+                foreach (array_keys($materialProgress) as $questionId) {
+                    $answeredQuestionIds->push((int)$questionId);
+                }
             }
+            
+            // Also check format 1 (additional check, can be removed if not needed)
+            foreach ($guestProgress as $key => $progress) {
+                // Format 1: "material_id_question_id" => ["is_correct" => true]
+                if (is_array($progress) && isset($progress['is_correct']) && $progress['is_correct']) {
+                    $parts = explode('_', $key);
+                    if (count($parts) >= 2 && $parts[0] == $material->id) {
+                        $questionId = (int)$parts[1];
+                        if (!$answeredQuestionIds->contains($questionId)) {
+                            $answeredQuestionIds->push($questionId);
+                        }
+                    }
+                }
+            }
+        } else {
+            // Regular user progress from database
+            $answeredQuestionIds = Progress::where('user_id', $userId)
+                ->where('material_id', $material->id)
+                ->where('is_correct', true)
+                ->pluck('question_id');
         }
-        
-        // Get answered questions for progress tracking
-        $answeredQuestionIds = Progress::where('user_id', auth()->id() ?? session()->getId())
-            ->where('material_id', $material->id)
-            ->where('is_correct', true)
-            ->pluck('question_id');
         
         $levels = [];
         $questionsArray = $questions->toArray();
@@ -243,16 +303,16 @@ class MaterialQuestionController extends Controller
             $isAnswered = $answeredQuestionIds->contains($question->id);
             
             if ($isAnswered) {
-                // Soal sudah dijawab benar, tandai sebagai completed
+                // Question already answered correctly, mark as completed
                 $status = 'completed';
             } elseif ($questionIndex === 1) {
-                // Soal pertama selalu terbuka
+                // First question is always unlocked
                 $status = 'unlocked';
             } elseif ($index > 0 && $answeredQuestionIds->contains($questions[$index-1]->id)) {
-                // Soal sebelumnya sudah dijawab benar, buka soal ini
+                // Previous question was answered correctly, unlock this one
                 $status = 'unlocked';
             } else {
-                // Soal sebelumnya belum dijawab benar, kunci soal ini
+                // Previous question not answered correctly, keep this locked
                 $status = 'locked';
             }
             
@@ -373,18 +433,39 @@ class MaterialQuestionController extends Controller
             
             // Jika user auth, simpan progress ke database
             if (auth()->check() && auth()->user()->role_id !== 4) {
-                Progress::updateOrCreate(
-                    [
+                // Cek jika soal ini sudah pernah dijawab benar
+                $existingCorrectProgress = Progress::where([
+                    'user_id' => $userId,
+                    'material_id' => $material->id,
+                    'question_id' => $question->id,
+                    'is_correct' => true
+                ])->exists();
+                
+                // Jika belum pernah dijawab benar atau jawaban saat ini salah, catat percobaan baru
+                if (!$existingCorrectProgress || !$isCorrect) {
+                    // Hitung jumlah percobaan sebelumnya
+                    $attemptsCount = Progress::where([
                         'user_id' => $userId,
                         'material_id' => $material->id,
                         'question_id' => $question->id
-                    ],
-                    [
+                    ])->count();
+                    
+                    // Fix attempt number logic
+                    $attemptNumber = $attemptsCount > 0 ? $attemptsCount + 1 : 1;
+                    
+                    // Buat record baru
+                    $newAttempt = Progress::create([
+                        'user_id' => $userId,
+                        'material_id' => $material->id,
+                        'question_id' => $question->id,
                         'is_correct' => $isCorrect,
                         'is_answered' => true,
-                        'attempt_number' => DB::raw('attempt_number + 1')
-                    ]
-                );
+                        'attempt_number' => $attemptNumber
+                    ]);
+                    
+                    // Cache buster untuk memaksa refresh leaderboard
+                    Cache::forget('leaderboard_data');
+                }
             } else {
                 // Untuk guest, simpan progress di session
                 $sessionKey = 'guest_progress';
@@ -398,16 +479,6 @@ class MaterialQuestionController extends Controller
                 ];
                 
                 session([$sessionKey => $guestProgress]);
-                
-                // PENTING: Tambahkan ini untuk memastikan level-tracking juga diperbarui
-                if ($isCorrect) {
-                    // Simpan juga di format array untuk level tracking
-                    $materialProgress = session('guest_progress.' . $material->id, []);
-                    if (!in_array($question->id, $materialProgress)) {
-                        $materialProgress[] = $question->id;
-                        session(['guest_progress.' . $material->id => $materialProgress]);
-                    }
-                }
             }
             
             // Response sesuai hasil jawaban
@@ -478,10 +549,24 @@ class MaterialQuestionController extends Controller
         }
         
         // Get answered questions for progress tracking
-        $answeredQuestionIds = Progress::where('user_id', auth()->id() ?? session()->getId())
-            ->where('material_id', $material->id)
-            ->where('is_correct', true)
-            ->pluck('question_id');
+        $answeredQuestionIds = collect([]);
+
+        // Check if user is a guest
+        if ($isGuest) {
+            // For guest users, check session data
+            $materialProgress = session('guest_progress.' . $material->id, []);
+            
+            // Convert session data to a collection of question IDs
+            if (!empty($materialProgress)) {
+                $answeredQuestionIds = collect(array_keys($materialProgress));
+            }
+        } else {
+            // For logged-in users, get from database
+            $answeredQuestionIds = Progress::where('user_id', auth()->id())
+                ->where('material_id', $material->id)
+                ->where('is_correct', true)
+                ->pluck('question_id');
+        }
         
         $levels = [];
         $questionsArray = $questions->toArray();
@@ -491,16 +576,16 @@ class MaterialQuestionController extends Controller
             $isAnswered = $answeredQuestionIds->contains($question->id);
             
             if ($isAnswered) {
-                // Soal sudah dijawab benar, tandai sebagai completed
+                // Question already answered correctly, mark as completed
                 $status = 'completed';
             } elseif ($questionIndex === 1) {
-                // Soal pertama selalu terbuka
+                // First question is always unlocked
                 $status = 'unlocked';
             } elseif ($index > 0 && $answeredQuestionIds->contains($questions[$index-1]->id)) {
-                // Soal sebelumnya sudah dijawab benar, buka soal ini
+                // Previous question was answered correctly, unlock this one
                 $status = 'unlocked';
             } else {
-                // Soal sebelumnya belum dijawab benar, kunci soal ini
+                // Previous question not answered correctly, keep this locked
                 $status = 'locked';
             }
             
@@ -574,5 +659,112 @@ class MaterialQuestionController extends Controller
             'configuredHardQuestions' => $configuredHardQuestions,
             // other variables...
         ]);
+    }
+
+    /**
+     * Debug endpoint for guest progress issues
+     */
+    public function debugGuestProgressIssue(Request $request, $materialId)
+    {
+        // Check current session structure
+        $sessionId = session()->getId();
+        $guestProgress = session('guest_progress', []);
+        $materialProgress = session('guest_progress.' . $materialId, []);
+        
+        // Check for specific question_id progress
+        $specificProgress = [];
+        foreach ($guestProgress as $key => $progress) {
+            if (strpos($key, $materialId . '_') === 0) {
+                $specificProgress[$key] = $progress;
+            }
+        }
+        
+        // Check current question IDs for this material and difficulty
+        $difficulty = $request->query('difficulty', 'beginner');
+        $questions = Question::where('material_id', $materialId)
+                      ->where('difficulty', $difficulty)
+                      ->get(['id', 'difficulty']);
+        
+        // Return all the debug info
+        return response()->json([
+            'session_id' => $sessionId,
+            'guest_progress' => $guestProgress,
+            'material_progress' => $materialProgress,
+            'specific_progress' => $specificProgress,
+            'material_id' => $materialId,
+            'difficulty' => $difficulty,
+            'available_questions' => $questions->pluck('id')->toArray()
+        ]);
+    }
+
+    public function submitAnswer(Request $request, Material $material, Question $question)
+    {
+        try {
+            $difficulty = $request->input('difficulty', 'beginner');
+            $userId = auth()->id() ?? session()->getId();
+            $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+            
+            // Default messages
+            $successMessage = 'Jawaban benar!';
+            
+            // Logic untuk mengecek jawaban
+            $isCorrect = false;
+            $questionType = $question->question_type;
+            
+            // Check jawaban berdasarkan tipe soal
+            if ($questionType === 'multiple_choice') {
+                $selectedAnswer = Answer::findOrFail($request->answer);
+                $isCorrect = $selectedAnswer->is_correct;
+            } elseif ($questionType === 'fill_in_the_blank') {
+                $answer = trim(strtolower($request->fill_in_the_blank_answer));
+                $correctAnswer = trim(strtolower($question->correct_answer));
+                $isCorrect = $answer === $correctAnswer;
+            } elseif ($questionType === 'true_false') {
+                $selectedAnswer = ($request->answer === 'true');
+                $isCorrect = $selectedAnswer === $question->is_true;
+            }
+            
+            // Gunakan HANYA kode ini untuk menyimpan progress
+            if (auth()->check() && auth()->user()->role_id !== 4) {
+                // Cek jika soal ini sudah pernah dijawab benar
+                $existingCorrectProgress = Progress::where([
+                    'user_id' => $userId,
+                    'material_id' => $material->id,
+                    'question_id' => $question->id,
+                    'is_correct' => true
+                ])->exists();
+                
+                // Jika belum pernah dijawab benar atau jawaban saat ini salah, catat percobaan baru
+                if (!$existingCorrectProgress || !$isCorrect) {
+                    // Hitung jumlah percobaan sebelumnya
+                    $attemptsCount = Progress::where([
+                        'user_id' => $userId,
+                        'material_id' => $material->id,
+                        'question_id' => $question->id
+                    ])->count();
+                    
+                    // Fix attempt number logic
+                    $attemptNumber = $attemptsCount > 0 ? $attemptsCount + 1 : 1;
+                    
+                    // Buat record baru
+                    $newAttempt = Progress::create([
+                        'user_id' => $userId,
+                        'material_id' => $material->id,
+                        'question_id' => $question->id,
+                        'is_correct' => $isCorrect,
+                        'is_answered' => true,
+                        'attempt_number' => $attemptNumber
+                    ]);
+                    
+                    // Cache buster untuk memaksa refresh leaderboard
+                    Cache::forget('leaderboard_data');
+                }
+            }
+            
+            // Kode selanjutnya tetap sama
+        } catch (\Exception $e) {
+            \Log::error("Error submit answer: " . $e->getMessage());
+            // Error handling
+        }
     }
 } 
