@@ -4,6 +4,48 @@
 
 @push('css')
 <link rel="stylesheet" href="{{ asset('css/material-show.css') }}">
+<style>
+    .materi-media-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .media-heading {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+    }
+
+    .media-item {
+        transition: transform 0.3s ease;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .media-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .media-item img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .media-caption {
+        background-color: #fff;
+        padding: 10px;
+        font-size: 0.9rem;
+        color: #555;
+        text-align: center;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -57,6 +99,8 @@
             </div>
         </div>
     </div>
+
+    
 
     <!-- Navigation Buttons -->
     <div class="d-flex justify-content-between mt-4 mb-5">
@@ -272,6 +316,19 @@ function initializeQuestionForm() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeQuestionForm();
 });
+</script>
+@endpush
+
+@push('js')
+<!-- Lightbox untuk Galeri Gambar -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+<script>
+    lightbox.option({
+        'resizeDuration': 200,
+        'wrapAround': true,
+        'albumLabel': "Gambar %1 dari %2"
+    });
 </script>
 @endpush
 @endsection

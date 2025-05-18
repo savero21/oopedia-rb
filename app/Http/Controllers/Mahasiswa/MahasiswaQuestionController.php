@@ -68,17 +68,29 @@ class MahasiswaQuestionController extends Controller
             
             // Update progress jika user login, simpan ke session jika guest
             if (auth()->check() && auth()->user()->role_id !== 4) {
-                Progress::updateOrCreate(
-                    [
-                        'user_id' => auth()->id(),
-                        'material_id' => $request->material_id,
-                        'question_id' => $question->id
-                    ],
-                    [
-                        'is_correct' => $isCorrect,
-                        'attempt_number' => DB::raw('attempt_number + 1')
-                    ]
-                );
+                // Hitung attempt number dengan SQL count + 1
+                $attemptsCount = Progress::where([
+                    'user_id' => auth()->id(),
+                    'material_id' => $request->material_id,
+                    'question_id' => $question->id
+                ])->count();
+                
+                // Debug logging to identify the issue
+                \Log::info("Current attempts count for question {$question->id}: $attemptsCount");
+                
+                // Buat progress baru - Fix attempt number logic
+                $attemptNumber = $attemptsCount > 0 ? $attemptsCount + 1 : 1;
+                Progress::create([
+                    'user_id' => auth()->id(),
+                    'material_id' => $request->material_id,
+                    'question_id' => $question->id,
+                    'is_correct' => $isCorrect,
+                    'is_answered' => true,
+                    'attempt_number' => $attemptNumber
+                ]);
+                
+                \Log::info("User " . auth()->id() . " menjawab soal " . $question->id . ", percobaan ke-" . ($attemptNumber) . 
+                    ", kesulitan: " . $question->difficulty . ", hasil: " . ($isCorrect ? 'BENAR' : 'SALAH'));
             } else {
                 // For guest users (not logged in or role_id = 4), track in session
                 // Format untuk session guest_progress
@@ -96,11 +108,24 @@ class MahasiswaQuestionController extends Controller
                 
                 // Update format untuk level unlocking jika jawaban benar
                 if ($isCorrect) {
-                    $materialProgress = session('guest_progress.' . $request->material_id, []);
-                    if (!in_array($question->id, $materialProgress)) {
-                        $materialProgress[] = $question->id;
-                        session(['guest_progress.' . $request->material_id => $materialProgress]);
+                    // Pastikan array guest_progress ada
+                    if (!session()->has('guest_progress')) {
+                        session(['guest_progress' => []]);
                     }
+                    
+                    // Pastikan array untuk material ini ada
+                    if (!session()->has('guest_progress.' . $request->material_id)) {
+                        session(['guest_progress.' . $request->material_id => []]);
+                    }
+                    
+                    // Simpan progres dengan format yang sama seperti di MaterialQuestionController
+                    $currentProgress = session('guest_progress.' . $request->material_id, []);
+                    $currentProgress[$question->id] = [
+                        'is_correct' => true,
+                        'answered_at' => now()->toDateTimeString()
+                    ];
+                    
+                    session(['guest_progress.' . $request->material_id => $currentProgress]);
                 }
             }
             
@@ -168,6 +193,11 @@ class MahasiswaQuestionController extends Controller
             $isCorrect = $selectedAnswer && $selectedAnswer->is_correct;
             $correctAnswer = $question->answers->where('is_correct', true)->first();
             
+            // Hitung attempt_number
+            $attemptNumber = Progress::where('user_id', auth()->id())
+                ->where('question_id', $questionId)
+                ->count() + 1;
+            
             // Save progress regardless of correctness
             Progress::updateOrCreate(
                 [
@@ -177,7 +207,8 @@ class MahasiswaQuestionController extends Controller
                 ],
                 [
                     'is_correct' => $isCorrect,
-                    'is_answered' => true
+                    'is_answered' => true,
+                    'attempt_number' => $attemptNumber
                 ]
             );
             
@@ -211,5 +242,66 @@ class MahasiswaQuestionController extends Controller
         
         return redirect()->route('mahasiswa.dashboard')
             ->with('success', "Anda menjawab benar $correctAnswers dari $totalQuestions soal (Skor: $score%)");
+    }
+
+    public function submitQuiz(Request $request)
+    {
+        $request->validate([
+            'material_id' => 'required|exists:materials,id',
+            'answers' => 'required|array'
+        ]);
+
+        $materialId = $request->material_id;
+        $answers = $request->answers;
+        
+        $totalQuestions = count($answers);
+        $correctAnswers = 0;
+        $results = [];
+        
+        // Check each answer
+        foreach ($answers as $questionId => $answerId) {
+            $question = Question::with('answers')->findOrFail($questionId);
+            $selectedAnswer = $question->answers->find($answerId);
+            
+            $isCorrect = $selectedAnswer && $selectedAnswer->is_correct;
+            $correctAnswer = $question->answers->where('is_correct', true)->first();
+            
+            // Hitung attempt_number
+            $attemptNumber = Progress::where('user_id', auth()->id())
+                ->where('question_id', $questionId)
+                ->count() + 1;
+            
+            // Save progress regardless of correctness
+            Progress::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'material_id' => $materialId,
+                    'question_id' => $questionId
+                ],
+                [
+                    'is_correct' => $isCorrect,
+                    'is_answered' => true,
+                    'attempt_number' => $attemptNumber
+                ]
+            );
+            
+            if ($isCorrect) {
+                $correctAnswers++;
+            }
+            
+            // Store result for feedback
+            $results[$questionId] = [
+                'is_correct' => $isCorrect,
+                'question_text' => $question->question_text,
+                'selected_answer' => $selectedAnswer ? $selectedAnswer->answer_text : null,
+                'correct_answer' => $isCorrect ? null : ($correctAnswer->answer_text ?? null),
+                'explanation' => $correctAnswer->explanation ?? null,
+                'selected_explanation' => $selectedAnswer ? $selectedAnswer->explanation : null
+            ];
+        }
+        
+        $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+        
+        // Sisa kode tetap sama
     }
 }

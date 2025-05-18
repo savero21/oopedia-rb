@@ -46,6 +46,16 @@
                             @endguest
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('mahasiswa.leaderboard') }}" 
+                           class="nav-link {{ request()->routeIs('mahasiswa.leaderboard*') ? 'active' : '' }}"
+                           data-bs-toggle="tooltip" 
+                           data-bs-placement="bottom" 
+                           title="Papan peringkat pengguna berdasarkan skor">
+                            <i class="fas fa-trophy me-2"></i>
+                            <span>Peringkat</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -117,6 +127,7 @@
     const routeDashboard = "{{ route('mahasiswa.dashboard') }}";
     const routeMateri = "{{ route('mahasiswa.materials.index') }}";
     const routeSoal = "{{ route('mahasiswa.materials.questions.index') }}";
+    const routeLeaderboard = "{{ route('mahasiswa.leaderboard') }}";
     const isLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
 
     // Variabel untuk menandai klik sidebar
@@ -178,6 +189,10 @@
             {
                 element: document.querySelector('.nav-link[href="' + routeSoal + '"]'),
                 intro: "Cek pemahamanmu di bagian latihan soal ini!"
+            },
+            {
+                element: document.querySelector('.nav-link[href="' + routeLeaderboard + '"]'),
+                intro: "Periksa peringkat dan capaian pengguna di leaderboard!"
             },
             {
                 intro: "Siap menjelajah? Klik di mana saja untuk menyelesaikan tutorial ini!"

@@ -19,7 +19,7 @@
                             </div>
                         </div>
                         <div class="card-body px-4 pb-2">
-                            <form method="POST" action="{{ route('admin.materials.store') }}" id="materialForm">
+                            <form method="POST" action="{{ route('admin.materials.store') }}" id="materialForm" enctype="multipart/form-data">
                                 @csrf
                                 <input type="hidden" name="created_by" value="{{ auth()->id() }}">
                                 <div class="row">
@@ -45,15 +45,36 @@
                                             @enderror
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row mt-4">
-                                    <div class="col-12">
-                                        <button type="submit" class="btn bg-gradient-primary" id="submitBtn">
-                                            <span class="btn-inner--text">Simpan</span>
-                                        </button>
-                                        <a href="{{ route('admin.materials.index') }}" class="btn btn-outline-secondary">Batal</a>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Gambar Cover (Untuk Tampilan Card Mahasiswa)</label>
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                <strong>Rekomendasi Ukuran Gambar:</strong>
+                                                <ul class="mb-0 mt-1">
+                                                    <li><b>Rasio Aspek:</b> 16:9 (widescreen) atau 4:3 (standar)</li>
+                                                    <li><b>Ukuran Optimal:</b> 1280×720px (16:9) atau 1024×768px (4:3)</li>
+                                                    <li><b>Ukuran Minimum:</b> 640×360px (16:9) atau 800×600px (4:3)</li>
+                                                    <li><b>Format:</b> JPG, PNG, GIF (maks 2MB)</li>
+                                                </ul>
+                                                <div class="mt-2">Gambar akan tampil penuh pada card materi dan question tanpa terpotong.</div>
+                                            </div>
+                                            <div class="input-group input-group-outline">
+                                                <input type="file" name="cover_image" class="form-control" accept="image/*" 
+                                                       onchange="previewImage(this, 'imagePreview')">
+                                            </div>
+                                            <div id="imagePreview" class="mt-3 text-center d-none">
+                                                <p class="text-muted mb-1">Preview:</p>
+                                                <img src="" class="img-thumbnail" style="max-height: 200px; max-width: 100%;">
+                                            </div>
+                                            @error('cover_image')
+                                                <div class="text-danger text-xs">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
                                 </div>
+                                <button type="submit" class="btn bg-gradient-primary">Simpan</button>
+                                <a href="{{ route('admin.materials.index') }}" class="btn btn-outline-secondary">Batal</a>
                             </form>
                         </div>
                     </div>
@@ -61,9 +82,26 @@
             </div>
         </div>
     </main>
-
-    @push('scripts')
-    @endpush
     <x-admin.tutorial />
-
 </x-layout>
+
+<script>
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    const previewImg = preview.querySelector('img');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.classList.remove('d-none');
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        previewImg.src = '';
+        preview.classList.add('d-none');
+    }
+}
+</script>

@@ -121,6 +121,11 @@ class MaterialController extends Controller
             $material->total_questions = $configuredTotalQuestions;
             $material->completed_questions = $correctAnswers;
             
+            // Pastikan media sudah ter-load 
+            if (!$material->relationLoaded('media')) {
+                $material->load('media');
+            }
+            
             return $material;
         });
         

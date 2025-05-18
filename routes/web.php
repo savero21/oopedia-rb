@@ -138,6 +138,10 @@ Route::middleware('auth')->group(function () {
             ->name('question-banks.store-config');
         Route::delete('question-bank-configs/{config}', [QuestionBankController::class, 'deleteConfig'])
             ->name('question-bank-configs.delete');
+
+        // Media routes
+        Route::get('/media/delete/{id}', [AdminMaterialController::class, 'deleteMedia'])
+            ->name('media.delete');
     });
 
     // Mahasiswa & Guest Routes (role 3 = mahasiswa, role 4 = guest)

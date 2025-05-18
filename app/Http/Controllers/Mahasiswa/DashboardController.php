@@ -76,43 +76,33 @@ class DashboardController extends Controller
         $totalAnsweredQuestions = 0;
         $totalCorrectQuestions = 0;
 
-        $allMaterials = Material::with(['questions'])
-            ->select('id', 'title', 'content')
-            ->get()
-            ->map(function ($material) use ($progressStats, &$completedMaterials, &$inProgressMaterials, &$totalAnsweredQuestions, &$totalCorrectQuestions) {
-                $totalQuestions = $material->questions->count();
-                $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+        $materials = Material::with(['questions', 'questionBankConfigs'])->get()
+            ->map(function($material) use ($progressStats) {
+                // Get active configuration
+                $config = $material->questionBankConfigs()->where('is_active', true)->first();
                 
-                if ($materialProgress) {
-                    $answeredQuestions = $materialProgress->answered_questions;
-                    $correctAnswers = $materialProgress->correct_answers;
-                    
-                    // Update question statistics
-                    $totalAnsweredQuestions += $answeredQuestions;
-                    $totalCorrectQuestions += $correctAnswers;
-                    
-                    // Calculate progress percentage
-                    $progress = $totalQuestions > 0 ? ($correctAnswers / $totalQuestions) * 100 : 0;
-                    $progress = round($progress);
-                    
-                    // Update material counts
-                    if ($progress == 100) {
-                        $completedMaterials++;
-                    } elseif ($progress > 0) {
-                        $inProgressMaterials++;
-                    }
-                    
-                    $material->progress = $progress;
-                    $material->answered_questions = $answeredQuestions;
-                    $material->correct_answers = $correctAnswers;
+                // Calculate total configured questions
+                if ($config) {
+                    $totalQuestions = $config->beginner_count + $config->medium_count + $config->hard_count;
                 } else {
-                    $material->progress = 0;
-                    $material->answered_questions = 0;
-                    $material->correct_answers = 0;
+                    $totalQuestions = $material->questions->count();
                 }
                 
-                $material->total_questions = $totalQuestions;
-                return $material;
+                $materialProgress = $progressStats->firstWhere('material_id', $material->id);
+                $correctAnswers = $materialProgress ? $materialProgress->correct_answers : 0;
+                
+                $progressPercentage = $totalQuestions > 0 
+                    ? min(100, round(($correctAnswers / $totalQuestions) * 100))
+                    : 0;
+
+                return (object)[
+                    'id' => $material->id,
+                    'title' => $material->title,
+                    'description' => $material->description,
+                    'progress_percentage' => $progressPercentage,
+                    'total_questions' => $totalQuestions,
+                    'completed_questions' => $correctAnswers
+                ];
             });
 
         // Calculate overall progress percentages
@@ -137,7 +127,7 @@ class DashboardController extends Controller
             'totalAnsweredQuestions' => $totalAnsweredQuestions,
             'totalCorrectQuestions' => $totalCorrectQuestions,
             'recentActivities' => $recentActivities,
-            'allMaterials' => $allMaterials
+            'allMaterials' => $materials
         ]);
 
         /* 

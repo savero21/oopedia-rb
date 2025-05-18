@@ -30,6 +30,18 @@
     </div>
 
     <div class="level-container">
+        <!-- Tambahkan peringatan tentang sistem penilaian hanya untuk user mahasiswa (bukan tamu) -->
+        @if(auth()->check() && auth()->user()->role_id === 3)
+            <div class="alert alert-info mb-4" role="alert">
+                <h5><i class="fas fa-info-circle"></i> Sistem Penilaian Pada Leaderboard</h5>
+                <p>Perhatikan bahwa nilai Anda di leaderboard bergantung pada jumlah percobaan yang dibutuhkan untuk menjawab soal dengan benar:</p>
+                
+                <div class="mt-2 fw-bold text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Pastikan jawaban Anda sudah benar sebelum mengirim untuk mendapatkan nilai maksimal!
+                </div>
+            </div>
+        @endif
+
         <div class="level-legend mb-4">
             <div class="legend-title mb-3">Keterangan:</div>
             <div class="legend-items">

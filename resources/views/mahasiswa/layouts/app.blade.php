@@ -59,6 +59,47 @@
             padding: 2px 4px;
             border-radius: 4px;
         }
+
+        /* Gambar Card Material */
+        .material-image {
+            height: 180px;
+            position: relative;
+            border-top-left-radius: 13px;
+            border-top-right-radius: 13px;
+            border-bottom: 1px solid #e0e6ed;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+
+        .material-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Gambar Card Question */
+        .material-left-section {
+            width: 180px;
+            min-width: 180px;
+            height: 180px;
+            background-color: #f8f9fa;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .material-question-image {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .material-question-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 
     <!-- Additional page-specific CSS -->
@@ -237,6 +278,17 @@
             loadingOverlay.classList.remove('show');
         };
     });
+    </script>
+
+    <!-- Lightbox untuk Galeri Gambar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <script>
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'albumLabel': "Gambar %1 dari %2"
+        });
     </script>
 </body>
 </html>
