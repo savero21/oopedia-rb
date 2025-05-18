@@ -14,17 +14,16 @@
                 <div class="page-header min-vh-100">
                     <div class="container">
                         <div class="row">
-                            <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 start-0 text-center justify-content-center flex-column">
-                                <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center"
-                                    style="background-image: url('{{ asset('images/background-log.jpg') }}'); background-size: cover; height: auto; min-height: 600px;">
-                                    <div class="position-relative">
-                                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-blue opacity-6 border-radius-lg"></div>
-                                        <div class="position-relative z-index-1 p-4">
-                                            <h2 class="text-white font-weight-bolder mb-4">Bergabunglah dengan OOPedia</h2>
-                                            <p class="text-white opacity-8">Mengakses materi dengan lengkap dan terbaru dengan akun OOPedia</p>
-                                        </div>
+                            <div class="col-lg-5 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 start-9 text-center justify-content-center flex-column">
+                            <div class="position-relative bg-gradient-primary m-3 px-7 border-radius-lg d-flex flex-column justify-content-center oopedia-bg">
+                                <div class="position-relative">
+                                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-blue opacity-6 border-radius-lg"></div>
+                                    <div class="position-relative z-index-1 p-4">
+                                        <h2 class="text-white font-weight-bolder mb-4">Bergabunglah dengan OOPedia</h2>
+                                        <p class="text-white opacity-8">Mengakses materi dengan lengkap dan terbaru dengan akun OOPedia</p>
                                     </div>
                                 </div>
+                            </div>
                             </div>
                             <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column ms-auto me-auto ms-lg-auto me-lg-5">
                                 <div class="card card-plain mt-8">
@@ -102,6 +101,15 @@
             </section>
         </main>
     </div>
+
+    <style>
+        .oopedia-bg {
+    background-image: url('/images/background-log.jpg');
+    background-size: cover;
+    min-height: 600px;
+}
+
+    </style>
 
     @push('js')
     <script src="{{ asset('assets') }}/js/jquery.min.js"></script>
