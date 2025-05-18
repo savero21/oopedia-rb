@@ -68,7 +68,16 @@
                 
                 <div class="material-stats">
                     <div class="stats-pill">
-                        <i class="fas fa-question-circle"></i> {{ $material->questions->count() }} Soal
+                        <i class="fas fa-question-circle"></i> 
+                        @if(!auth()->check() || (auth()->check() && auth()->user()->role_id === 4))
+                            9 Soal
+                            <span class="guest-mode-badge ms-2">
+                                <i class="fas fa-lock-open text-warning"></i>
+                                Mode Tamu
+                            </span>
+                        @else
+                            {{ $material->questions->count() }} Soal
+                        @endif
                     </div>
                     
                 </div>
@@ -327,6 +336,22 @@
         font-size: 48px;
         color: #0057B8;
         opacity: 0.4;
+    }
+    
+    .guest-mode-badge {
+        font-size: 0.75rem;
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #856404;
+        border-radius: 12px;
+        padding: 2px 8px;
+        vertical-align: middle;
+    }
+    
+    .stats-pill {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
     }
 </style>
 @endpush

@@ -31,6 +31,9 @@
                            title="@auth Kumpulan materi pembelajaran @else Kumpulan materi pembelajaran @endauth">
                             <i class="fas fa-book me-2"></i>
                             <span>Materi</span>
+                            @guest
+                                <small class="badge bg-warning text-dark ms-1">Terbatas</small>
+                            @endguest
                         </a>
                     </li>
                     <li>
@@ -54,6 +57,9 @@
                            title="Papan peringkat pengguna berdasarkan skor">
                             <i class="fas fa-trophy me-2"></i>
                             <span>Peringkat</span>
+                            @guest
+                                <small class="badge bg-danger text-white ms-1">Perlu Login</small>
+                            @endguest
                         </a>
                     </li>
                 </ul>

@@ -300,7 +300,7 @@
                        title="Silakan login untuk melihat peringkat">
                         <i class="fas fa-trophy"></i>
                         <span>Peringkat</span>
-                        <span class="badge bg-warning text-dark ms-2">Perlu Login</span>
+                        <span class="badge bg-danger text-white ms-1">Perlu Login</span>
                     </a>
                 @endauth
             </li>
