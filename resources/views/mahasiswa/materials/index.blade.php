@@ -36,6 +36,7 @@
                     <h4 class="material-title">{{ $material->title }}</h4>
                 </div>
                 <div class="material-card-body">
+                    
                     <div class="material-description">
                         {{ Str::limit($material->description, 150) }}
                     </div>
@@ -295,10 +296,85 @@
         flex-direction: column;
         gap: 0.5rem;
     }
-}
-</style>
+}/* Perbaikan Gaya untuk Tour Guide */
+.introjs-tooltip {
+        border-radius: 12px !important;
+        padding: 20px !important;
+        max-width: 400px !important;
+        box-shadow: 0 8px 25px rgba(0, 78, 152, 0.15) !important;
+        border: 1px solid rgba(0, 78, 152, 0.1) !important;
+    }
 
-<link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
+    .introjs-tooltip-header {
+        padding-bottom: 10px !important;
+        border-bottom: 1px solid rgba(0, 78, 152, 0.1) !important;
+        margin-bottom: 15px !important;
+    }
+
+    .introjs-tooltiptext {
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+        color: var(--text-dark) !important;
+    }
+
+    .introjs-tooltipbuttons {
+        border-top: 1px solid rgba(0, 78, 152, 0.1) !important;
+        padding-top: 15px !important;
+        margin-top: 15px !important;
+        text-align: right !important;
+    }
+
+    .introjs-button {
+        padding: 8px 16px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        margin-left: 8px !important;
+    }
+
+    .introjs-skipbutton {
+        background-color: #f8f9fa !important;
+        color: var(--color-1) !important;
+        border: 1px solid rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-skipbutton:hover {
+        background-color: #e9ecef !important;
+    }
+
+    .introjs-nextbutton {
+        background: var(--gradient-primary) !important;
+        color: white !important;
+    }
+
+    .introjs-nextbutton:hover {
+        background: var(--gradient-secondary) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-prevbutton {
+        background-color: white !important;
+        color: var(--color-1) !important;
+        border: 1px solid rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-prevbutton:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    .introjs-bullets {
+        bottom: -25px !important;
+    }
+
+    .introjs-bullets ul li a {
+        background: rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-bullets ul li a.active {
+        background: var(--color-1) !important;
+    }
+</style>
 @endpush
 
 @push('scripts')
@@ -306,46 +382,70 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Check if tour has been shown for this page
         if (!sessionStorage.getItem('material_index_tour_complete')) {
-            setTimeout(startMaterialsIndexTour, 500);
+            setTimeout(startMaterialsIndexTour, 800);
         }
     });
 
     function startMaterialsIndexTour() {
         const steps = [
             {
-                intro: "Selamat datang di halaman Materi OOPEDIA!"
+                intro: `
+                    <div class="text-center">
+                        <h4 style="margin-bottom: 10px; color: var(--color-1);">Selamat Datang</h4>
+                        <p>Di halaman Materi OOPEDIA!</p>
+                    </div>
+                `,
+                position: 'center'
             },
             {
                 element: document.querySelector('.material-card:first-child'),
-                intro: "Ini adalah kartu materi pembelajaran. Pilih salah satu materi untuk mulai belajar."
-            },
-            {
-                element: document.querySelector('.progress-container'),
-                intro: "Di sini Anda dapat melihat progres pembelajaran untuk setiap materi."
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Kartu Materi</h5>
+                        <p>Ini adalah kartu materi pembelajaran. Pilih salah satu materi untuk mulai belajar.</p>
+                    </div>
+                `,
+                position: 'auto'
             },
             {
                 element: document.querySelector('.material-actions .btn-read-material'),
-                intro: "Klik tombol ini untuk mulai mempelajari materi yang dipilih."
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Tombol Baca</h5>
+                        <p>Klik tombol ini untuk mulai mempelajari materi yang dipilih.</p>
+                    </div>
+                `,
+                position: 'auto'
             },
             {
-                intro: "Selamat belajar PBO di OOPEDIA!"
+                intro: `
+                    <div class="text-center">
+                        <h4 style="margin-bottom: 10px; color: var(--color-1);">Selamat Belajar!</h4>
+                        <p>Mari eksplorasi dunia Pemrograman Berorientasi Objek bersama OOPEDIA.</p>
+                    </div>
+                `,
+                position: 'center'
             }
         ];
 
-        // Start the tutorial
         introJs().setOptions({
             steps: steps,
             showProgress: true,
             exitOnOverlayClick: true,
-            showBullets: false,
+            showBullets: true,
             scrollToElement: true,
             nextLabel: 'Berikutnya',
             prevLabel: 'Sebelumnya',
-            doneLabel: 'Mulai'
+            skipLabel: 'Lewati',
+            doneLabel: 'Selesai',
+            tooltipClass: 'custom-tour',
+            highlightClass: 'custom-highlight',
+            hidePrev: true,
+            exitOnEsc: true
         }).oncomplete(function() {
-            // Mark as completed in session storage
+            sessionStorage.setItem('material_index_tour_complete', 'true');
+        }).onexit(function() {
             sessionStorage.setItem('material_index_tour_complete', 'true');
         }).start();
     }
