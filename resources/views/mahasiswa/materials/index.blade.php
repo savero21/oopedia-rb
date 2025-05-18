@@ -44,6 +44,7 @@
                         <i class="fas fa-book-open"></i>
                     </div>
                 </div>
+
             @endif
             
             <div class="material-icon">
@@ -58,6 +59,7 @@
                 <div class="material-meta">
                     <div class="meta-item">
                         <i class="fas fa-user"></i> {{ $material->creator ? $material->creator->name : 'Admin' }}
+
                     </div>
                     <div class="meta-item">
                         <i class="far fa-calendar-alt"></i> {{ $material->updated_at->format('d M Y') }}
@@ -211,125 +213,160 @@
         flex-direction: column;
         flex-grow: 1;
     }
-    
-    .material-title {
-        font-weight: 700;
-        font-size: 1.3rem;
-        color: #0057B8;
-        margin-bottom: 10px;
-        line-height: 1.4;
+
+}/* Perbaikan Gaya untuk Tour Guide */
+.introjs-tooltip {
+        border-radius: 12px !important;
+        padding: 20px !important;
+        max-width: 400px !important;
+        box-shadow: 0 8px 25px rgba(0, 78, 152, 0.15) !important;
+        border: 1px solid rgba(0, 78, 152, 0.1) !important;
     }
-    
-    .material-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 5px;
+
+    .introjs-tooltip-header {
+        padding-bottom: 10px !important;
+        border-bottom: 1px solid rgba(0, 78, 152, 0.1) !important;
+        margin-bottom: 15px !important;
     }
-    
-    .meta-item {
-        font-size: 0.85rem;
-        color: #6c757d;
-        display: flex;
-        align-items: center;
+
+    .introjs-tooltiptext {
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+        color: var(--text-dark) !important;
     }
-    
-    .meta-item i {
-        margin-right: 5px;
-        color: #0057B8;
-        opacity: 0.8;
+
+    .introjs-tooltipbuttons {
+        border-top: 1px solid rgba(0, 78, 152, 0.1) !important;
+        padding-top: 15px !important;
+        margin-top: 15px !important;
+        text-align: right !important;
     }
-    
-    .content-divider {
-        width: 100%;
-        height: 1px;
-        background: linear-gradient(to right, rgba(0,87,184,0.1), rgba(0,87,184,0.2), rgba(0,87,184,0.1));
-        margin: 10px 0 15px;
+
+    .introjs-button {
+        padding: 8px 16px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        margin-left: 8px !important;
     }
-    
-    .material-stats {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 20px;
+
+    .introjs-skipbutton {
+        background-color: #f8f9fa !important;
+        color: var(--color-1) !important;
+        border: 1px solid rgba(0, 78, 152, 0.2) !important;
     }
-    
-    .stats-pill {
-        background-color: #f0f7ff;
-        color: #0057B8;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        border: 1px solid rgba(0,87,184,0.1);
+
+    .introjs-skipbutton:hover {
+        background-color: #e9ecef !important;
     }
-    
-    .stats-pill i {
-        margin-right: 5px;
+
+    .introjs-nextbutton {
+        background: var(--gradient-primary) !important;
+        color: white !important;
     }
-    
-    .material-link {
-        display: inline-block;
-        background: linear-gradient(135deg, #0057B8, #0074D9);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 30px;
-        text-decoration: none;
-        font-weight: 500;
-        margin-top: auto;
-        transition: all 0.3s ease;
-        text-align: center;
-        box-shadow: 0 4px 10px rgba(0,87,184,0.2);
-        border: none;
+
+    .introjs-nextbutton:hover {
+        background: var(--gradient-secondary) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(0, 78, 152, 0.2) !important;
     }
-    
-    .material-link:hover {
-        background: linear-gradient(135deg, #004a9e, #0068c3);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(0,87,184,0.3);
+
+    .introjs-prevbutton {
+        background-color: white !important;
+        color: var(--color-1) !important;
+        border: 1px solid rgba(0, 78, 152, 0.2) !important;
     }
-    
-    .material-link i {
-        margin-left: 5px;
-        transition: transform 0.3s ease;
+
+    .introjs-prevbutton:hover {
+        background-color: #f8f9fa !important;
     }
-    
-    .material-link:hover i {
-        transform: translateX(3px);
+
+    .introjs-bullets {
+        bottom: -25px !important;
     }
-    
-    /* Responsivitas */
-    @media (max-width: 767px) {
-        .material-image {
-            height: 180px;
+
+    .introjs-bullets ul li a {
+        background: rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-bullets ul li a.active {
+        background: var(--color-1) !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!sessionStorage.getItem('material_index_tour_complete')) {
+            setTimeout(startMaterialsIndexTour, 800);
         }
-        
-        .material-icon {
-            top: 155px;
-            width: 45px;
-            height: 45px;
-        }
-        
-        .material-content {
-            padding: 20px 15px 15px;
-        }
-        
-        .material-title {
-            font-size: 1.2rem;
-        }
-    }
-    
-    /* Untuk gambar default */
-    .default-image {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #f0f7ff, #e6f2ff);
+    });
+
+    function startMaterialsIndexTour() {
+        const steps = [
+            {
+                intro: `
+                    <div class="text-center">
+                        <h4 style="margin-bottom: 10px; color: var(--color-1);">Selamat Datang</h4>
+                        <p>Di halaman Materi OOPEDIA!</p>
+                    </div>
+                `,
+                position: 'center'
+            },
+            {
+                element: document.querySelector('.material-card:first-child'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Kartu Materi</h5>
+                        <p>Ini adalah kartu materi pembelajaran. Pilih salah satu materi untuk mulai belajar.</p>
+                    </div>
+                `,
+                position: 'auto'
+            },
+            {
+                element: document.querySelector('.material-actions .btn-read-material'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Tombol Baca</h5>
+                        <p>Klik tombol ini untuk mulai mempelajari materi yang dipilih.</p>
+                    </div>
+                `,
+                position: 'auto'
+            },
+            {
+                intro: `
+                    <div class="text-center">
+                        <h4 style="margin-bottom: 10px; color: var(--color-1);">Selamat Belajar!</h4>
+                        <p>Mari eksplorasi dunia Pemrograman Berorientasi Objek bersama OOPEDIA.</p>
+                    </div>
+                `,
+                position: 'center'
+            }
+        ];
+
+        introJs().setOptions({
+            steps: steps,
+            showProgress: true,
+            exitOnOverlayClick: true,
+            showBullets: true,
+            scrollToElement: true,
+            nextLabel: 'Berikutnya',
+            prevLabel: 'Sebelumnya',
+            skipLabel: 'Lewati',
+            doneLabel: 'Selesai',
+            tooltipClass: 'custom-tour',
+            highlightClass: 'custom-highlight',
+            hidePrev: true,
+            exitOnEsc: true
+        }).oncomplete(function() {
+            sessionStorage.setItem('material_index_tour_complete', 'true');
+        }).onexit(function() {
+            sessionStorage.setItem('material_index_tour_complete', 'true');
+        }).start();
+
     }
     
     .no-image-icon {

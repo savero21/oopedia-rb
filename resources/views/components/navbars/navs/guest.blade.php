@@ -17,18 +17,18 @@
         <div class="collapse navbar-collapse" id="navigation">
             <ul class="navbar-nav ms-auto">
                @guest
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link nav-link-icon me-2" href="{{ route($signin) }}">
                         <i class="fas fa-key me-1"></i>
                         <span class="nav-link-inner--text">Login</span>
                     </a>
-                </li>
-                <li class="nav-item">
+                </li> -->
+                <!-- <li class="nav-item">
                     <a class="nav-link nav-link-icon me-2 bg-gradient-primary btn-navbar" href="{{ route($signup) }}">
                         <i class="fas fa-user-circle me-1"></i>
                         <span class="nav-link-inner--text">Register</span>
                     </a>
-                </li>
+                </li> -->
                 @endguest
 
                 @auth

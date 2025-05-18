@@ -174,32 +174,107 @@ use Illuminate\Support\Str;
         padding-top: 1rem !important;
     }
 
-    .dashboard-icon {
-        width: 24px;
-        height: 24px;
-        object-fit: contain;
-        vertical-align: middle;
+    /* Custom Tour Styling */ .introjs-tooltip {
+        border-radius: 12px !important;
+        padding: 20px !important;
+        max-width: 400px !important;
+        box-shadow: 0 8px 25px rgba(0, 78, 152, 0.15) !important;
+        border: 1px solid rgba(0, 78, 152, 0.1) !important;
+        background: white !important;
     }
 
-    .dashboard-icon-large {
-        width: 80px;
-        height: 80px;
-        display: block;
-        margin: 0 auto 10px;
+    .introjs-tooltip-header {
+        padding-bottom: 10px !important;
+        border-bottom: 1px solid rgba(0, 78, 152, 0.1) !important;
+        margin-bottom: 15px !important;
     }
 
-    .count-number-large {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #4e73df;
+    .introjs-tooltiptext {
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+        color: #2c3e50 !important;
     }
 
-    .materi-count {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 15px 0;
+    .introjs-tooltipbuttons {
+        border-top: 1px solid rgba(0, 78, 152, 0.1) !important;
+        padding-top: 15px !important;
+        margin-top: 15px !important;
+        text-align: right !important;
+    }
+
+    .introjs-button {
+        padding: 8px 16px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        margin-left: 8px !important;
+        font-size: 14px !important;
+    }
+
+    .introjs-skipbutton {
+        background-color: #f8f9fa !important;
+        color: #3498db !important;
+        border: 1px solid rgba(0, 78, 152, 0.2) !important;
+        float: left !important;
+        margin-left: 0 !important;
+    }
+
+    .introjs-skipbutton:hover {
+        background-color: #e9ecef !important;
+    }
+
+    .introjs-nextbutton {
+        background: linear-gradient(135deg, #3498db, #2c3e50) !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    .introjs-nextbutton:hover {
+        background: linear-gradient(135deg, #2980b9, #1a252f) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-prevbutton {
+        background-color: white !important;
+        color: #3498db !important;
+        border: 1px solid rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-prevbutton:hover {
+        background-color: #f8f9fa !important;
+    }
+
+    .introjs-bullets {
+        bottom: -25px !important;
+    }
+
+    .introjs-bullets ul li a {
+        background: rgba(0, 78, 152, 0.2) !important;
+    }
+
+    .introjs-bullets ul li a.active {
+        background: #3498db !important;
+    }
+
+    .custom-highlight {
+        border-radius: 8px !important;
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.5), 0 0 15px rgba(0,0,0,0.5) !important;
+    }
+
+    /* Tour content styling */
+    .tour-step-title {
+        color: #3498db;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .tour-step-content {
+        color: #2c3e50;
+        font-size: 0.95rem;
+        line-height: 1.6;
+
     }
 </style>
 @endpush
@@ -209,50 +284,80 @@ use Illuminate\Support\Str;
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Check if tour has been shown for this page
         if (!sessionStorage.getItem('dashboard_tour_complete')) {
-            setTimeout(startDashboardTour, 500);
+            setTimeout(startDashboardTour, 800);
         }
     });
 
     function startDashboardTour() {
         const steps = [
             {
-                intro: "Selamat datang di Dashboard OOPEDIA!"
+                intro: `
+                    <div class="text-center">
+                        <h4 class="tour-step-title">Selamat Datang di Dashboard</h4>
+                        <p class="tour-step-content">Temukan semua fitur pembelajaran OOP di satu tempat!</p>
+                    </div>
+                `,
+                position: 'center'
             },
             {
                 element: document.querySelector('.col-md-6:first-child .materi-card'),
-                intro: "Di sini Anda dapat melihat informasi tentang materi pembelajaran yang tersedia."
+                intro: `
+                    <div>
+                        <h5 class="tour-step-title">Materi Pembelajaran</h5>
+                        <p class="tour-step-content">Lihat jumlah materi yang tersedia dan akses konten pembelajaran.</p>
+                    </div>
+                `,
+                position: 'auto'
             },
             {
                 element: document.querySelector('.col-md-6:nth-child(2) .materi-card'),
-                intro: "Bagian ini menampilkan informasi tentang latihan soal yang dapat Anda kerjakan."
+                intro: `
+                    <div>
+                        <h5 class="tour-step-title">Latihan Soal</h5>
+                        <p class="tour-step-content">Temukan berbagai level soal untuk menguji pemahaman Anda.</p>
+                    </div>
+                `,
+                position: 'auto'
             },
             {
-                element: document.querySelector('.col-md-6 .btn-primary'),
-                intro: "Klik tombol ini untuk melihat semua materi pembelajaran."
+                element: document.querySelector('.activity-timeline'),
+                intro: `
+                    <div>
+                        <h5 class="tour-step-title">Aktivitas Terbaru</h5>
+                        <p class="tour-step-content">Pantau perkembangan belajar Anda melalui aktivitas terkini.</p>
+                    </div>
+                `,
+                position: 'auto'
             },
             {
-                element: document.querySelector('.col-md-6:nth-child(2) .btn-primary'),
-                intro: "Klik tombol ini untuk mengakses latihan soal."
-            },
-            {
-                intro: "Selamat menggunakan Dashboard OOPEDIA! Silakan jelajahi fitur-fitur yang tersedia."
+                intro: `
+                    <div class="text-center">
+                        <h4 class="tour-step-title">Mulai Petualangan Belajar!</h4>
+                        <p class="tour-step-content">Anda siap menjelajahi dunia OOP. Selamat belajar!</p>
+                    </div>
+                `,
+                position: 'center'
             }
         ];
 
-        // Start the tutorial
         introJs().setOptions({
             steps: steps,
             showProgress: true,
             exitOnOverlayClick: true,
-            showBullets: false,
+            showBullets: true,
             scrollToElement: true,
-            nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Mulai'
+            nextLabel: 'Berikutnya →',
+            prevLabel: '← Sebelumnya',
+            skipLabel: 'Lewati Tour',
+            doneLabel: 'Mulai Belajar',
+            tooltipClass: 'custom-tour',
+            highlightClass: 'custom-highlight',
+            hidePrev: true,
+            exitOnEsc: true
         }).oncomplete(function() {
-            // Mark as completed in session storage
+            sessionStorage.setItem('dashboard_tour_complete', 'true');
+        }).onexit(function() {
             sessionStorage.setItem('dashboard_tour_complete', 'true');
         }).start();
     }

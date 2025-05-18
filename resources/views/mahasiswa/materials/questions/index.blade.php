@@ -1,4 +1,4 @@
-@extends('mahasiswa.layouts.app')
+`@extends('mahasiswa.layouts.app')
 
 @section('title', 'Latihan Soal PBO')
 
@@ -481,13 +481,216 @@
     color: #777;
     font-size: 0.8rem;
 }
+
+/* Skip Tour Button Style */
+.skip-tour-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999999;
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.skip-tour-btn:hover {
+    background: #d32f2f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* IntroJS Custom Styles - Focused on Skip Button Positioning */  /* Improved Tour Navigation Styles */
+.introjs-tooltip {
+    border-radius: 12px;
+    max-width: 400px;
+    box-shadow: 0 8px 25px rgba(0, 78, 152, 0.15);
+    border: 1px solid rgba(0, 78, 152, 0.1);
+    font-family: inherit;
+    
+}
+
+.introjs-tooltip-header {
+    padding: 16px 20px 0;
+}
+
+.introjs-tooltiptext {
+    padding: 16px 20px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text-dark);
+}
+
+/* Container utama tombol */
+.introjs-tooltipbuttons {
+    padding: 12px 20px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Baris tombol navigasi */
+.introjs-buttons {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+}
+
+/* Baris tombol skip (posisi di bawah) */
+.introjs-skipbutton {
+    order: 2; /* Pastikan selalu di bawah */
+    align-self: flex-end; /* Rata kanan */
+    margin-top: 4px;
+}
+
+/* Gaya dasar semua tombol */
+.introjs-button {
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    text-shadow: none !important;
+    border: none !important;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    font-family: inherit;
+}
+
+/* Tombol Previous */
+.introjs-prevbutton {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.introjs-prevbutton:hover {
+    background-color: #e0e0e0 !important;
+}
+
+/* Tombol Next/Done */
+.introjs-nextbutton,
+.introjs-donebutton {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+}
+
+.introjs-nextbutton:hover,
+.introjs-donebutton:hover {
+    background: var(--gradient-secondary) !important;
+    transform: translateY(-1px);
+}
+
+/* Tombol Skip *//* Penyesuaian Tombol Lewati Panduan IntroJS */
+.introjs-skipbutton {
+    order: 2; /* Pastikan selalu di bawah */
+    align-self: flex-end; /* Rata kanan */
+    margin-top: 10px; /* Beri jarak sedikit dari tombol navigasi */
+    background-color: #f8f9fa !important; /* Warna latar belakang lebih terang */
+    color: #495057 !important; /* Warna teks lebih gelap */
+    border: 1px solid #ced4da !important; /* Tambahkan border tipis */
+    border-radius: 6px !important; /* Sedikit lebih kecil radiusnya */
+    padding: 6px 12px !important; /* Padding lebih kecil */
+    font-size: 14px; /* Ukuran font lebih kecil */
+    font-weight: normal !important; /* Tidak terlalu tebal */
+    box-shadow: none !important; /* Hilangkan shadow default */
+}
+
+.introjs-skipbutton:hover {
+    background-color: #e2e6ea !important; /* Efek hover lebih halus */
+    color: #212529 !important;
+    border-color: #adb5bd !important;
+}
+
+/* Kontainer tombol navigasi agar rapi */
+.introjs-tooltipbuttons {
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column; /* Susun tombol ke bawah */
+    gap: 10px; /* Beri jarak antar tombol */
+    align-items: stretch; /* Lebar tombol menyesuaikan kontainer */
+}
+
+.introjs-buttons {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+}
+
+.introjs-button {
+    flex-grow: 1; /* Tombol navigasi mengisi ruang yang tersisa */
+    text-align: center; /* Ratakan teks ke tengah */
+}
+
+.introjs-skipbutton {
+    flex-grow: 0; /* Tombol lewati tidak mengisi ruang */
+    align-self: flex-end; /* Posisikan ke kanan */
+    margin-top: 10px; /* Beri jarak dari tombol navigasi */
+}
+
+/* Responsif untuk layar kecil */
+@media (max-width: 576px) {
+    .introjs-tooltipbuttons {
+        flex-direction: column; /* Tetap susun ke bawah */
+    }
+
+    .introjs-buttons {
+        flex-direction: column; /* Tombol navigasi juga ke bawah */
+        gap: 6px;
+    }
+
+    .introjs-button {
+        width: 100%; /* Lebar penuh pada layar kecil */
+    }
+
+    .introjs-skipbutton {
+        width: 100%; /* Lebar penuh pada layar kecil */
+        align-self: stretch; /* Meregang selebar kontainer */
+        text-align: center; /* Ratakan teks ke tengah */
+        margin-top: 6px;
+    }
+}
+/* Progress bar */
+.introjs-progress {
+    background-color: rgba(0, 78, 152, 0.1) !important;
+    height: 4px !important;
+    border-radius: 0;
+}
+
+/* .introjs-progressbar {
+    background: var(--gradient-primary) !important;
+    border-radius: 0;
+} */
+
+/* Responsive */
+@media (max-width: 480px) {
+    .introjs-buttons {
+        flex-direction: column;
+    }
+    
+    .introjs-button {
+        width: 100%;
+    }
+    
+    .introjs-skipbutton {
+        width: 100%;
+        text-align: center;
+    }
+}
 </style>
 @endpush
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check if tour has been shown for this page
+    document.addEventListener('DOMContentLoaded', function () {
         if (!sessionStorage.getItem('question_index_tour_complete')) {
             setTimeout(startQuestionsIndexTour, 500);
         }
@@ -496,40 +699,77 @@
     function startQuestionsIndexTour() {
         const steps = [
             {
-                intro: "Selamat datang di halaman Latihan Soal OOPEDIA!"
+                intro: `
+                    <div class="text-center">
+                        <h4 style="margin-bottom: 10px; color: var(--color-1);">Selamat datang di Latihan Soal OOPEDIA!</h4>
+                        <p>Temukan berbagai latihan soal untuk menguji pemahaman Anda tentang Pemrograman Berorientasi Objek</p>
+                    </div>
+                `
             },
             {
-                element: document.querySelector('.material-question-card'),
-                intro: "Ini adalah kartu materi latihan soal. Pilih salah satu materi untuk mulai berlatih."
+
+                element: document.querySelector('.material-card:first-child'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Kartu Materi</h5>
+                        <p>Setiap kartu mewakili satu materi yang bisa Anda pelajari. Pilih materi untuk mulai berlatih.</p>
+                    </div>
+                `,
+                position: 'bottom'
             },
             {
-                element: document.querySelector('.progress-section'),
-                intro: "Di sini Anda dapat melihat progres pengerjaan soal untuk setiap materi."
+                element: document.querySelector('.progress-container'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Progress Belajar</h5>
+                        <p>Pantau perkembangan Anda melalui indikator progress ini.</p>
+                    </div>
+                `,
+                position: 'bottom'
             },
             {
-                element: document.querySelector('.btn-start-exercise'),
-                intro: "Klik tombol ini untuk melihat detail dan mulai mengerjakan latihan soal."
+                element: document.querySelector('.material-actions .btn-read-material'),
+                intro: `
+                    <div>
+                        <h5 style="margin-bottom: 8px; color: var(--color-1);">Mulai Berlatih</h5>
+                        <p>Klik tombol ini untuk mengakses soal-soal latihan dari materi yang dipilih.</p>
+                    </div>
+                `,
+                position: 'top'
             },
             {
-                intro: "Selamat berlatih soal PBO di OOPEDIA!"
+                intro: `
+                    <div class="text-center">
+                        <h4 style="margin-bottom: 10px; color: var(--color-1);">Siap Berlatih!</h4>
+                        <p>Selamat mengasah kemampuan Pemrograman Berorientasi Objek Anda!</p>
+                    </div>
+                `
             }
         ];
 
-        // Start the tutorial
-        introJs().setOptions({
+        const intro = introJs();
+
+        intro.setOptions({
             steps: steps,
             showProgress: true,
             exitOnOverlayClick: true,
-            showBullets: false,
             scrollToElement: true,
             nextLabel: 'Berikutnya',
-            prevLabel: 'Sebelumnya',
-            doneLabel: 'Mulai'
-        }).oncomplete(function() {
-            // Mark as completed in session storage
-            sessionStorage.setItem('question_index_tour_complete', 'true');
-        }).start();
-    }
+        prevLabel: 'Sebelumnya', 
+        doneLabel: 'Mulai Berlatih',
+        skipLabel: 'Lewati Panduan',
+        showSkipButton: true,
+        tooltipClass: 'custom-introjs-tooltip',
+        hidePrev: true
+    })
+    .oncomplete(function() {
+        sessionStorage.setItem('question_index_tour_complete', 'true');
+    })
+    .onexit(function() {
+        sessionStorage.setItem('question_index_tour_complete', 'true'); 
+    })
+    .start();
+}    
 </script>
 @endpush
-@endsection 
+@endsection`
