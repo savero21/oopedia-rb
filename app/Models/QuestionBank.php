@@ -12,6 +12,7 @@ class QuestionBank extends Model
     protected $fillable = [
         'name',
         'description',
+        'material_id',
         'created_by',
     ];
 
@@ -29,5 +30,10 @@ class QuestionBank extends Model
     public function configs()
     {
         return $this->hasMany(QuestionBankConfig::class);
+    }
+
+    public function material()
+    {
+        return $this->belongsTo(Material::class);
     }
 }

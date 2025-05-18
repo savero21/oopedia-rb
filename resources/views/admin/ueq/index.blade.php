@@ -35,17 +35,7 @@
                                                             <div class="card shadow-sm">
                                                                 <div class="card-body p-3">
                                                                     <h6 class="text-capitalize">{{ $dimension }}</h6>
-                                                                    <div class="progress-container">
-                                                                        <div class="progress">
-                                                                            <div class="progress-bar bg-gradient-info" role="progressbar" 
-                                                                                style="width: {{ min(max(($score/7)*100, 0), 100) }}%" 
-                                                                                aria-valuenow="{{ $score }}" aria-valuemin="1" aria-valuemax="7">
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <p class="mt-2 mb-0 text-sm">
-                                                                        <span class="font-weight-bold">Score: {{ number_format($score, 2) }}/7</span>
-                                                                    </p>
+                                                                    <p>Score: {{ number_format($score, 2) }}/7</p>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -120,6 +110,61 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                                </div>
+
+                                <!-- Add this after the UEQ dimensions summary -->
+                                <div class="card mt-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">User Feedback Terbaru</h6>
+                                    </div>
+                                    <div class="card-body px-0 pb-2">
+                                        <div class="table-responsive p-0">
+                                            <table class="table align-items-center mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Mahasiswa</th>
+                                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Komentar</th>
+                                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Saran</th>
+                                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tanggal</th>
+                                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($surveys as $survey)
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex px-2 py-1">
+                                                                <div class="d-flex flex-column justify-content-center">
+                                                                    <h6 class="mb-0 text-sm">{{ $survey->user->name }}</h6>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <p class="text-xs text-secondary mb-0">
+                                                                {{ Str::limit($survey->comments, 50) }}
+                                                            </p>
+                                                        </td>
+                                                        <td>
+                                                            <p class="text-xs text-secondary mb-0">
+                                                                {{ Str::limit($survey->suggestions, 50) }}
+                                                            </p>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <span class="text-secondary text-xs font-weight-bold">
+                                                                {{ $survey->created_at->format('d M Y') }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            <a href="{{ route('admin.ueq.detail', $survey->user_id) }}" class="btn btn-sm btn-primary">
+                                                                Detail
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
                         </div>

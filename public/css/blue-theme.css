@@ -1212,3 +1212,66 @@ img.navbar-logo[src$="undefined"] ~ .logo-fallback {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(220, 53, 69, 0.5) !important;
 }
+
+/* Loading Overlay Styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 78, 152, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.loading-content {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px 40px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.spinner-container {
+    margin-bottom: 15px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(0, 78, 152, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--color-1);
+    animation: spin 1s ease-in-out infinite;
+    margin: 0 auto;
+}
+
+.loading-text {
+    color: var(--color-1);
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

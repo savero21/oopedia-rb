@@ -59,6 +59,47 @@
             padding: 2px 4px;
             border-radius: 4px;
         }
+
+        /* Gambar Card Material */
+        .material-image {
+            height: 180px;
+            position: relative;
+            border-top-left-radius: 13px;
+            border-top-right-radius: 13px;
+            border-bottom: 1px solid #e0e6ed;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+
+        .material-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Gambar Card Question */
+        .material-left-section {
+            width: 180px;
+            min-width: 180px;
+            height: 180px;
+            background-color: #f8f9fa;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .material-question-image {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .material-question-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 
     <!-- Additional page-specific CSS -->
@@ -101,6 +142,9 @@
             });
         });
     </script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link href="{{ asset('css/loading-overlay.css') }}" rel="stylesheet">
 </head>
 <body>
     <!-- Include Navbar Component -->
@@ -173,6 +217,77 @@
             window.redirectToLogin = function() {
                 return false;
             };
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+
+    <!-- Add Loading Overlay Component -->
+    <x-loading-overlay />
+
+    <!-- Loading Overlay JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        // Show loading on page load
+        showLoading();
+        
+        // Hide when page is fully loaded
+        window.addEventListener('load', function() {
+            hideLoading();
+        });
+        
+        // Show loading on navigation
+        document.addEventListener('click', function(event) {
+            const link = event.target.closest('a');
+            if (link && 
+                link.href && 
+                !link.target && 
+                link.hostname === window.location.hostname && 
+                !link.hasAttribute('data-bs-toggle') && 
+                !link.classList.contains('no-loading')) {
+                showLoading();
+            }
+        });
+        
+        // Show loading on form submissions
+        document.addEventListener('submit', function(event) {
+            if (!event.target.classList.contains('ajax-form')) {
+                showLoading();
+            }
+        });
+        
+        // Safety timeout to prevent infinite loading
+        let loadingTimeout;
+        
+        // Helper functions
+        window.showLoading = function() {
+            loadingOverlay.classList.add('show');
+            
+            // Set safety timeout
+            clearTimeout(loadingTimeout);
+            loadingTimeout = setTimeout(() => {
+                hideLoading();
+            }, 10000); // 10 seconds max
+        };
+        
+        window.hideLoading = function() {
+            clearTimeout(loadingTimeout);
+            loadingOverlay.classList.remove('show');
+        };
+    });
+    </script>
+
+    <!-- Lightbox untuk Galeri Gambar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <script>
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'albumLabel': "Gambar %1 dari %2"
         });
     </script>
 </body>

@@ -621,6 +621,24 @@ function showFeedback(data) {
     feedbackIcon.innerHTML = `<i class="fas ${data.status === 'success' ? 'fa-check-circle' : 'fa-times-circle'} fa-3x"></i>`;
 
     if (data.status === 'success') {
+        // Penanganan khusus untuk guest dengan redirect langsung
+        if (data.redirect_url) {
+            // Tampilkan feedback sebentar lalu redirect
+            feedbackElement.style.display = 'block';
+            feedbackElement.classList.remove('alert-danger');
+            feedbackElement.classList.add('alert-success');
+            feedbackIcon.className = 'fas fa-check-circle';
+            feedbackStatus.textContent = data.message;
+            
+            // Redirect setelah 1.5 detik
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+            
+            return; // Penting: hentikan eksekusi di sini
+        }
+        
+        // Kode penanganan normal lainnya
         tryAgainBtn.style.display = 'none';
         nextQuestionBtn.style.display = 'inline-block';
         nextQuestionBtn.innerHTML = '<i class="fas fa-list-ol me-2"></i>Kembali ke Level';
@@ -663,24 +681,30 @@ $(document).ready(function() {
             method: 'POST',
             data: $(this).serialize() + '&difficulty=' + currentDifficulty,
             success: function(response) {
+                console.log("Answer response:", response);
+                
                 if (response.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Jawaban Benar!',
-                        text: response.message,
-                        confirmButtonText: 'Lanjut',
-                        allowOutsideClick: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            redirectToLevelWithScroll();
+                    // Show success feedback
+                    showFeedback(true, response.message, response.selectedAnswerText, 
+                                 response.correctAnswerText, response.explanation);
+                    
+                    // Then redirect after a delay
+                    setTimeout(function() {
+                        if (response.hasNextQuestion && response.nextUrl) {
+                            console.log("Redirecting to next question:", response.nextUrl);
+                            // Store in localStorage that we're redirecting
+                            localStorage.setItem('redirecting_from_question', 'true');
+                            window.location.href = response.nextUrl;
+                        } else {
+                            console.log("Redirecting to levels page:", response.levelUrl);
+                            localStorage.setItem('questionCompleted', 'true');
+                            window.location.href = response.levelUrl + (response.levelUrl.includes('?') ? '&' : '?') + 'scroll=true';
                         }
-                    });
+                    }, 2000);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: response.message
-                    });
+                    // Handle incorrect answer
+                    showFeedback(false, response.message, response.selectedAnswerText, 
+                                 response.correctAnswerText, response.explanation);
                 }
             }
         });
@@ -805,15 +829,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Ketika jawaban benar dan kembali ke halaman level
 function redirectToLevelWithScroll(levelUrl) {
-    // Simpan status bahwa soal telah dijawab benar
+    // Save status that question was answered correctly
     localStorage.setItem('questionCompleted', 'true');
     
-    // Jika levelUrl tidak diberikan, gunakan default URL
+    // If levelUrl not provided, use default URL
     if (!levelUrl) {
         levelUrl = "{{ route('mahasiswa.materials.questions.levels', ['material' => $material->id, 'difficulty' => request()->query('difficulty')]) }}";
     }
     
-    // Tambahkan parameter scroll
+    // Add scroll parameter
     const separator = levelUrl.includes('?') ? '&' : '?';
     window.location.href = `${levelUrl}${separator}scroll=true`;
 }

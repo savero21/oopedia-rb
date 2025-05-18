@@ -34,9 +34,9 @@ use Illuminate\Support\Str;
                     <div class="materi-card-body">
                         <h3 class="materi-title">Materi Pembelajaran</h3>
                         <div class="materi-overview">
-                            <div class="materi-count">
-                                <i class="fas fa-book me-2"></i>
-                                <span class="count-number">{{ $totalMaterials }}</span>
+                            <div class="materi-count text-center">
+                                <img src="{{ asset('images/book-icon.png') }}" alt="Materi" class="dashboard-icon-large mb-2">
+                                <div class="count-number-large">{{ $totalMaterials }}</div>
                             </div>
                             <p class="materi-description">Total materi tersedia untuk dipelajari</p>
                             <div class="button-container">
@@ -55,9 +55,9 @@ use Illuminate\Support\Str;
                     <div class="materi-card-body">
                         <h3 class="materi-title">Latihan Soal</h3>
                         <div class="materi-overview">
-                            <div class="materi-count">
-                                <i class="fas fa-question-circle me-2"></i>
-                                <span class="count-number">{{ $totalQuestions }}</span>
+                            <div class="materi-count text-center">
+                                <img src="{{ asset('images/question-icon.png') }}" alt="Soal" class="dashboard-icon-large mb-2">
+                                <div class="count-number-large">{{ $totalQuestions }}</div>
                             </div>
                             <p class="materi-description">Total soal tersedia untuk latihan</p>
                             <div class="difficulty-breakdown">
@@ -115,17 +115,17 @@ use Illuminate\Support\Str;
                                             @endif
                                         </div>
                                         <div class="activity-details">
-            @if($activity->type === 'achievement')
-            Menyelesaikan {{ $activity->total_correct }} soal di materi 
-            <span class="fw-bold">{{ $activity->material_title }}</span>
-        @elseif($activity->type === 'milestone')
-            Berhasil menyelesaikan soal level hard di materi 
-            <span class="fw-bold">{{ $activity->material_title }}</span>
-        @else
-            Mengerjakan soal {{ $activity->difficulty }} di materi 
-            <span class="fw-bold">{{ $activity->material_title }}</span>
-        @endif
-    </div>
+                                            @if($activity->type === 'achievement')
+                                                Menyelesaikan {{ $activity->total_correct }} soal di materi 
+                                                <span class="fw-bold">{{ $activity->material_title }}</span>
+                                            @elseif($activity->type === 'milestone')
+                                                Berhasil menyelesaikan soal level hard di materi 
+                                                <span class="fw-bold">{{ $activity->material_title }}</span>
+                                            @else
+                                                Mengerjakan soal {{ $activity->difficulty }} di materi 
+                                                <span class="fw-bold">{{ $activity->material_title }}</span>
+                                            @endif
+                                        </div>
                                         <div class="activity-time">
                                             {{ \Carbon\Carbon::parse($activity->created_at)->diffForHumans() }}
                                         </div>
@@ -173,7 +173,9 @@ use Illuminate\Support\Str;
     #dashboard-container .container-fluid {
         padding-top: 1rem !important;
     }
-    /* Custom Tour Styling */ .introjs-tooltip {
+
+    /* Custom Tour Styling */ 
+    .introjs-tooltip {
         border-radius: 12px !important;
         padding: 20px !important;
         max-width: 400px !important;
@@ -274,6 +276,34 @@ use Illuminate\Support\Str;
         font-size: 0.95rem;
         line-height: 1.6;
     }
+
+    .dashboard-icon {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        vertical-align: middle;
+    }
+
+    .dashboard-icon-large {
+        width: 80px;
+        height: 80px;
+        display: block;
+        margin: 0 auto 10px;
+    }
+
+    .count-number-large {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #4e73df;
+    }
+
+    .materi-count {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 15px 0;
+    }
 </style>
 @endpush
 
@@ -361,4 +391,4 @@ use Illuminate\Support\Str;
     }
 </script>
 @endpush
-@endsection 
+@endsection

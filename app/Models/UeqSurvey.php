@@ -37,6 +37,8 @@ class UeqSurvey extends Model
         'attractive_unattractive',
         'friendly_unfriendly',
         'conservative_innovative',
+        'comments',
+        'suggestions'
     ];
 
     public function user()

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AdminStudentController extends Controller
 {
@@ -202,8 +203,25 @@ class AdminStudentController extends Controller
         try {
             DB::beginTransaction();
             
-            // Hapus data terkait
-            $student->progress()->delete();
+            // Hapus semua data terkait
+            // 1. Delete user_ranks records
+            DB::table('user_ranks')->where('user_id', $student->id)->delete();
+            
+            // 2. Delete progress records
+            DB::table('progress')->where('user_id', $student->id)->delete();
+            
+            // 3. Check for any other possible tables that might have foreign keys
+            // You can add more tables here as needed
+            // For example: student_answers, quiz_attempts, etc.
+            if (Schema::hasTable('student_answers')) {
+                DB::table('student_answers')->where('student_id', $student->id)->delete();
+            }
+            
+            if (Schema::hasTable('quiz_attempts')) {
+                DB::table('quiz_attempts')->where('user_id', $student->id)->delete();
+            }
+            
+            // Finally delete the student
             $student->delete();
             
             DB::commit();

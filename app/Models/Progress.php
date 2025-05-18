@@ -9,7 +9,15 @@ class Progress extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'material_id', 'question_id', 'is_answered', 'is_correct'];
+    protected $fillable = [
+        'user_id',
+        'material_id',
+        'question_id',
+        'is_correct',
+        'is_answered',
+        'answer_id',
+        'attempt_number',
+    ];
 
     public function user()
     {

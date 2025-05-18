@@ -515,5 +515,76 @@
 @endpush
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Add this before the closing </body> tag -->
+<x-loading-overlay />
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    
+    // Show loading on page load
+    showLoading();
+    
+    // Hide when page is fully loaded
+    window.addEventListener('load', function() {
+        hideLoading();
+    });
+    
+    // Show loading on navigation
+    document.addEventListener('click', function(event) {
+        const link = event.target.closest('a');
+        if (link && 
+            link.href && 
+            !link.target && 
+            link.hostname === window.location.hostname && 
+            !link.hasAttribute('data-bs-toggle') && 
+            !link.classList.contains('no-loading')) {
+            showLoading();
+        }
+    });
+    
+    // Show loading on form submissions
+    document.addEventListener('submit', function(event) {
+        if (!event.target.classList.contains('ajax-form')) {
+            showLoading();
+        }
+    });
+    
+    // Intercept fetch requests
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+        showLoading();
+        return originalFetch.apply(this, arguments)
+            .then(response => {
+                hideLoading();
+                return response;
+            })
+            .catch(error => {
+                hideLoading();
+                throw error;
+            });
+    };
+    
+    // Safety timeout to prevent infinite loading
+    let loadingTimeout;
+    
+    // Helper functions
+    window.showLoading = function() {
+        loadingOverlay.classList.add('show');
+        
+        // Set safety timeout
+        clearTimeout(loadingTimeout);
+        loadingTimeout = setTimeout(() => {
+            hideLoading();
+        }, 10000); // 10 seconds max
+    };
+    
+    window.hideLoading = function() {
+        clearTimeout(loadingTimeout);
+        loadingOverlay.classList.remove('show');
+    };
+});
+</script>
 </body>
 </html>

@@ -46,6 +46,7 @@
                                     <thead>
                                         <tr>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Bank Soal</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Materi</th>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Dibuat Oleh</th>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tanggal Dibuat</th>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Aksi</th>
@@ -61,6 +62,9 @@
                                                         <p class="text-xs text-secondary mb-0">{{ Str::limit($bank->description, 50) }}</p>
                                                     </div>
                                                 </div>
+                                            </td>
+                                            <td>
+                                                <p class="text-sm mb-0">{{ $bank->material->title ?? 'Tidak ada materi' }}</p>
                                             </td>
                                             <td>
                                                 <div class="d-flex px-2 py-1">
@@ -105,7 +109,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="4" class="text-center py-4">
+                                            <td colspan="5" class="text-center py-4">
                                                 <p class="text-sm mb-0">Belum ada bank soal</p>
                                             </td>
                                         </tr>
