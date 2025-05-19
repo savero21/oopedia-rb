@@ -11,6 +11,8 @@ class UeqSurvey extends Model
 
     protected $fillable = [
         'user_id',
+        'nim',
+        'class',
         'annoying_enjoyable',
         'not_understandable_understandable',
         'creative_dull',

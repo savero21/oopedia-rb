@@ -1,6 +1,33 @@
 @push('css')
 <link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
 <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
+
+<style>
+    /* Styling untuk tombol toggle sidebar */
+    #sidebarToggleBtn {
+        background: transparent;
+        color: #ffffff;
+        border: none;
+        font-size: 1.2rem;
+        padding: 0.25rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: none; /* Default hidden, akan ditampilkan melalui media query */
+    }
+    
+    #sidebarToggleBtn:hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+    
+    @media (max-width: 991.98px) {
+        #sidebarToggleBtn {
+            display: block; /* Tampilkan di layar mobile */
+        }
+    }
+</style>
 @endpush
 
 
@@ -8,6 +35,11 @@
     <div class="container-fluid">
         <!-- Left side group -->
         <div class="d-flex align-items-center h-100">
+            <!-- Sidebar Toggle Button - hanya muncul di mobile -->
+            <button id="sidebarToggleBtn" class="btn btn-icon d-lg-none me-2">
+                <i class="fas fa-bars"></i>
+            </button>
+            
             <!-- Navigation links -->
             <div class="nav-links">
                 <ul class="nav-menu">
@@ -100,10 +132,10 @@
                         </a>
                     </li>
                     <li>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form id="logout-form" method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
-                                <span>Logout</span>
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
                             </button>
                         </form>
                     </li>
@@ -155,6 +187,55 @@
         if (isLoggedIn && !isMainTutorialCompleted && isDashboardPage && !sidebarClicked && !sessionStorage.getItem('skip_tour')) {
             startTutorial();
         }
+        
+        // Tambahkan fungsi toggle sidebar
+        const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+        const sidebar = document.querySelector('.sidebar');
+        let sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+        
+        // Buat backdrop jika belum ada
+        if (!sidebarBackdrop) {
+            sidebarBackdrop = document.createElement('div');
+            sidebarBackdrop.className = 'sidebar-backdrop';
+            document.body.appendChild(sidebarBackdrop);
+        }
+        
+        // Fungsi toggle sidebar
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            sidebarBackdrop.classList.toggle('show');
+            
+            // Simpan state ke localStorage
+            const isSidebarOpen = sidebar.classList.contains('show');
+            localStorage.setItem('sidebarOpen', isSidebarOpen);
+        }
+        
+        // Toggle sidebar ketika tombol di klik
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleSidebar();
+            });
+        }
+        
+        // Tutup sidebar ketika klik di luar
+        sidebarBackdrop.addEventListener('click', function() {
+            toggleSidebar();
+        });
+        
+        // Tutup sidebar ketika menekan tombol Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                toggleSidebar();
+            }
+        });
+
+        // Fix logout button text and icons
+        const logoutButtons = document.querySelectorAll('form[action*="logout"] button');
+        logoutButtons.forEach(function(button) {
+            // Hapus semua isi dan set ulang dengan benar
+            button.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i> Logout';
+        });
     });
 
     // Fungsi untuk memulai tutorial
@@ -228,6 +309,19 @@
             
             // Untuk materi, biarkan lanjut tanpa tour
             sessionStorage.setItem('skip_tour', 'true');
+            
+            // Tutup sidebar otomatis di mobile setelah link diklik
+            if (window.innerWidth <= 991.98) {
+                const sidebar = document.querySelector('.sidebar');
+                const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+                
+                if (sidebar && sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.remove('show');
+                    }
+                }
+            }
         });
     });
 </script>

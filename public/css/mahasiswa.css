@@ -3493,3 +3493,115 @@ button.dropdown-item[type="submit"]::before {
 .materials-container {
     padding-top: 0.5rem !important;
 }
+
+/* Responsive Sidebar Styles */
+.sidebar-toggler {
+    display: none;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+}
+
+.sidebar-toggler:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+/* Improved Profile Dropdown */
+.profile-dropdown .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 220px;
+    margin-top: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 8px;
+}
+
+.profile-dropdown .dropdown-item {
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.profile-dropdown .dropdown-item:hover {
+    background-color: rgba(0, 78, 152, 0.08);
+    transform: translateX(5px);
+}
+
+.profile-dropdown .dropdown-divider {
+    margin: 0.5rem 0;
+    opacity: 0.1;
+}
+
+.profile-dropdown .dropdown-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+    color: var(--color-1);
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 991.98px) {
+    .sidebar-toggler {
+        display: block;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1030;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        transition: margin 0.3s ease;
+    }
+    
+    .main-content.sidebar-open {
+        margin-left: 250px !important;
+    }
+    
+    /* Fix profile dropdown on mobile */
+    .profile-dropdown .dropdown-menu {
+        position: absolute;
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    /* Improve the profile section visibility */
+    .profile-image {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    /* Add backdrop when sidebar is open */
+    .sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1025;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-backdrop.show {
+        opacity: 1;
+        visibility: visible;
+    }
+}

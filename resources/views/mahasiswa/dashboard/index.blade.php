@@ -35,8 +35,10 @@ use Illuminate\Support\Str;
                         <h3 class="materi-title">Materi Pembelajaran</h3>
                         <div class="materi-overview">
                             <div class="materi-count text-center">
-                                <img src="{{ asset('images/book-icon.png') }}" alt="Materi" class="dashboard-icon-large mb-2">
-                                <div class="count-number-large">{{ $totalMaterials }}</div>
+                                <div class="d-flex flex-column align-items-center">
+                                    <img src="{{ asset('images/book-icon.png') }}" alt="Materi" class="dashboard-icon-large mb-2">
+                                    <div class="count-number-large">{{ $totalMaterials }}</div>
+                                </div>
                             </div>
                             <p class="materi-description">Total materi tersedia untuk dipelajari</p>
                             <div class="button-container">
@@ -56,8 +58,10 @@ use Illuminate\Support\Str;
                         <h3 class="materi-title">Latihan Soal</h3>
                         <div class="materi-overview">
                             <div class="materi-count text-center">
-                                <img src="{{ asset('images/question-icon.png') }}" alt="Soal" class="dashboard-icon-large mb-2">
-                                <div class="count-number-large">{{ $totalQuestions }}</div>
+                                <div class="d-flex flex-column align-items-center">
+                                    <img src="{{ asset('images/question-icon.png') }}" alt="Soal" class="dashboard-icon-large mb-2">
+                                    <div class="count-number-large">{{ $totalQuestions }}</div>
+                                </div>
                             </div>
                             <p class="materi-description">Total soal tersedia untuk latihan</p>
                             <div class="difficulty-breakdown">
@@ -276,6 +280,21 @@ use Illuminate\Support\Str;
         line-height: 1.6;
 
     }
+
+    .dashboard-icon-large {
+        width: 64px;
+        height: 64px;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    /* Responsive sizing untuk layar kecil */
+    @media (max-width: 768px) {
+        .dashboard-icon-large {
+            width: 48px;
+            height: 48px;
+        }
+    }
 </style>
 @endpush
 
@@ -349,7 +368,7 @@ use Illuminate\Support\Str;
             scrollToElement: true,
             nextLabel: 'Berikutnya →',
             prevLabel: '← Sebelumnya',
-            skipLabel: 'Lewati Tour',
+            skipLabel: 'X',
             doneLabel: 'Mulai Belajar',
             tooltipClass: 'custom-tour',
             highlightClass: 'custom-highlight',
@@ -361,6 +380,74 @@ use Illuminate\Support\Str;
             sessionStorage.setItem('dashboard_tour_complete', 'true');
         }).start();
     }
+
+    // Add sidebar toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        let sidebarBackdrop;
+        
+        // Create backdrop element if it doesn't exist
+        if (!document.querySelector('.sidebar-backdrop')) {
+            sidebarBackdrop = document.createElement('div');
+            sidebarBackdrop.className = 'sidebar-backdrop';
+            document.body.appendChild(sidebarBackdrop);
+        } else {
+            sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+        }
+        
+        // Toggle sidebar function
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            sidebarBackdrop.classList.toggle('show');
+            
+            // Save state to localStorage
+            const isSidebarOpen = sidebar.classList.contains('show');
+            localStorage.setItem('sidebarOpen', isSidebarOpen);
+        }
+        
+        // Toggle sidebar on button click
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleSidebar();
+            });
+        }
+        
+        // Close sidebar when clicking outside
+        sidebarBackdrop.addEventListener('click', function() {
+            toggleSidebar();
+        });
+        
+        // Close sidebar when pressing Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                toggleSidebar();
+            }
+        });
+        
+        // Check if sidebar should be open on page load (for larger screens)
+        if (window.innerWidth > 991.98) {
+            sidebar.classList.remove('show');
+            sidebarBackdrop.classList.remove('show');
+        } else {
+            // For mobile: check localStorage preference
+            const sidebarShouldBeOpen = localStorage.getItem('sidebarOpen') === 'true';
+            if (sidebarShouldBeOpen) {
+                sidebar.classList.add('show');
+                sidebarBackdrop.classList.add('show');
+            }
+        }
+        
+        // Handle resize events
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 991.98) {
+                sidebar.classList.remove('show');
+                sidebarBackdrop.classList.remove('show');
+            }
+        });
+    });
 </script>
 @endpush
 @endsection 
