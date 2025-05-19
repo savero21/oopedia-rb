@@ -1,33 +1,6 @@
 @push('css')
 <link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
 <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
-
-<style>
-    /* Styling untuk tombol toggle sidebar */
-    #sidebarToggleBtn {
-        background: transparent;
-        color: #ffffff;
-        border: none;
-        font-size: 1.2rem;
-        padding: 0.25rem;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: none; /* Default hidden, akan ditampilkan melalui media query */
-    }
-    
-    #sidebarToggleBtn:hover {
-        color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-    }
-    
-    @media (max-width: 991.98px) {
-        #sidebarToggleBtn {
-            display: block; /* Tampilkan di layar mobile */
-        }
-    }
-</style>
 @endpush
 
 
@@ -132,10 +105,10 @@
                         </a>
                     </li>
                     <li>
-                        <form id="logout-form" method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                                <span>Logout</span>
                             </button>
                         </form>
                     </li>
@@ -228,13 +201,6 @@
             if (e.key === 'Escape' && sidebar.classList.contains('show')) {
                 toggleSidebar();
             }
-        });
-
-        // Fix logout button text and icons
-        const logoutButtons = document.querySelectorAll('form[action*="logout"] button');
-        logoutButtons.forEach(function(button) {
-            // Hapus semua isi dan set ulang dengan benar
-            button.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i> Logout';
         });
     });
 

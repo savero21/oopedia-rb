@@ -227,22 +227,6 @@
         position: relative;
         z-index: 2;
     }
-
-    /* Force logout text to be correct */
-    .dropdown-item[onclick*="logout-form"] {
-        font-size: 14px !important;
-    }
-    
-    .dropdown-item[onclick*="logout-form"] i {
-        margin-right: 8px;
-    }
-    
-    /* Prevent form submit from changing text */
-    #ueqForm button[type="submit"] {
-        color: #fff;
-        background-color: #007bff;
-        border-color: #007bff;
-    }
 </style>
 @endpush
 
@@ -482,23 +466,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (logoutButton) {
                 logoutButton.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i> Logout';
             }
-        });
-    }
-
-    // Fix for logout button text
-    const logoutButtons = document.querySelectorAll('form[action*="logout"] button, a[onclick*="logout-form"]');
-    logoutButtons.forEach(function(button) {
-        if (button.innerHTML.includes('Kirim')) {
-            button.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i> Logout';
-        }
-    });
-    
-    // Prevent UEQ form from affecting logout
-    const ueqForm = document.getElementById('ueqForm');
-    if (ueqForm) {
-        ueqForm.addEventListener('submit', function(e) {
-            // Stop form submission from affecting other buttons
-            e.stopPropagation();
         });
     }
 });
