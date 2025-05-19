@@ -201,14 +201,14 @@
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                     <li>
                         <a class="dropdown-item" href="{{ route('mahasiswa.profile') }}">
-                            <i class="fas fa-user me-2"></i> <span>Profil Saya</span>
+                            <span>Profil Saya</span>
                         </a>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt me-2"></i> <span>Logout</span>
+                                <span>Logout</span>
                             </button>
                         </form>
                     </li>
