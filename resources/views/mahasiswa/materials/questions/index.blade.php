@@ -757,7 +757,7 @@
             nextLabel: 'Berikutnya',
         prevLabel: 'Sebelumnya', 
         doneLabel: 'Mulai Berlatih',
-        skipLabel: 'Lewati Panduan',
+        skipLabel: 'X',
         showSkipButton: true,
         tooltipClass: 'custom-introjs-tooltip',
         hidePrev: true
