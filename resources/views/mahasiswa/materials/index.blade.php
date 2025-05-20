@@ -71,14 +71,36 @@
                 <div class="material-stats">
                     <div class="stats-pill">
                         <i class="fas fa-question-circle"></i> 
-                        @if(!auth()->check() || (auth()->check() && auth()->user()->role_id === 4))
-                            9 Soal
+                        @php
+                            $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+                            
+                            // Calculate configured question count
+                            if ($isGuest) {
+                                // For guests, limit to 3 questions per difficulty level
+                                $beginnerCount = min(3, $material->questions->where('difficulty', 'beginner')->count());
+                                $mediumCount = min(3, $material->questions->where('difficulty', 'medium')->count());
+                                $hardCount = min(3, $material->questions->where('difficulty', 'hard')->count());
+                                $configuredTotalQuestions = $beginnerCount + $mediumCount + $hardCount;
+                            } else {
+                                // For registered users, use admin configuration
+                                $config = App\Models\QuestionBankConfig::where('material_id', $material->id)
+                                    ->where('is_active', true)
+                                    ->first();
+                                
+                                if ($config) {
+                                    $configuredTotalQuestions = $config->beginner_count + $config->medium_count + $config->hard_count;
+                                } else {
+                                    $configuredTotalQuestions = $material->questions->count();
+                                }
+                            }
+                        @endphp
+                        
+                        {{ $configuredTotalQuestions }} Soal
+                        @if($isGuest)
                             <span class="guest-mode-badge ms-2">
                                 <i class="fas fa-lock-open text-warning"></i>
                                 Mode Tamu
                             </span>
-                        @else
-                            {{ $material->questions->count() }} Soal
                         @endif
                     </div>
                     
