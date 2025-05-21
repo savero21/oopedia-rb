@@ -162,7 +162,7 @@ class UeqSurveyController extends Controller
             
             // Add CSV headers
             fputcsv($file, [
-                'ID', 'NIM', 'Nama Pengguna', 'Kelas', 'Tanggal Pengisian',
+                'ID', 'NIM', 'Nama Pengguna', 'Email', 'Kelas', 'Tanggal Pengisian',
                 // 26 aspek UEQ
                 'Annoying - Enjoyable',
                 'Not Understandable - Understandable',
@@ -199,6 +199,7 @@ class UeqSurveyController extends Controller
                     $survey->id,
                     $survey->nim ?? '',
                     optional($survey->user)->name ?? 'Tidak ada',
+                    optional($survey->user)->email ?? 'Tidak ada',
                     $survey->class ?? '',
                     $survey->created_at->format('d/m/Y H:i'),
                     // 26 aspek UEQ
