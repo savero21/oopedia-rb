@@ -114,6 +114,4 @@
         </div>
     </main>
     <x-admin.tutorial />
-
-</x-layout>
-@endpush 
+</x-layout> 
