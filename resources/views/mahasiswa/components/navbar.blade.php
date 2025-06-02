@@ -1,6 +1,100 @@
 @push('css')
 <link href="{{ asset('css/mahasiswa.css') }}" rel="stylesheet">
 <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
+<style>
+    /* Perbaikan responsif navbar */
+    @media (max-width: 767.98px) {
+        .navbar .container-fluid {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        
+        /* Profile dropdown style untuk mobile */
+        .profile-dropdown {
+            position: static;  /* Penting: membuat dropdown muncul relatif terhadap navbar */
+        }
+        
+        .profile-dropdown .dropdown-menu {
+            position: absolute;
+            right: 10px;
+            left: auto;
+            width: auto;
+            min-width: 200px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Animasi dropdown yang lebih halus */
+        .dropdown-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        
+        .dropdown-menu {
+            transform: translateY(-10px);
+            opacity: 0;
+        }
+    }
+    
+    /* Perbaikan umum */
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+    }
+    
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+    }
+    
+    .profile-image {
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .mobile-header-links {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mobile-header-links .btn-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        color: #333;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .mobile-header-links .btn-icon.active {
+        background: #007bff;
+        color: white;
+    }
+    
+    @media (max-width: 359.98px) {
+        .profile-image {
+            width: 25px;
+            height: 25px;
+        }
+        
+        .navbar .container-fluid {
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        
+        .btn-icon {
+            padding: 0.25rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
 @endpush
 
 
@@ -8,6 +102,11 @@
     <div class="container-fluid">
         <!-- Left side group -->
         <div class="d-flex align-items-center h-100">
+            <!-- Sidebar Toggle Button - hanya muncul di mobile -->
+            <button id="sidebarToggleBtn" class="btn btn-icon d-lg-none me-2">
+                <i class="fas fa-bars"></i>
+            </button>
+            
             <!-- Navigation links -->
             <div class="nav-links">
                 <ul class="nav-menu">
@@ -31,6 +130,9 @@
                            title="@auth Kumpulan materi pembelajaran @else Kumpulan materi pembelajaran @endauth">
                             <i class="fas fa-book me-2"></i>
                             <span>Materi</span>
+                            @guest
+                                <small class="badge bg-warning text-dark ms-1">Terbatas</small>
+                            @endguest
                         </a>
                     </li>
                     <li>
@@ -54,6 +156,9 @@
                            title="Papan peringkat pengguna berdasarkan skor">
                             <i class="fas fa-trophy me-2"></i>
                             <span>Peringkat</span>
+                            @guest
+                                <small class="badge bg-danger text-white ms-1">Perlu Login</small>
+                            @endguest
                         </a>
                     </li>
                 </ul>
@@ -61,7 +166,7 @@
         </div>
 
         <!-- Right side - Profile/Logout/Login/Register -->
-        <div class="d-flex align-items-center ms-auto">
+        <div class="d-flex align-items-center">
             @guest
                 <div class="auth-buttons me-3 d-none d-md-flex">
                     <a href="{{ route('login') }}" class="btn btn-primary btn-sm me-2" 
@@ -77,22 +182,23 @@
                         <i class="fas fa-user-plus me-1"></i> Register
                     </a>
                 </div>
+                <!-- Tampilkan tombol kecil untuk login di mobile -->
+                <div class="d-md-none">
+                    <a href="{{ route('login') }}" class="btn btn-sm btn-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                </div>
             @endguest
             
             @auth
             <div class="dropdown profile-dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{{ asset('images/profile.gif') }}" alt="Profile" class="profile-image me-2" width="30" height="30">
+                    <img src="{{ asset('images/profile.gif') }}" alt="Profile" class="profile-image me-1" width="30" height="30">
                     <span class="profile-name d-none d-sm-inline">
                         {{ auth()->user()->name }}
                     </span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    <li>
-                        <a class="dropdown-item" href="{{ route('mahasiswa.profile') }}">
-                            <span>Profil Saya</span>
-                        </a>
-                    </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -148,6 +254,68 @@
         // Skip tutorial for guests and on question pages
         if (isLoggedIn && !isMainTutorialCompleted && isDashboardPage && !sidebarClicked && !sessionStorage.getItem('skip_tour')) {
             startTutorial();
+        }
+        
+        // SOLUSI BARU: Pendekatan langsung untuk toggle sidebar
+        // Dapatkan elemen-elemen yang diperlukan
+        const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+        const sidebar = document.querySelector('.sidebar');
+        let sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+        
+        // Periksa apakah backdrop sudah ada
+        if (!sidebarBackdrop) {
+            // Jika belum ada, buat elemen backdrop baru
+            sidebarBackdrop = document.createElement('div');
+            sidebarBackdrop.className = 'sidebar-backdrop';
+            document.body.appendChild(sidebarBackdrop);
+        }
+        
+        // Fungsi sederhana untuk toggle sidebar
+        function toggleSidebar() {
+            console.log('Toggle sidebar dipanggil'); // Logging untuk debugging
+            sidebar.classList.toggle('show');
+            sidebarBackdrop.classList.toggle('show');
+        }
+        
+        // PENTING: Pasang event listener langsung dengan implementasi paling sederhana
+        sidebarToggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Tombol sidebar diklik'); // Logging untuk debugging
+            toggleSidebar();
+        });
+        
+        // Event listener untuk backdrop (untuk menutup sidebar saat klik di luar)
+        sidebarBackdrop.addEventListener('click', function() {
+            if (sidebar.classList.contains('show')) {
+                toggleSidebar();
+            }
+        });
+        
+        // Event listener untuk tombol Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                toggleSidebar();
+            }
+        });
+        
+        // Tambahkan event listener untuk semua link di sidebar 
+        // agar sidebar tertutup saat link diklik (pada tampilan mobile)
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 991.98 && sidebar.classList.contains('show')) {
+                    toggleSidebar();
+                }
+            });
+        });
+        
+        // Juga tambahkan event listener untuk tombol tutup di sidebar
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', function() {
+                if (sidebar.classList.contains('show')) {
+                    toggleSidebar();
+                }
+            });
         }
     });
 
@@ -222,6 +390,19 @@
             
             // Untuk materi, biarkan lanjut tanpa tour
             sessionStorage.setItem('skip_tour', 'true');
+            
+            // Tutup sidebar otomatis di mobile setelah link diklik
+            if (window.innerWidth <= 991.98) {
+                const sidebar = document.querySelector('.sidebar');
+                const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+                
+                if (sidebar && sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.remove('show');
+                    }
+                }
+            }
         });
     });
 </script>

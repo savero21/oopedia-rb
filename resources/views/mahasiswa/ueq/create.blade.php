@@ -32,6 +32,41 @@
                     
                     <form id="ueqForm" method="POST" action="{{ route('mahasiswa.ueq.store') }}">
                         @csrf
+                        
+                        <!-- Tambahkan bagian form identitas mahasiswa -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="nim" class="form-label">NIM <span class="text-danger fw-bold">*</span></label>
+                                    <input type="text" class="form-control @error('nim') is-invalid @enderror" 
+                                        id="nim" name="nim" value="{{ old('nim') }}" required>
+                                    @error('nim')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nama Lengkap <span class="text-danger fw-bold">*</span></label>
+                                    <input type="text" class="form-control bg-light"
+                                        id="name" value="{{ auth()->check() ? auth()->user()->name : '' }}" readonly
+                                        style="cursor: not-allowed; opacity: 0.7;">
+                                    <small class="text-muted">Nama diambil dari data profil</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="class" class="form-label">Kelas <span class="text-danger fw-bold">*</span></label>
+                                    <input type="text" class="form-control @error('class') is-invalid @enderror" 
+                                        id="class" name="class" value="{{ old('class') }}" 
+                                        placeholder="contoh: SIB2A" required>
+                                    @error('class')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <!-- Header table tidak berubah -->
@@ -171,6 +206,26 @@
         content: " *";
         color: #dc3545;
         font-weight: bold;
+    }
+
+    /* Memastikan tombol logout selalu menampilkan teks "Logout" */
+    #logout-button::after,
+    #logout-button.dropdown-item::after,
+    button.logout-button::after {
+        content: "Logout" !important;
+        position: absolute;
+        display: none;
+    }
+    
+    #logout-button,
+    button.logout-button {
+        position: relative;
+    }
+    
+    #logout-button span,
+    button.logout-button span {
+        position: relative;
+        z-index: 2;
     }
 </style>
 @endpush
@@ -397,6 +452,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 500);
     @endif
+
+    // Memastikan teks tombol logout tidak berubah
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+        logoutButton.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i> Logout';
+    }
+    
+    // Mencegah form UEQ memengaruhi tombol logout
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const logoutButton = document.getElementById('logout-button');
+            if (logoutButton) {
+                logoutButton.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i> Logout';
+            }
+        });
+    }
 });
 </script>
 @endpush

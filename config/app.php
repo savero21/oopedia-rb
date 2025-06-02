@@ -159,7 +159,9 @@ return [
         /*
          * Package Service Providers...
          */
-
+        // Hapus atau komentari baris SailServiceProvider ini
+        // Laravel\Sail\SailServiceProvider::class,
+        
         /*
          * Application Service Providers...
          */

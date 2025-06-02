@@ -52,79 +52,47 @@ class UeqSurveyController extends Controller
 
     public function store(Request $request)
     {
-        // Check if this is an AJAX request
-        $isAjax = $request->ajax();
-        
         // Check if user has already submitted a survey
         $existingSurvey = UeqSurvey::where('user_id', auth()->id())->first();
         if ($existingSurvey) {
-            if ($isAjax) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda sudah mengisi survey sebelumnya',
-                    'redirect' => route('mahasiswa.ueq.thankyou')
-                ]);
-            }
             return redirect()->route('mahasiswa.ueq.thankyou');
         }
 
-        // Pre-validation check for empty fields
-        $emptyFields = $this->checkEmptyFields($request);
-        if (count($emptyFields) > 0) {
-            if ($isAjax) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ada ' . count($emptyFields) . ' pertanyaan yang belum dijawab',
-                    'emptyFields' => $emptyFields
-                ]);
-            }
-            return $this->handleEmptyFields($request, $emptyFields);
-        }
-
-        // Full validation with rules
-        $validator = Validator::make($request->all(), $this->getValidationRules(), $this->getValidationMessages());
-
+        // Tambahkan validasi untuk kolom baru
+        $rules = $this->getValidationRules();
+        $rules['nim'] = 'required|string|max:20';
+        $rules['class'] = 'required|string|max:20';
+        
+        $messages = $this->getValidationMessages();
+        $messages['nim.required'] = 'NIM wajib diisi';
+        $messages['class.required'] = 'Kelas wajib diisi';
+        
+        $validator = Validator::make($request->all(), $rules, $messages);
+        
         if ($validator->fails()) {
-            $missingFields = array_keys($validator->errors()->messages());
-            if ($isAjax) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ada ' . count($missingFields) . ' pertanyaan yang belum dijawab atau tidak valid',
-                    'errors' => $validator->errors(),
-                    'missingFields' => $missingFields
-                ]);
-            }
-            return $this->handleValidationErrors($request, $validator, $missingFields);
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('missingFields', $validator->errors()->keys());
         }
 
-        // Process valid data
-        try {
-            $validatedData = $validator->validated();
-            $validatedData['user_id'] = auth()->id();
-            
-            UeqSurvey::create($validatedData);
-            
-            if ($isAjax) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Survey berhasil disimpan',
-                    'redirect' => route('mahasiswa.ueq.thankyou')
-                ]);
-            }
-            
-            return redirect()->route('mahasiswa.ueq.thankyou');
-        } catch (\Exception $e) {
-            \Log::error('Error creating survey', ['error' => $e->getMessage()]);
-            
-            if ($isAjax) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat menyimpan survey: ' . $e->getMessage()
-                ]);
-            }
-            
-            return back()->with('error', 'Terjadi kesalahan saat menyimpan survey: ' . $e->getMessage());
+        // Buat record survey baru
+        $survey = new UeqSurvey();
+        $survey->user_id = auth()->id();
+        $survey->nim = $request->nim;
+        $survey->class = $request->class;
+        
+        // Set semua aspek UEQ (kode yang sudah ada)
+        foreach ($this->getAspects() as $aspect) {
+            $name = $aspect['name'];
+            $survey->{$name} = $request->input($name);
         }
+        
+        $survey->comments = $request->comments;
+        $survey->suggestions = $request->suggestions;
+        $survey->save();
+
+        return redirect()->route('mahasiswa.ueq.thankyou');
     }
     
     /**
@@ -220,7 +188,9 @@ class UeqSurveyController extends Controller
             'friendly_unfriendly' => 'required|integer|between:1,7',
             'conservative_innovative' => 'required|integer|between:1,7',
             'comments' => 'required|max:1000',
-            'suggestions' => 'required|max:1000'
+            'suggestions' => 'required|max:1000',
+            'nim' => 'required|string|max:20',
+            'class' => 'required|string|max:20'
         ];
     }
     
@@ -286,12 +256,51 @@ class UeqSurveyController extends Controller
             'comments.max' => 'Komentar tidak boleh lebih dari 1000 karakter',
             'suggestions.max' => 'Saran tidak boleh lebih dari 1000 karakter',
             'comments.required' => 'Komentar wajib diisi',
-            'suggestions.required' => 'Saran wajib diisi'
+            'suggestions.required' => 'Saran wajib diisi',
+            'nim.required' => 'NIM wajib diisi',
+            'class.required' => 'Kelas wajib diisi'
         ];
     }
     
     public function thankyou()
     {
         return view('mahasiswa.ueq.thankyou');
+    }
+
+    /**
+     * Get all UEQ survey aspects
+     * 
+     * @return array
+     */
+    private function getAspects()
+    {
+        return [
+            ['name' => 'annoying_enjoyable'],
+            ['name' => 'not_understandable_understandable'],
+            ['name' => 'creative_dull'],
+            ['name' => 'easy_difficult'],
+            ['name' => 'valuable_inferior'],
+            ['name' => 'boring_exciting'],
+            ['name' => 'not_interesting_interesting'],
+            ['name' => 'unpredictable_predictable'],
+            ['name' => 'fast_slow'],
+            ['name' => 'inventive_conventional'],
+            ['name' => 'obstructive_supportive'],
+            ['name' => 'good_bad'],
+            ['name' => 'complicated_easy'],
+            ['name' => 'unlikable_pleasing'],
+            ['name' => 'usual_leading_edge'],
+            ['name' => 'unpleasant_pleasant'],
+            ['name' => 'secure_not_secure'],
+            ['name' => 'motivating_demotivating'],
+            ['name' => 'meets_expectations_does_not_meet'],
+            ['name' => 'inefficient_efficient'],
+            ['name' => 'clear_confusing'],
+            ['name' => 'impractical_practical'],
+            ['name' => 'organized_cluttered'],
+            ['name' => 'attractive_unattractive'],
+            ['name' => 'friendly_unfriendly'],
+            ['name' => 'conservative_innovative']
+        ];
     }
 } 

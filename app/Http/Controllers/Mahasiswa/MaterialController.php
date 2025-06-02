@@ -16,8 +16,20 @@ class MaterialController extends Controller
     {
         $material = Material::findOrFail($id);
         
-        // Untuk sidebar
-        $materials = Material::orderBy('created_at', 'asc')->get();
+        // Check if user is guest
+        $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+        
+        // Get all materials first
+        $allMaterials = Material::orderBy('created_at', 'asc')->get();
+        
+        // If user is guest, only show half of the materials
+        if ($isGuest) {
+            $totalMaterials = $allMaterials->count();
+            $materialsToShow = ceil($totalMaterials / 2);
+            $materials = $allMaterials->take($materialsToShow);
+        } else {
+            $materials = $allMaterials;
+        }
         
         // Acak urutan jawaban untuk setiap soal
         foreach ($material->questions as $question) {
@@ -27,7 +39,7 @@ class MaterialController extends Controller
         }
         
         // Limit questions for guest users (both when logged in as guest or not logged in)
-        if ((auth()->check() && auth()->user()->role_id === 4) || !auth()->check()) {
+        if ($isGuest) {
             // Get the first 3 questions only
             $limitedQuestions = $material->questions->take(3);
             
@@ -54,7 +66,6 @@ class MaterialController extends Controller
 
         if ($answeredCount >= $material->questions->count()) {
             $currentQuestionNumber = "Review";
-
         }
         
         return view('mahasiswa.materials.show', compact('material', 'materials', 'currentQuestionNumber'));

@@ -35,8 +35,10 @@ use Illuminate\Support\Str;
                         <h3 class="materi-title">Materi Pembelajaran</h3>
                         <div class="materi-overview">
                             <div class="materi-count text-center">
-                                <img src="{{ asset('images/book-icon.png') }}" alt="Materi" class="dashboard-icon-large mb-2">
-                                <div class="count-number-large">{{ $totalMaterials }}</div>
+                                <div class="d-flex flex-column align-items-center">
+                                    <img src="{{ asset('images/book-icon.png') }}" alt="Materi" class="dashboard-icon-large mb-2">
+                                    <div class="count-number-large">{{ $totalMaterials }}</div>
+                                </div>
                             </div>
                             <p class="materi-description">Total materi tersedia untuk dipelajari</p>
                             <div class="button-container">
@@ -56,8 +58,10 @@ use Illuminate\Support\Str;
                         <h3 class="materi-title">Latihan Soal</h3>
                         <div class="materi-overview">
                             <div class="materi-count text-center">
-                                <img src="{{ asset('images/question-icon.png') }}" alt="Soal" class="dashboard-icon-large mb-2">
-                                <div class="count-number-large">{{ $totalQuestions }}</div>
+                                <div class="d-flex flex-column align-items-center">
+                                    <img src="{{ asset('images/question-icon.png') }}" alt="Soal" class="dashboard-icon-large mb-2">
+                                    <div class="count-number-large">{{ $totalQuestions }}</div>
+                                </div>
                             </div>
                             <p class="materi-description">Total soal tersedia untuk latihan</p>
                             <div class="difficulty-breakdown">
@@ -174,9 +178,8 @@ use Illuminate\Support\Str;
         padding-top: 1rem !important;
     }
 
-
-    /* Custom Tour Styling */ .introjs-tooltip {
-
+    /* Custom Tour Styling */
+    .introjs-tooltip {
         border-radius: 12px !important;
         padding: 20px !important;
         max-width: 400px !important;
@@ -276,7 +279,6 @@ use Illuminate\Support\Str;
         color: #2c3e50;
         font-size: 0.95rem;
         line-height: 1.6;
-
     }
 
     .dashboard-icon {
@@ -305,9 +307,21 @@ use Illuminate\Support\Str;
         align-items: center;
         justify-content: center;
         padding: 15px 0;
+    }
 
+    .dashboard-icon-large {
+        width: 64px;
+        height: 64px;
+        max-width: 100%;
+        object-fit: contain;
+    }
 
-
+    /* Responsive sizing untuk layar kecil */
+    @media (max-width: 768px) {
+        .dashboard-icon-large {
+            width: 48px;
+            height: 48px;
+        }
     }
 </style>
 @endpush
@@ -382,7 +396,7 @@ use Illuminate\Support\Str;
             scrollToElement: true,
             nextLabel: 'Berikutnya →',
             prevLabel: '← Sebelumnya',
-            skipLabel: 'Lewati Tour',
+            skipLabel: 'X',
             doneLabel: 'Mulai Belajar',
             tooltipClass: 'custom-tour',
             highlightClass: 'custom-highlight',

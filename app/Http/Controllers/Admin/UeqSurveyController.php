@@ -7,6 +7,8 @@ use App\Models\UeqSurvey;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UeqSurveyExport;
 
 class UeqSurveyController extends Controller
 {
@@ -22,10 +24,20 @@ class UeqSurveyController extends Controller
         });
     }
 
-    public function index()
+    public function index(Request $request)
     {
         // Ambil semua data survey dengan relasi user
-        $surveys = UeqSurvey::with('user')->get();
+        $query = UeqSurvey::with('user');
+        
+        // Filter berdasarkan kelas jika ada
+        if ($request->has('class') && !empty($request->class)) {
+            $query->where('class', $request->class);
+        }
+        
+        $surveys = $query->get();
+        
+        // Daftar kelas unik untuk filter dropdown
+        $classes = UeqSurvey::distinct()->pluck('class')->filter()->values();
         
         // Hitung rata-rata untuk setiap dimensi UEQ
         $averages = $this->calculateAverages($surveys);
@@ -37,6 +49,7 @@ class UeqSurveyController extends Controller
             'surveys' => $surveys,
             'averages' => $averages,
             'materials' => $materials,
+            'classes' => $classes,
             'activePage' => 'ueq',
             'userName' => auth()->user()->name,
             'userRole' => auth()->user()->role->role_name
@@ -122,61 +135,74 @@ class UeqSurveyController extends Controller
         return $averages;
     }
 
-    public function export()
+    /**
+     * Export UEQ Survey results filtered by class
+     */
+    public function export(Request $request)
     {
-        $surveys = UeqSurvey::with('user')->get();
+        $class = $request->input('class');
+        
+        // Query data
+        $query = UeqSurvey::with('user');
+        if ($class) {
+            $query->where('class', $class);
+        }
+        $surveys = $query->get();
         
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename=ueq_survey_results.csv',
+            'Content-Disposition' => 'attachment; filename="ueq-survey-results.csv"',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0'
         ];
-
-        $callback = function() use ($surveys) {
+        
+        $callback = function() use ($surveys, $headers) {
             $file = fopen('php://output', 'w');
             
-            // Add headers
+            // Add CSV headers
             fputcsv($file, [
-                'User ID',
-                'User Name',
-                'Timestamp',
-                'Annoying/Enjoyable',
-                'Not Understandable/Understandable',
-                'Creative/Dull',
-                'Easy/Difficult',
-                'Valuable/Inferior',
-                'Boring/Exciting',
-                'Not Interesting/Interesting',
-                'Unpredictable/Predictable',
-                'Fast/Slow',
-                'Inventive/Conventional',
-                'Obstructive/Supportive',
-                'Good/Bad',
-                'Complicated/Easy',
-                'Unlikable/Pleasing',
-                'Usual/Leading Edge',
-                'Unpleasant/Pleasant',
-                'Secure/Not Secure',
-                'Motivating/Demotivating',
-                'Meets Expectations/Does Not Meet',
-                'Inefficient/Efficient',
-                'Clear/Confusing',
-                'Impractical/Practical',
-                'Organized/Cluttered',
-                'Attractive/Unattractive',
-                'Friendly/Unfriendly',
-                'Conservative-Innovative',
-                'Comments',
-                'Suggestions'
+                'ID', 'NIM', 'Nama Pengguna', 'Email', 'Kelas', 'Tanggal Pengisian',
+                // 26 aspek UEQ
+                'Annoying - Enjoyable',
+                'Not Understandable - Understandable',
+                'Creative - Dull',
+                'Easy - Difficult',
+                'Valuable - Inferior',
+                'Boring - Exciting',
+                'Not Interesting - Interesting',
+                'Unpredictable - Predictable',
+                'Fast - Slow',
+                'Inventive - Conventional',
+                'Obstructive - Supportive',
+                'Good - Bad',
+                'Complicated - Easy',
+                'Unlikable - Pleasing',
+                'Usual - Leading Edge',
+                'Unpleasant - Pleasant',
+                'Secure - Not Secure',
+                'Motivating - Demotivating',
+                'Meets Expectations - Does Not Meet',
+                'Inefficient - Efficient',
+                'Clear - Confusing',
+                'Impractical - Practical',
+                'Organized - Cluttered',
+                'Attractive - Unattractive',
+                'Friendly - Unfriendly',
+                'Conservative - Innovative',
+                'Komentar', 'Saran'
             ]);
-
+            
+            // Add data rows
             foreach ($surveys as $survey) {
                 fputcsv($file, [
-                    $survey->user_id,
-                    $survey->user->name,
-                    $survey->created_at,
+                    $survey->id,
+                    $survey->nim ?? '',
+                    optional($survey->user)->name ?? 'Tidak ada',
+                    optional($survey->user)->email ?? 'Tidak ada',
+                    $survey->class ?? '',
+                    $survey->created_at->format('d/m/Y H:i'),
+                    // 26 aspek UEQ
                     $survey->annoying_enjoyable,
                     $survey->not_understandable_understandable,
                     $survey->creative_dull,
@@ -203,15 +229,15 @@ class UeqSurveyController extends Controller
                     $survey->attractive_unattractive,
                     $survey->friendly_unfriendly,
                     $survey->conservative_innovative,
-                    $survey->comments,
-                    $survey->suggestions
+                    $survey->comments ?? '',
+                    $survey->suggestions ?? ''
                 ]);
             }
-
+            
             fclose($file);
         };
-
-        return Response::stream($callback, 200, $headers);
+        
+        return response()->stream($callback, 200, $headers);
     }
 
     public function detail($userId)

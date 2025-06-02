@@ -26,6 +26,14 @@
                                             <td>{{ $user->name }}</td>
                                         </tr>
                                         <tr>
+                                            <th>NIM</th>
+                                            <td>{{ $survey->nim }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Kelas</th>
+                                            <td>{{ $survey->class }}</td>
+                                        </tr>
+                                        <tr>
                                             <th>Email</th>
                                             <td>{{ $user->email }}</td>
                                         </tr>

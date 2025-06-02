@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>OOPEDIA - @yield('title')</title>
     
     <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
@@ -290,5 +290,8 @@
             'albumLabel': "Gambar %1 dari %2"
         });
     </script>
+
+    <!-- Sidebar backdrop for mobile -->
+    <div class="sidebar-backdrop"></div>
 </body>
 </html>

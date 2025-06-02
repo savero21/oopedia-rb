@@ -66,19 +66,30 @@ class MahasiswaController extends Controller
 
     public function leaderboard()
     {
-        // Hitung jumlah soal per kategori untuk badge
-        $questionCounts = DB::table('questions')
-            ->select(
-                DB::raw('COUNT(*) as total'),
-                DB::raw('SUM(CASE WHEN difficulty = "beginner" THEN 1 ELSE 0 END) as beginner_count'),
-                DB::raw('SUM(CASE WHEN difficulty = "medium" THEN 1 ELSE 0 END) as medium_count'),
-                DB::raw('SUM(CASE WHEN difficulty = "hard" THEN 1 ELSE 0 END) as hard_count')
-            )
-            ->first();
-        
-        $totalBeginner = $questionCounts->beginner_count;
-        $totalMedium = $questionCounts->medium_count;
-        $totalHard = $questionCounts->hard_count;
+        // Hitung jumlah soal per kategori untuk badge (dari bank soal yang aktif)
+        $totalBeginner = 0;
+        $totalMedium = 0;
+        $totalHard = 0;
+
+        // Ambil data materials dengan konfigurasi bank soal yang aktif
+        $materials = Material::with(['questionBankConfigs' => function($query) {
+            $query->where('is_active', true);
+        }])->get();
+
+        // Hitung total soal per tingkat kesulitan dari bank soal aktif
+        foreach ($materials as $material) {
+            $config = $material->questionBankConfigs->first();
+            if ($config) {
+                $totalBeginner += $config->beginner_count;
+                $totalMedium += $config->medium_count;
+                $totalHard += $config->hard_count;
+            } else {
+                // Jika tidak ada konfigurasi, gunakan semua soal berdasarkan kesulitan
+                $totalBeginner += $material->questions()->where('difficulty', 'beginner')->count();
+                $totalMedium += $material->questions()->where('difficulty', 'medium')->count();
+                $totalHard += $material->questions()->where('difficulty', 'hard')->count();
+            }
+        }
         
         // Ambil data jawaban benar untuk setiap user dengan percobaan minimum
         $correctAnswers = DB::table('progress')

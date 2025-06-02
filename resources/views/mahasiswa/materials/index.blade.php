@@ -42,10 +42,6 @@
                         <i class="fas fa-book-open"></i>
                     </div>
                 </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 29ff6dd1c83b86081a6cad5db73a75b0b1a473b7
             @endif
             
             <div class="material-icon">
@@ -60,7 +56,6 @@
                 <div class="material-meta">
                     <div class="meta-item">
                         <i class="fas fa-user"></i> {{ $material->creator ? $material->creator->name : 'Admin' }}
-
                     </div>
                     <div class="meta-item">
                         <i class="far fa-calendar-alt"></i> {{ $material->updated_at->format('d M Y') }}
@@ -71,7 +66,38 @@
                 
                 <div class="material-stats">
                     <div class="stats-pill">
-                        <i class="fas fa-question-circle"></i> {{ $material->questions->count() }} Soal
+                        <i class="fas fa-question-circle"></i> 
+                        @php
+                            $isGuest = !auth()->check() || (auth()->check() && auth()->user()->role_id === 4);
+                            
+                            // Calculate configured question count
+                            if ($isGuest) {
+                                // For guests, limit to 3 questions per difficulty level
+                                $beginnerCount = min(3, $material->questions->where('difficulty', 'beginner')->count());
+                                $mediumCount = min(3, $material->questions->where('difficulty', 'medium')->count());
+                                $hardCount = min(3, $material->questions->where('difficulty', 'hard')->count());
+                                $configuredTotalQuestions = $beginnerCount + $mediumCount + $hardCount;
+                            } else {
+                                // For registered users, use admin configuration
+                                $config = App\Models\QuestionBankConfig::where('material_id', $material->id)
+                                    ->where('is_active', true)
+                                    ->first();
+                                
+                                if ($config) {
+                                    $configuredTotalQuestions = $config->beginner_count + $config->medium_count + $config->hard_count;
+                                } else {
+                                    $configuredTotalQuestions = $material->questions->count();
+                                }
+                            }
+                        @endphp
+                        
+                        {{ $configuredTotalQuestions }} Soal
+                        @if($isGuest)
+                            <span class="guest-mode-badge ms-2">
+                                <i class="fas fa-lock-open text-warning"></i>
+                                Mode Tamu
+                            </span>
+                        @endif
                     </div>
                 </div>
                 
@@ -113,7 +139,7 @@
     .material-card {
         background-color: white;
         border-radius: 15px;
-        box-shadow: 0 0 0 4px rgba(0,87,184,0.2), 0 6px 16px rgba(0,87,184,0.08);
+        box-shadow: 0 5px 15px rgba(0, 87, 184, 0.15);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         height: 100%;
         display: flex;
@@ -121,34 +147,33 @@
         position: relative;
         overflow: hidden;
         border: none;
+        margin-bottom: 25px;
     }
     
     .material-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0 0 4px rgba(0,87,184,0.4), 0 12px 30px rgba(0,87,184,0.15);
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 87, 184, 0.25);
     }
     
     .material-badge {
         position: absolute;
         top: 15px;
         left: 15px;
-        z-index: 3;
+        z-index: 10;
         background: linear-gradient(135deg, #28a745, #20c997);
         color: white;
-        padding: 5px 12px;
+        padding: 6px 15px;
         border-radius: 20px;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
     }
     
     .material-image {
-        height: 180px;
+        height: 200px;
         position: relative;
-        border-top-left-radius: 13px;
-        border-top-right-radius: 13px;
-        border-bottom: 1px solid #e0e6ed;
-        background-color: #f8f9fa;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
         overflow: hidden;
     }
     
@@ -156,8 +181,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.3s ease;
-        padding: 0;
+        transition: transform 0.5s ease;
     }
     
     .material-image::after {
@@ -166,13 +190,13 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        height: 20px;
-        background: linear-gradient(to top, rgba(248,249,250,0.8), transparent);
-        z-index: 1;
+        height: 30px;
+        background: linear-gradient(to top, rgba(255,255,255,0.9), transparent);
+        z-index: 2;
     }
     
     .material-card:hover .material-image img {
-        transform: scale(1.05);
+        transform: scale(1.1);
     }
     
     .material-icon {
@@ -188,14 +212,15 @@
         align-items: center;
         justify-content: center;
         font-size: 20px;
-        z-index: 2;
+        z-index: 3;
         border: 3px solid white;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 87, 184, 0.3);
+        transition: transform 0.3s ease, background-color 0.3s ease;
     }
     
     .material-card:hover .material-icon {
         transform: rotate(15deg);
+        background-color: #004095;
     }
     
     .material-content {
@@ -204,8 +229,98 @@
         flex-direction: column;
         flex-grow: 1;
     }
-
     
+    .material-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0057B8;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+    
+    .material-meta {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #555;
+    }
+    
+    .meta-item i {
+        color: #0057B8;
+        margin-right: 5px;
+    }
+    
+    .content-divider {
+        height: 1px;
+        background-color: #e0e6ed;
+        margin: 10px 0 15px;
+    }
+    
+    .material-stats {
+        margin-bottom: 15px;
+    }
+    
+    .stats-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        background-color: #f0f7ff;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #0057B8;
+        font-weight: 500;
+    }
+    
+    .stats-pill i {
+        margin-right: 5px;
+    }
+    
+    .guest-mode-badge {
+        background-color: #fff8e6;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        color: #d68c00;
+        font-weight: 600;
+    }
+    
+    .material-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: auto;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #0057B8, #0074D9);
+        color: white;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 87, 184, 0.2);
+    }
+    
+    .material-link:hover {
+        background: linear-gradient(135deg, #004095, #0065c0);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 87, 184, 0.3);
+        color: white;
+    }
+    
+    .material-link i {
+        margin-left: 8px;
+        transition: transform 0.2s ease;
+    }
+    
+    .material-link:hover i {
+        transform: translateX(3px);
+    }
+
     .material-title {
         font-weight: 700;
         font-size: 1.3rem;
@@ -334,11 +449,6 @@
 
     /* Perbaikan Gaya untuk Tour Guide */
     .introjs-tooltip {
-
-
-}/* Perbaikan Gaya untuk Tour Guide */
-.introjs-tooltip {
-
         border-radius: 12px !important;
         padding: 20px !important;
         max-width: 400px !important;
@@ -415,6 +525,28 @@
     .introjs-bullets ul li a.active {
         background: var(--color-1) !important;
     }
+
+    .no-image-icon {
+        font-size: 48px;
+        color: #0057B8;
+        opacity: 0.4;
+    }
+    
+    .guest-mode-badge {
+        font-size: 0.75rem;
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #856404;
+        border-radius: 12px;
+        padding: 2px 8px;
+        vertical-align: middle;
+    }
+    
+    .stats-pill {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
 </style>
 @endpush
 
@@ -489,15 +621,6 @@
         }).onexit(function() {
             sessionStorage.setItem('material_index_tour_complete', 'true');
         }).start();
-
     }
 </script>
-<style>
-    .no-image-icon {
-        font-size: 48px;
-        color: #0057B8;
-        opacity: 0.4;
-    }
-</style>
-
 @endpush

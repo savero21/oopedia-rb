@@ -130,8 +130,7 @@
 </style>
 @endpush
 
-@push('scripts')
-<script>
+@push('scripts')<script>
     document.addEventListener('DOMContentLoaded', function () {
         if (!sessionStorage.getItem('question_index_tour_complete')) {
             setTimeout(startQuestionsIndexTour, 500);
@@ -149,7 +148,6 @@
                 `
             },
             {
-
                 element: document.querySelector('.material-question-card'),
                 intro: "Ini adalah kartu materi latihan soal. Pilih salah satu materi untuk mulai berlatih."
             },
@@ -160,7 +158,6 @@
             {
                 element: document.querySelector('.btn-start-exercise'),
                 intro: "Klik tombol ini untuk melihat detail dan mulai mengerjakan latihan soal."
-
             },
             {
                 element: document.querySelector('.material-card:first-child'),
@@ -191,7 +188,6 @@
                     </div>
                 `,
                 position: 'top'
-
             },
             {
                 intro: `
@@ -204,7 +200,6 @@
         ];
 
         const intro = introJs();
-
         intro.setOptions({
             steps: steps,
             showProgress: true,
@@ -225,7 +220,7 @@
             sessionStorage.setItem('question_index_tour_complete', 'true'); 
         })
         .start();
-    }    
+    }
 </script>
 @endpush
 @endsection

@@ -16,7 +16,8 @@ use App\Http\Controllers\Admin\{
     PendingApprovalController,
     LogoutController as AdminLogoutController,
     UeqSurveyController,
-    QuestionBankController
+    QuestionBankController,
+    UeqSurveyController as AdminUeqSurveyController
 };
 use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
@@ -241,8 +242,8 @@ Route::post('/questions/check-answer', [MahasiswaQuestionController::class, 'che
     ->name('questions.check-answer')
     ->withoutMiddleware('auth');
 
-// UEQ Survey routes for mahasiswa
-Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+// UEQ Survey routes for mahasiswa - tambahkan middleware auth
+Route::prefix('mahasiswa')->name('mahasiswa.')->middleware(['auth'])->group(function () {
     Route::get('/ueq-survey', [MahasiswaUeqSurveyController::class, 'create'])->name('ueq.create');
     Route::post('/ueq-survey', [MahasiswaUeqSurveyController::class, 'store'])->name('ueq.store');
     Route::get('/ueq-survey/thankyou', [MahasiswaUeqSurveyController::class, 'thankyou'])->name('ueq.thankyou');

@@ -1,4 +1,9 @@
 <div class="sidebar">
+    <!-- Add a close button that's only visible on mobile -->
+    <button class="sidebar-close d-block d-lg-none" id="sidebarCloseBtn">
+        <i class="fas fa-times"></i>
+    </button>
+
     <!-- Logo Section - Added at the top -->
     <div class="text-center py-3">
         <a href="{{ route('mahasiswa.dashboard') }}">
@@ -300,7 +305,7 @@
                        title="Silakan login untuk melihat peringkat">
                         <i class="fas fa-trophy"></i>
                         <span>Peringkat</span>
-                        <span class="badge bg-warning text-dark ms-2">Perlu Login</span>
+                        <span class="badge bg-danger text-white ms-1">Perlu Login</span>
                     </a>
                 @endauth
             </li>
@@ -342,5 +347,47 @@
         font-size: 0.7rem;
         margin-left: 8px;
     }
+
+    /* Additional mobile sidebar styles */
+    .sidebar-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        color: #777;
+        font-size: 1.2rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        display: none;
+        z-index: 10;
+    }
+    
+    @media (max-width: 991.98px) {
+        .sidebar-close {
+            display: block;
+        }
+    }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    // Close sidebar button functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+        
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.classList.remove('show');
+                }
+                localStorage.setItem('sidebarOpen', false);
+            });
+        }
+    });
+</script>
 @endpush
